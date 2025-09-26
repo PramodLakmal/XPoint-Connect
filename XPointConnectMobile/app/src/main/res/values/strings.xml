@@ -1,3 +1,159 @@
 <resources>
-    <string name="app_name">XPoint-Connect-Mobile</string>
+    <string name="app_name">XPoint Connect</string>
+    
+    <!-- Auth Strings -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="logout">Logout</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="nic">NIC</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="license_number">License Number</string>
+    <string name="vehicle_model">Vehicle Model</string>
+    <string name="vehicle_year">Vehicle Year</string>
+    <string name="battery_capacity">Battery Capacity (kWh)</string>
+    <string name="login_successful">Login successful!</string>
+    <string name="registration_successful">Registration successful!</string>
+    <string name="invalid_credentials">Invalid credentials</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="stations">Stations</string>
+    <string name="bookings">Bookings</string>
+    <string name="profile">Profile</string>
+    <string name="dashboard">Dashboard</string>
+    
+    <!-- Stations -->
+    <string name="charging_stations">Charging Stations</string>
+    <string name="nearby_stations">Nearby Stations</string>
+    <string name="all_stations">All Stations</string>
+    <string name="station_details">Station Details</string>
+    <string name="available">Available</string>
+    <string name="occupied">Occupied</string>
+    <string name="offline">Offline</string>
+    <string name="book_now">Book Now</string>
+    <string name="get_directions">Get Directions</string>
+    <string name="operating_hours">Operating Hours</string>
+    <string name="amenities">Amenities</string>
+    <string name="connector_types">Connector Types</string>
+    <string name="max_power">Max Power</string>
+    <string name="cost_per_kwh">Cost per kWh</string>
+    <string name="rating">Rating</string>
+    <string name="reviews">Reviews</string>
+    
+    <!-- Bookings -->
+    <string name="my_bookings">My Bookings</string>
+    <string name="upcoming_bookings">Upcoming Bookings</string>
+    <string name="booking_history">Booking History</string>
+    <string name="new_booking">New Booking</string>
+    <string name="booking_details">Booking Details</string>
+    <string name="reservation_date">Reservation Date</string>
+    <string name="reservation_time">Reservation Time</string>
+    <string name="duration">Duration</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="booking_status">Status</string>
+    <string name="cancel_booking">Cancel Booking</string>
+    <string name="booking_confirmed">Booking Confirmed</string>
+    <string name="booking_cancelled">Booking Cancelled</string>
+    <string name="qr_code">QR Code</string>
+    <string name="show_qr">Show QR Code</string>
+    
+    <!-- Booking Status -->
+    <string name="status_pending">Pending Approval</string>
+    <string name="status_approved">Approved</string>
+    <string name="status_checked_in">Checked In</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_no_show">No Show</string>
+    
+    <!-- Dashboard -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="pending_reservations">Pending Reservations</string>
+    <string name="approved_reservations">Approved Reservations</string>
+    <string name="completed_this_month">Completed This Month</string>
+    <string name="total_spent_this_month">Total Spent This Month</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="find_stations">Find Stations</string>
+    <string name="view_bookings">View Bookings</string>
+    
+    <!-- Profile -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="vehicle_information">Vehicle Information</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="notifications">Notifications</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="app_version">App Version</string>
+    <string name="about">About</string>
+    
+    <!-- Common -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="loading">Loading…</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+    <string name="no_data">No data available</string>
+    <string name="refresh">Refresh</string>
+    <string name="retry">Retry</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="sort">Sort</string>
+    <string name="map_view">Map View</string>
+    <string name="list_view">List View</string>
+    
+    <!-- Error Messages -->
+    <string name="network_error">Network error. Please check your connection.</string>
+    <string name="server_error">Server error. Please try again later.</string>
+    <string name="unknown_error">An unknown error occurred.</string>
+    <string name="field_required">This field is required</string>
+    <string name="invalid_email">Please enter a valid email address</string>
+    <string name="invalid_nic">Please enter a valid NIC</string>
+    <string name="invalid_phone">Please enter a valid phone number</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="passwords_dont_match">Passwords do not match</string>
+    
+    <!-- Time and Date -->
+    <string name="minutes">minutes</string>
+    <string name="hours">hours</string>
+    <string name="days">days</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="yesterday">Yesterday</string>
+    
+    <!-- Units -->
+    <string name="km">km</string>
+    <string name="kwh">kWh</string>
+    <string name="kw">kW</string>
+    <string name="currency_symbol">Rs.</string>
+    
+    <!-- Permissions -->
+    <string name="location_permission_required">Location permission is required to find nearby stations</string>
+    <string name="camera_permission_required">Camera permission is required to scan QR codes</string>
+    <string name="grant_permission">Grant Permission</string>
+    
+    <!-- Welcome/Onboarding -->
+    <string name="welcome_title">Welcome to XPoint Connect</string>
+    <string name="welcome_subtitle">Find and book EV charging stations with ease</string>
+    <string name="get_started">Get Started</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="finish">Finish</string>
 </resources>
