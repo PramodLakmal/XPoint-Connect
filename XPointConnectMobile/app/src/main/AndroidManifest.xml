@@ -5,30 +5,47 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" /> <!-- For QR scanning -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- For Google Maps -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Required for Android 12+ -->
 
     <application
+        android:name="com.xpoint.connect.XPointConnectApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.XPointConnectMobile"
         tools:targetApi="31">
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".ReservationActivity" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+        
+        <!-- Main Activity (Launcher - handles splash logic internally) -->
+        <activity 
+            android:name="com.xpoint.connect.ui.main.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.XPointConnectMobile.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- Auth Activities -->
+        <activity 
+            android:name="com.xpoint.connect.ui.auth.LoginActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+        <activity 
+            android:name="com.xpoint.connect.ui.auth.RegisterActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+        
+        <!-- Splash Activity (No longer launcher) -->
+        <activity 
+            android:name="com.xpoint.connect.ui.auth.SplashActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+        
+
+        
     </application>
 
 </manifest>
