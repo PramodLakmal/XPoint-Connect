@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="16dp"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="Station ID">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputStationId" android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tvDateTime" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:text="Select date and time"
+        android:layout_marginTop="12dp" android:padding="8dp" android:background="#EEEEEE" />
+
+    <Button android:id="@+id/btnPickDateTime" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:text="Pick date &amp; time" android:layout_marginTop="8dp"/>
+
+    <Button android:id="@+id/btnSubmit" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:text="Create Reservation" android:layout_marginTop="16dp"/>
+
+</LinearLayout>
