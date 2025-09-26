@@ -42,7 +42,14 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Extra dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("com.google.zxing:core:3.5.1")           // QR generation
+    implementation("com.google.android.material:material:1.6.1")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
 }
