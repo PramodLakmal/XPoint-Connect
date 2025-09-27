@@ -1,8 +1,9 @@
 package com.xpoint.connect.data.api
 
 import com.google.gson.GsonBuilder
-import com.xpoint.connect.utils.SharedPreferencesManager
+import com.xpoint.connect.data.database.UserPreferencesManager
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -11,17 +12,16 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    private const val BASE_URL =
-            "https://your-api-base-url.com/" // Replace with your actual API URL
+    private const val BASE_URL = "http://10.0.2.2:5034/" // Replace with your actual API URL
 
-    private var sharedPreferencesManager: SharedPreferencesManager? = null
+    private var userPreferencesManager: UserPreferencesManager? = null
 
-    fun init(prefsManager: SharedPreferencesManager) {
-        sharedPreferencesManager = prefsManager
+    fun init(prefsManager: UserPreferencesManager) {
+        userPreferencesManager = prefsManager
     }
 
     private val authInterceptor = Interceptor { chain ->
-        val token = sharedPreferencesManager?.getAuthToken()
+        val token = runBlocking { userPreferencesManager?.getAuthToken() }
         val request =
                 if (token != null) {
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()

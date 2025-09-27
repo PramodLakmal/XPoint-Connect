@@ -6,14 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.auth.LoginActivity
-import com.xpoint.connect.utils.SharedPreferencesManager
 import com.xpoint.connect.utils.showToast
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -26,7 +29,8 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedPreferencesManager = SharedPreferencesManager(requireContext())
+        userPreferencesManager =
+                (requireActivity().application as XPointConnectApplication).userPreferencesManager
 
         setupViews(view)
         loadUserData()
@@ -56,26 +60,30 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadUserData() {
-        view?.let { v ->
-            val userName = sharedPreferencesManager.getUserName() ?: "User"
-            val userEmail = sharedPreferencesManager.getUserEmail() ?: "email@example.com"
-            val vehicleModel = sharedPreferencesManager.getVehicleModel() ?: "N/A"
-            val batteryCapacity = sharedPreferencesManager.getBatteryCapacity()
+        lifecycleScope.launch {
+            view?.let { v ->
+                val userName = userPreferencesManager.getUserName() ?: "User"
+                val userEmail = userPreferencesManager.getUserEmail() ?: "email@example.com"
+                val vehicleModel = userPreferencesManager.getVehicleModel() ?: "N/A"
+                val batteryCapacity = userPreferencesManager.getBatteryCapacity()
 
-            v.findViewById<android.widget.TextView>(R.id.tvUserName)?.text = userName
-            v.findViewById<android.widget.TextView>(R.id.tvUserEmail)?.text = userEmail
-            v.findViewById<android.widget.TextView>(R.id.tvVehicleModel)?.text = vehicleModel
-            v.findViewById<android.widget.TextView>(R.id.tvBatteryCapacity)?.text =
-                    "${batteryCapacity} kWh"
+                v.findViewById<android.widget.TextView>(R.id.tvUserName)?.text = userName
+                v.findViewById<android.widget.TextView>(R.id.tvUserEmail)?.text = userEmail
+                v.findViewById<android.widget.TextView>(R.id.tvVehicleModel)?.text = vehicleModel
+                v.findViewById<android.widget.TextView>(R.id.tvBatteryCapacity)?.text =
+                        "${batteryCapacity} kWh"
+            }
         }
     }
 
     private fun logout() {
-        sharedPreferencesManager.logout()
+        lifecycleScope.launch {
+            userPreferencesManager.logout()
 
-        val intent = Intent(requireContext(), LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        requireActivity().finish()
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            requireActivity().finish()
+        }
     }
 }

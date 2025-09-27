@@ -5,19 +5,22 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.xpoint.connect.ui.main.MainActivity
-import com.xpoint.connect.utils.SharedPreferencesManager
+import androidx.lifecycle.lifecycleScope
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
+import com.xpoint.connect.ui.main.MainActivity
+import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
 
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        sharedPreferencesManager = SharedPreferencesManager(this)
+        userPreferencesManager = (application as XPointConnectApplication).userPreferencesManager
 
         // Delay for splash screen
         Handler(Looper.getMainLooper())
@@ -25,14 +28,16 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun navigateToNextScreen() {
-        val intent =
-                if (sharedPreferencesManager.isLoggedIn()) {
-                    Intent(this, MainActivity::class.java)
-                } else {
-                    Intent(this, LoginActivity::class.java)
-                }
+        lifecycleScope.launch {
+            val intent =
+                    if (userPreferencesManager.isLoggedIn()) {
+                        Intent(this@SplashActivity, MainActivity::class.java)
+                    } else {
+                        Intent(this@SplashActivity, LoginActivity::class.java)
+                    }
 
-        startActivity(intent)
-        finish()
+            startActivity(intent)
+            finish()
+        }
     }
 }

@@ -4,16 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.xpoint.connect.R
-import com.xpoint.connect.utils.SharedPreferencesManager
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.utils.showToast
+import kotlinx.coroutines.launch
 
 class DashboardFragment : Fragment() {
 
     private val viewModel: DashboardViewModel by viewModels()
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -26,7 +29,8 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedPreferencesManager = SharedPreferencesManager(requireContext())
+        userPreferencesManager =
+                (requireActivity().application as XPointConnectApplication).userPreferencesManager
 
         setupViews(view)
         observeViewModel()
@@ -35,9 +39,11 @@ class DashboardFragment : Fragment() {
 
     private fun setupViews(view: View) {
         // Set welcome message
-        val userName = sharedPreferencesManager.getUserName() ?: "User"
-        view.findViewById<android.widget.TextView>(R.id.tvWelcome)?.text =
-                getString(R.string.welcome_back) + ", $userName"
+        lifecycleScope.launch {
+            val userName = userPreferencesManager.getUserName() ?: "User"
+            view.findViewById<android.widget.TextView>(R.id.tvWelcome)?.text =
+                    getString(R.string.welcome_back) + ", $userName"
+        }
 
         // Setup quick actions
         view.findViewById<View>(R.id.cardFindStations)?.setOnClickListener {
@@ -91,9 +97,11 @@ class DashboardFragment : Fragment() {
     }
 
     private fun loadDashboardData() {
-        val userNIC = sharedPreferencesManager.getUserNIC()
-        if (userNIC != null) {
-            viewModel.loadDashboardStats(userNIC)
+        lifecycleScope.launch {
+            val userNIC = userPreferencesManager.getUserNIC()
+            if (userNIC != null) {
+                viewModel.loadDashboardStats(userNIC)
+            }
         }
     }
 }

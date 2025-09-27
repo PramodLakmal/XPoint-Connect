@@ -6,14 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.xpoint.connect.R
-import com.xpoint.connect.utils.SharedPreferencesManager
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.utils.showToast
+import kotlinx.coroutines.launch
 
 class BookingsFragment : Fragment() {
 
     private val viewModel: BookingsViewModel by viewModels()
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -26,7 +29,8 @@ class BookingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedPreferencesManager = SharedPreferencesManager(requireContext())
+        userPreferencesManager =
+                (requireActivity().application as XPointConnectApplication).userPreferencesManager
 
         setupViews(view)
         observeViewModel()
@@ -60,23 +64,29 @@ class BookingsFragment : Fragment() {
     }
 
     private fun loadBookings() {
-        val userNIC = sharedPreferencesManager.getUserNIC()
-        if (userNIC != null) {
-            viewModel.loadBookings(userNIC)
+        lifecycleScope.launch {
+            val userNIC = userPreferencesManager.getUserNIC()
+            if (userNIC != null) {
+                viewModel.loadBookings(userNIC)
+            }
         }
     }
 
     private fun loadUpcomingBookings() {
-        val userNIC = sharedPreferencesManager.getUserNIC()
-        if (userNIC != null) {
-            viewModel.loadUpcomingBookings(userNIC)
+        lifecycleScope.launch {
+            val userNIC = userPreferencesManager.getUserNIC()
+            if (userNIC != null) {
+                viewModel.loadUpcomingBookings(userNIC)
+            }
         }
     }
 
     private fun loadBookingHistory() {
-        val userNIC = sharedPreferencesManager.getUserNIC()
-        if (userNIC != null) {
-            viewModel.loadBookingHistory(userNIC)
+        lifecycleScope.launch {
+            val userNIC = userPreferencesManager.getUserNIC()
+            if (userNIC != null) {
+                viewModel.loadBookingHistory(userNIC)
+            }
         }
     }
 }
