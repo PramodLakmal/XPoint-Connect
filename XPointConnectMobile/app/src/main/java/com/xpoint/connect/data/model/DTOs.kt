@@ -1,3 +1,21 @@
+/**
+ * DTOs.kt
+ *
+ * Purpose: Defines data transfer objects for API communication and data serialization Author:
+ * XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This file contains all Data Transfer Objects (DTOs) used for API communication
+ * between the mobile application and backend services. DTOs are structured to match the JSON
+ * formats expected by REST API endpoints and include proper serialization annotations for automatic
+ * parsing with Gson.
+ *
+ * Key Features:
+ * - Authentication DTOs for login and registration processes
+ * - Booking management DTOs for reservation operations
+ * - Charging station DTOs for location and availability data
+ * - Error handling DTOs for API response management
+ * - Proper JSON serialization with @SerializedName annotations
+ */
 package com.xpoint.connect.data.model
 
 import com.google.gson.annotations.SerializedName

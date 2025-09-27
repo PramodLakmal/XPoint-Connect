@@ -1,3 +1,23 @@
+/**
+ * ApiService.kt
+ *
+ * Purpose: Retrofit interface defining all REST API endpoints for XPoint Connect backend Author:
+ * XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This interface defines all REST API endpoints used by the XPoint Connect mobile
+ * application to communicate with the backend services. It includes authentication, charging
+ * station management, booking operations, and user profile management endpoints with proper HTTP
+ * method annotations and parameter definitions.
+ *
+ * Key Features:
+ * - Authentication endpoints for login and registration
+ * - Charging station discovery and management APIs
+ * - Booking creation, management, and status tracking
+ * - EV owner profile management and updates
+ * - Dashboard statistics and reporting endpoints
+ * - Geolocation-based station discovery
+ * - QR code and check-in/check-out functionality
+ */
 package com.xpoint.connect.data.api
 
 import com.xpoint.connect.data.model.*

@@ -1,3 +1,22 @@
+/**
+ * UserPreferencesManager.kt
+ *
+ * Purpose: Manages user preferences and session data using SQLite database storage Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This manager class provides a high-level interface for user data persistence using
+ * Room database. It replaces SharedPreferences with more robust SQLite storage for better
+ * performance and data integrity. Handles authentication tokens, user profile data, and application
+ * preferences with coroutine support.
+ *
+ * Key Features:
+ * - SQLite-based user data storage with Room ORM
+ * - Authentication token management for API requests
+ * - User profile data persistence and retrieval
+ * - Session state management (login/logout)
+ * - Reactive data observation through Flow
+ * - Backward compatibility with existing preference methods
+ */
 package com.xpoint.connect.data.database
 
 import android.content.Context
@@ -10,7 +29,10 @@ class UserPreferencesManager(context: Context) {
     private val database = XPointDatabase.getDatabase(context)
     private val userDao = database.userDao()
 
-    // Initialize with default user if not exists
+    /**
+     * Initializes the user preferences database with default values Creates a default user entity
+     * if no user data exists in the database
+     */
     suspend fun initialize() {
         if (userDao.userExists() == 0) {
             userDao.insertOrUpdateUser(UserEntity())
@@ -58,7 +80,13 @@ class UserPreferencesManager(context: Context) {
         )
     }
 
-    // Save login data from new API response
+    /**
+     * Saves essential login data from the new simplified API response Stores authentication token
+     * and basic user information from login endpoint
+     * @param nic User's National Identity Card number
+     * @param fullName User's complete name from API response
+     * @param token JWT authentication token for API requests
+     */
     suspend fun saveLoginData(nic: String, fullName: String, token: String) {
         userDao.updateAuthToken(token)
         userDao.updateUserData(

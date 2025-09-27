@@ -1,3 +1,23 @@
+/**
+ * MainActivity.kt
+ *
+ * Purpose: Main container activity with bottom navigation for authenticated users Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This activity serves as the main container for the XPoint Connect application,
+ * providing bottom navigation between key features including dashboard, charging stations,
+ * bookings, and user profile. It manages fragment navigation, user authentication validation, and
+ * provides logout functionality for authenticated EV owners.
+ *
+ * Key Features:
+ * - Bottom navigation with fragment management
+ * - Dashboard with charging statistics and quick actions
+ * - Charging station discovery and booking interface
+ * - Booking management and history tracking
+ * - User profile management and settings
+ * - Authentication validation and logout functionality
+ * - Android 12+ splash screen API integration
+ */
 package com.xpoint.connect.ui.main
 
 import android.content.Intent

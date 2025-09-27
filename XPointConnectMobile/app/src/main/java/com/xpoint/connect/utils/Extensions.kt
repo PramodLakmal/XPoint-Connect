@@ -1,3 +1,21 @@
+/**
+ * Extensions.kt
+ *
+ * Purpose: Collection of Kotlin extension functions and utility classes for common operations
+ * Author: XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This file contains extension functions and utility classes that enhance the
+ * functionality of Android components and provide commonly used operations throughout the
+ * application. It includes UI utilities, date formatting helpers, keyboard management, and toast
+ * notifications to improve code reusability and maintain consistent user experience.
+ *
+ * Key Features:
+ * - Context and Fragment extension functions for toast notifications
+ * - Activity and Fragment keyboard management utilities
+ * - Date formatting utilities for API and display conversions
+ * - Time formatting helpers for user interface display
+ * - Validation utilities for user input processing
+ */
 package com.xpoint.connect.utils
 
 import android.app.Activity
@@ -10,20 +28,39 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 // Extension functions for easier usage
+
+/**
+ * Displays a toast message using the current context
+ * @param message The text message to display
+ * @param duration Duration of the toast (Toast.LENGTH_SHORT or Toast.LENGTH_LONG)
+ */
 fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, message, duration).show()
 }
 
+/**
+ * Displays a toast message from within a Fragment context
+ * @param message The text message to display
+ * @param duration Duration of the toast (Toast.LENGTH_SHORT or Toast.LENGTH_LONG)
+ */
 fun Fragment.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     requireContext().showToast(message, duration)
 }
 
+/**
+ * Hides the soft keyboard from the current activity Uses InputMethodManager to hide keyboard from
+ * the currently focused view
+ */
 fun Activity.hideKeyboard() {
     val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     val view = currentFocus ?: View(this)
     imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
+/**
+ * Hides the soft keyboard from within a Fragment context Delegates keyboard hiding to the parent
+ * Activity
+ */
 fun Fragment.hideKeyboard() {
     requireActivity().hideKeyboard()
 }

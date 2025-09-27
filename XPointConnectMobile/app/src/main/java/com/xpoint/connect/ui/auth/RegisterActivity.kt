@@ -1,3 +1,23 @@
+/**
+ * RegisterActivity.kt
+ *
+ * Purpose: User registration activity for new EV owner account creation Author: XPoint Connect
+ * Development Team Date: September 27, 2025
+ *
+ * Description: This activity provides the user interface for EV owner registration functionality.
+ * It collects comprehensive user information including personal details, contact information, and
+ * creates new user accounts through the backend API. The activity handles input validation,
+ * registration processing, and success/error feedback for a seamless user onboarding experience.
+ *
+ * Key Features:
+ * - Comprehensive EV owner registration form with validation
+ * - Real-time input validation with error feedback
+ * - NIC-based user identification system
+ * - Secure password handling with confirmation
+ * - Registration success handling and navigation
+ * - Integration with simplified registration API endpoint
+ * - Loading state management during registration process
+ */
 package com.xpoint.connect.ui.auth
 
 import android.os.Bundle
