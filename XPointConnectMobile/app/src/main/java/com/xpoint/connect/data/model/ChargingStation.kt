@@ -1,3 +1,24 @@
+/**
+ * ChargingStation.kt
+ *
+ * Purpose: Data models for charging station information and related infrastructure data Author:
+ * XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This file contains data models for charging station management including location
+ * data, operating hours, time slots, and charging specifications. It supports the complete charging
+ * station ecosystem with detailed information about power capabilities, connector types, pricing,
+ * and availability scheduling for EV owners.
+ *
+ * Key Features:
+ * - Comprehensive charging station profile with technical specifications
+ * - Location data with geographic coordinates for mapping integration
+ * - Operating hours and time slot management for reservations
+ * - Charging type support (AC/DC) with power and connector specifications
+ * - Pricing information and cost calculation support
+ * - Operator information and station management data
+ * - Rating and review system integration
+ * - Amenities and facility information
+ */
 package com.xpoint.connect.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -45,8 +66,8 @@ data class TimeSlot(
 )
 
 enum class ChargingStationType {
-    @SerializedName("AC") AC,
-    @SerializedName("DC") DC,
-    @SerializedName("Rapid") Rapid,
-    @SerializedName("Ultra") Ultra
+        @SerializedName("AC") AC,
+        @SerializedName("DC") DC,
+        @SerializedName("Rapid") Rapid,
+        @SerializedName("Ultra") Ultra
 }

@@ -1,3 +1,23 @@
+/**
+ * ApiClient.kt
+ *
+ * Purpose: Centralized HTTP client configuration for API communication Author: XPoint Connect
+ * Development Team Date: September 27, 2025
+ *
+ * Description: This singleton object provides a centralized configuration for all HTTP API
+ * communications in the XPoint Connect application. It manages authentication tokens,
+ * request/response logging, timeout configurations, and JSON serialization. The client
+ * automatically handles authorization headers and provides retry logic for network operations.
+ *
+ * Key Features:
+ * - Singleton pattern for centralized API client management
+ * - Automatic JWT token injection for authenticated requests
+ * - HTTP request/response logging for debugging and monitoring
+ * - Configurable timeout settings for network operations
+ * - JSON serialization/deserialization with Gson
+ * - Interceptor chain for request/response processing
+ * - Integration with UserPreferencesManager for token management
+ */
 package com.xpoint.connect.data.api
 
 import com.google.gson.GsonBuilder
@@ -16,6 +36,10 @@ object ApiClient {
 
     private var userPreferencesManager: UserPreferencesManager? = null
 
+    /**
+     * Initializes the API client with user preferences manager for token management
+     * @param prefsManager UserPreferencesManager instance for authentication token access
+     */
     fun init(prefsManager: UserPreferencesManager) {
         userPreferencesManager = prefsManager
     }

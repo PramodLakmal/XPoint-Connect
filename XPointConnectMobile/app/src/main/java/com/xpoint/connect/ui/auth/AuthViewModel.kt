@@ -1,3 +1,21 @@
+/**
+ * AuthViewModel.kt
+ *
+ * Purpose: Manages authentication operations and validation for login and registration Author:
+ * XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This ViewModel handles user authentication logic including login and registration
+ * processes. It provides validation for user input, manages API communication through the
+ * AuthRepository, and exposes LiveData for UI observation. The ViewModel ensures proper separation
+ * of concerns by handling business logic away from UI components.
+ *
+ * Key Features:
+ * - EV Owner login with NIC and password validation
+ * - EV Owner registration with comprehensive input validation
+ * - Real-time validation error handling and reporting
+ * - Asynchronous API communication management
+ * - Reactive data binding through LiveData observables
+ */
 package com.xpoint.connect.ui.auth
 
 import androidx.lifecycle.LiveData
@@ -25,6 +43,12 @@ class AuthViewModel : ViewModel() {
     private val _validationErrors = MutableLiveData<Map<String, String>>()
     val validationErrors: LiveData<Map<String, String>> = _validationErrors
 
+    /**
+     * Validates user credentials and initiates login process Performs client-side validation before
+     * making API call to authenticate user
+     * @param nic User's National Identity Card number
+     * @param password User's password
+     */
     fun login(nic: String, password: String) {
         val errors = mutableMapOf<String, String>()
 

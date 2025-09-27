@@ -1,3 +1,24 @@
+/**
+ * Booking.kt
+ *
+ * Purpose: Data models for charging station booking and reservation management Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This file contains data models for managing charging station bookings and
+ * reservations. It includes comprehensive booking lifecycle management from reservation creation
+ * through completion, with support for status tracking, payment processing, QR code generation, and
+ * check-in/check-out functionality.
+ *
+ * Key Features:
+ * - Complete booking lifecycle management with status tracking
+ * - EV owner and charging station relationship mapping
+ * - Reservation date/time scheduling with duration management
+ * - Payment integration with total amount calculation
+ * - QR code generation for contactless check-in/check-out
+ * - Cancellation support with reason tracking
+ * - Operator notes and booking management functionality
+ * - Dashboard statistics and reporting data models
+ */
 package com.xpoint.connect.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -25,12 +46,12 @@ data class Booking(
 )
 
 enum class BookingStatus {
-    @SerializedName("Pending") Pending,
-    @SerializedName("Approved") Approved,
-    @SerializedName("CheckedIn") CheckedIn,
-    @SerializedName("Completed") Completed,
-    @SerializedName("Cancelled") Cancelled,
-    @SerializedName("NoShow") NoShow
+        @SerializedName("Pending") Pending,
+        @SerializedName("Approved") Approved,
+        @SerializedName("CheckedIn") CheckedIn,
+        @SerializedName("Completed") Completed,
+        @SerializedName("Cancelled") Cancelled,
+        @SerializedName("NoShow") NoShow
 }
 
 data class DashboardStats(

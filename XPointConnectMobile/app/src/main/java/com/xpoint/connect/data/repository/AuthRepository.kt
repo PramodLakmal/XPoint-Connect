@@ -1,3 +1,21 @@
+/**
+ * AuthRepository.kt
+ *
+ * Purpose: Manages authentication-related API communications and data handling Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This repository class serves as the single source of truth for authentication
+ * operations. It handles API communication for login and registration processes, manages network
+ * exceptions, and provides clean data interfaces to ViewModels. All network operations are
+ * performed on the IO dispatcher for optimal performance.
+ *
+ * Key Features:
+ * - EV Owner login API integration with new simplified response format
+ * - EV Owner registration API handling
+ * - Centralized error handling and response processing
+ * - Coroutine-based asynchronous operations
+ * - Clean architecture separation between UI and network layers
+ */
 package com.xpoint.connect.data.repository
 
 import com.xpoint.connect.data.api.ApiClient
@@ -22,6 +40,13 @@ class AuthRepository {
         }
     }
 
+    /**
+     * Authenticates EV owner using NIC and password through backend API Makes API call to login
+     * endpoint and returns simplified authentication data
+     * @param nic User's National Identity Card number
+     * @param password User's password
+     * @return Resource wrapper containing login response or error information
+     */
     suspend fun evOwnerLogin(nic: String, password: String): Resource<EVOwnerLoginResponse> {
         return withContext(Dispatchers.IO) {
             try {
