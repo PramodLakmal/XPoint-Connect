@@ -22,7 +22,7 @@ namespace XPoint_Connect_API.Models
         [Required]
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
 
-        public int DurationMinutes { get; set; } = 60; // Default 1 hour
+        public int DurationMinutes { get; set; } = 60; 
 
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
