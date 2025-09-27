@@ -247,16 +247,6 @@ The API will be available at:
 4. Set up MongoDB connection
 5. Configure HTTPS certificates
 
-### Docker Deployment (Optional)
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-COPY ./publish .
-EXPOSE 80
-EXPOSE 443
-ENTRYPOINT ["dotnet", "XPoint-Connect-API.dll"]
-```
-
 ## Security Considerations
 1. Use strong JWT secret keys
 2. Enable HTTPS in production
