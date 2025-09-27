@@ -5,25 +5,28 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.main.MainActivity
 import com.xpoint.connect.utils.Resource
-import com.xpoint.connect.utils.SharedPreferencesManager
 import com.xpoint.connect.utils.hideKeyboard
 import com.xpoint.connect.utils.showToast
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
     private val viewModel: AuthViewModel by viewModels()
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        sharedPreferencesManager = SharedPreferencesManager(this)
+        userPreferencesManager = (application as XPointConnectApplication).userPreferencesManager
 
         setupClickListeners()
         observeViewModel()
@@ -61,17 +64,20 @@ class LoginActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     setLoadingState(false)
                     resource.data?.let { loginResponse ->
-                        // Save user data
-                        sharedPreferencesManager.saveAuthToken(loginResponse.token)
-                        sharedPreferencesManager.saveRefreshToken(loginResponse.refreshToken)
-                        sharedPreferencesManager.saveUserType(loginResponse.userType)
-                        sharedPreferencesManager.saveUserData(loginResponse.evOwner)
+                        // Save user data using coroutines
+                        lifecycleScope.launch {
+                            userPreferencesManager.saveLoginData(
+                                    nic = loginResponse.nic,
+                                    fullName = loginResponse.fullName,
+                                    token = loginResponse.token
+                            )
 
-                        showToast(getString(R.string.login_successful))
+                            showToast(getString(R.string.login_successful))
 
-                        // Navigate to main activity
-                        startActivity(Intent(this, MainActivity::class.java))
-                        finish()
+                            // Navigate to main activity
+                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                            finish()
+                        }
                     }
                 }
                 is Resource.Error -> {

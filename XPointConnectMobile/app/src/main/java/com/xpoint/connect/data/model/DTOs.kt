@@ -23,10 +23,9 @@ data class EVOwnerLoginRequest(
 
 data class EVOwnerLoginResponse(
         @SerializedName("token") val token: String,
-        @SerializedName("refreshToken") val refreshToken: String,
-        @SerializedName("userType") val userType: String,
-        @SerializedName("expirationTime") val expirationTime: String,
-        @SerializedName("evOwner") val evOwner: EVOwner
+        @SerializedName("nic") val nic: String,
+        @SerializedName("fullName") val fullName: String,
+        @SerializedName("expiresAt") val expiresAt: String
 )
 
 data class RegisterEVOwnerRequest(
@@ -35,11 +34,22 @@ data class RegisterEVOwnerRequest(
         @SerializedName("lastName") val lastName: String,
         @SerializedName("email") val email: String,
         @SerializedName("phoneNumber") val phoneNumber: String,
-        @SerializedName("password") val password: String,
-        @SerializedName("licenseNumber") val licenseNumber: String,
-        @SerializedName("vehicleModel") val vehicleModel: String,
-        @SerializedName("vehicleYear") val vehicleYear: Int,
-        @SerializedName("batteryCapacity") val batteryCapacity: Double
+        @SerializedName("address") val address: String,
+        @SerializedName("password") val password: String
+)
+
+data class RegisterEVOwnerResponse(
+        @SerializedName("nic") val nic: String = "",
+        @SerializedName("firstName") val firstName: String = "",
+        @SerializedName("lastName") val lastName: String = "",
+        @SerializedName("fullName") val fullName: String = "",
+        @SerializedName("email") val email: String = "",
+        @SerializedName("phoneNumber") val phoneNumber: String = "",
+        @SerializedName("address") val address: String = "",
+        @SerializedName("isActive") val isActive: Boolean = true,
+        @SerializedName("createdAt") val createdAt: String = "",
+        @SerializedName("updatedAt") val updatedAt: String = "",
+        @SerializedName("requiresReactivation") val requiresReactivation: Boolean = false
 )
 
 // Booking DTOs

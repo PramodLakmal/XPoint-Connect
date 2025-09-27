@@ -33,7 +33,9 @@ class AuthRepository {
         }
     }
 
-    suspend fun registerEVOwner(request: RegisterEVOwnerRequest): Resource<EVOwner> {
+    suspend fun registerEVOwner(
+            request: RegisterEVOwnerRequest
+    ): Resource<RegisterEVOwnerResponse> {
         return withContext(Dispatchers.IO) {
             try {
                 val response = apiService.registerEVOwner(request)

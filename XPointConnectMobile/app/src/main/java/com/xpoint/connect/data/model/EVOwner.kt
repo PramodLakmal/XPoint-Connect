@@ -9,6 +9,7 @@ data class EVOwner(
         @SerializedName("lastName") val lastName: String = "",
         @SerializedName("email") val email: String = "",
         @SerializedName("phoneNumber") val phoneNumber: String = "",
+        @SerializedName("addresss") val address: String = "",
         @SerializedName("licenseNumber") val licenseNumber: String = "",
         @SerializedName("vehicleModel") val vehicleModel: String = "",
         @SerializedName("vehicleYear") val vehicleYear: Int = 0,

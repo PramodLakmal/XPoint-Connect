@@ -97,6 +97,10 @@ object ValidationUtils {
                 phone.all { it.isDigit() || it == '+' || it == '-' || it == ' ' }
     }
 
+    fun isValidAddress(address: String): Boolean {
+        return address.isNotBlank()
+    }
+
     fun isValidPassword(password: String): Boolean {
         return password.length >= 6
     }
