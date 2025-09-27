@@ -1,71 +1,66 @@
-import { useState, useEffect } from 'react'
-import api from '../utils/api'
-import { Search, Check, X, Eye, Calendar, Clock, MapPin, User, Plus, Edit } from 'lucide-react'
-import { formatDateTime, formatDate, isWithin12Hours, isWithin7Days } from '../utils/helpers'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import api from '../utils/api';
+import { Search, Check, X, Eye, Calendar, Clock, MapPin, User, Plus, Edit } from 'lucide-react';
+import { formatDateTime, formatDate, isWithin12Hours, isWithin7Days } from '../utils/helpers';
+import toast from 'react-hot-toast';
 
 const BookingManagement = () => {
-  const [bookings, setBookings] = useState([])
-  const [evOwners, setEvOwners] = useState([])
-  const [chargingStations, setChargingStations] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [selectedBooking, setSelectedBooking] = useState(null)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [formData, setFormData] = useState({
-    evOwnerNic: '',
-    chargingStationId: '',
-    reservationDateTime: '',
-    durationMinutes: 60,
-    notes: ''
-  })
+  const [bookings, setBookings] = useState([]);
+  const [evOwners, setEvOwners] = useState([]);
+  const [chargingStations, setChargingStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
-    fetchBookings()
-    fetchEvOwners()
-    fetchChargingStations()
-  }, [])
+    fetchBookings();
+    fetchEvOwners();
+    fetchChargingStations();
+  }, []);
 
   const fetchBookings = async () => {
     try {
-      setLoading(true)
-      const response = await api.get('/bookings')
-      setBookings(response.data)
+      setLoading(true);
+      const response = await api.get('/bookings');
+      // Validate and clean booking data
+      const cleanedBookings = response.data.map((booking) => ({
+        ...booking,
+        status: typeof booking.status === 'string' ? booking.status : 'Unknown',
+      }));
+      setBookings(cleanedBookings);
     } catch (error) {
-      toast.error('Failed to fetch bookings')
+      toast.error('Failed to fetch bookings');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchEvOwners = async () => {
     try {
-      const response = await api.get('/evowners')
-      setEvOwners(response.data.filter(owner => owner.isActive))
+      const response = await api.get('/evowners');
+      setEvOwners(response.data.filter((owner) => owner.isActive));
     } catch (error) {
-      console.log('Failed to fetch EV owners:', error)
+      console.log('Failed to fetch EV owners:', error);
     }
-  }
+  };
 
   const fetchChargingStations = async () => {
     try {
-      const response = await api.get('/chargingstations')
-      setChargingStations(response.data.filter(station => station.isActive))
+      const response = await api.get('/chargingstations');
+      setChargingStations(response.data.filter((station) => station.isActive));
     } catch (error) {
-      console.log('Failed to fetch charging stations:', error)
+      console.log('Failed to fetch charging stations:', error);
     }
-  }
+  };
 
-  const handleCreateBooking = async (e) => {
-    e.preventDefault()
-    
-    // Validate reservation date (within 7 days)
+  const handleCreateBooking = async (formData) => {
     if (!isWithin7Days(formData.reservationDateTime)) {
-      toast.error('Reservation must be within 7 days from today')
-      return
+      toast.error('Reservation must be within 7 days from today');
+      return;
     }
 
     try {
@@ -74,166 +69,188 @@ const BookingManagement = () => {
         chargingStationId: formData.chargingStationId,
         reservationDateTime: formData.reservationDateTime,
         durationMinutes: parseInt(formData.durationMinutes),
-        notes: formData.notes
-      }
+        notes: formData.notes,
+      };
 
-      await api.post('/bookings', bookingData)
-      toast.success('Booking created successfully')
-      setShowCreateModal(false)
-      resetForm()
-      fetchBookings()
+      await api.post('/bookings', bookingData);
+      toast.success('Booking created successfully');
+      setShowCreateModal(false);
+      fetchBookings();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create booking'
-      toast.error(message)
+      const message = error.response?.data?.message || 'Failed to create booking';
+      toast.error(message);
     }
-  }
+  };
 
-  const handleUpdateBooking = async (e) => {
-    e.preventDefault()
-    
-    // Validate that update is at least 12 hours before reservation
+  const handleUpdateBooking = async (formData) => {
     if (!isWithin12Hours(formData.reservationDateTime)) {
-      toast.error('Reservations can only be updated at least 12 hours before the reservation time')
-      return
+      toast.error('Reservations can only be updated at least 12 hours before the reservation time');
+      return;
     }
 
-    // Validate reservation date (within 7 days)
     if (!isWithin7Days(formData.reservationDateTime)) {
-      toast.error('Reservation must be within 7 days from today')
-      return
+      toast.error('Reservation must be within 7 days from today');
+      return;
     }
 
     try {
       const bookingData = {
         reservationDateTime: formData.reservationDateTime,
         durationMinutes: parseInt(formData.durationMinutes),
-        notes: formData.notes
-      }
+        notes: formData.notes,
+      };
 
-      await api.put(`/bookings/${selectedBooking.id}`, bookingData)
-      toast.success('Booking updated successfully')
-      setShowEditModal(false)
-      resetForm()
-      fetchBookings()
+      await api.put(`/bookings/${selectedBooking.id}`, bookingData);
+      toast.success('Booking updated successfully');
+      setShowEditModal(false);
+      setSelectedBooking(null);
+      fetchBookings();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update booking'
-      toast.error(message)
+      const message = error.response?.data?.message || 'Failed to update booking';
+      toast.error(message);
     }
-  }
+  };
 
   const handleApproveBooking = async (bookingId) => {
     try {
-      await api.post(`/bookings/${bookingId}/approve`)
-      toast.success('Booking approved successfully')
-      fetchBookings()
+      await api.post(`/bookings/${bookingId}/approve`);
+      toast.success('Booking approved successfully');
+      fetchBookings();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to approve booking'
-      toast.error(message)
+      const message = error.response?.data?.message || 'Failed to approve booking';
+      toast.error(message);
     }
-  }
+  };
 
   const handleCancelBooking = async (bookingId, reason = 'Cancelled by admin') => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
       try {
-        await api.post(`/bookings/${bookingId}/cancel`, { reason })
-        toast.success('Booking cancelled successfully')
-        fetchBookings()
+        await api.post(`/bookings/${bookingId}/cancel`, { reason });
+        toast.success('Booking cancelled successfully');
+        fetchBookings();
       } catch (error) {
-        const message = error.response?.data?.message || 'Failed to cancel booking'
-        toast.error(message)
+        const message = error.response?.data?.message || 'Failed to cancel booking';
+        toast.error(message);
       }
     }
-  }
+  };
 
   const viewBookingDetails = (booking) => {
-    setSelectedBooking(booking)
-    setShowDetailsModal(true)
-  }
+    setSelectedBooking(booking);
+    setShowDetailsModal(true);
+  };
 
   const openCreateModal = () => {
-    resetForm()
-    setShowCreateModal(true)
-  }
+    setShowCreateModal(true);
+  };
 
   const openEditModal = (booking) => {
-    setSelectedBooking(booking)
-    setFormData({
-      evOwnerNic: booking.evOwner?.nic || '',
-      chargingStationId: booking.station?.id || '',
-      reservationDateTime: booking.reservationDateTime ? new Date(booking.reservationDateTime).toISOString().slice(0, 16) : '',
-      durationMinutes: booking.durationMinutes || 60,
-      notes: booking.notes || ''
-    })
-    setShowEditModal(true)
-  }
+    setSelectedBooking(booking);
+    setShowEditModal(true);
+  };
 
-  const resetForm = () => {
-    setFormData({
+  const getStatusBadgeColor = (status) => {
+    // Ensure status is a string before calling toLowerCase
+    const statusStr = typeof status === 'string' ? status.toLowerCase() : 'unknown';
+    switch (statusStr) {
+      case 'pending':
+        return 'badge-warning';
+      case 'approved':
+        return 'badge-success';
+      case 'completed':
+        return 'badge-primary';
+      case 'cancelled':
+        return 'badge-danger';
+      case 'active':
+        return 'badge-success';
+      default:
+        return 'badge-secondary';
+    }
+  };
+
+  const canModifyBooking = (booking) => {
+    // Ensure status is a string or handle as 'unknown'
+    const statusStr = typeof booking.status === 'string' ? booking.status.toLowerCase() : 'unknown';
+    if (statusStr === 'cancelled' || statusStr === 'completed') {
+      return false;
+    }
+    return isWithin12Hours(booking.reservationDateTime);
+  };
+
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesSearch =
+      booking.evOwner?.nic?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.evOwner?.fullName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.station?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.qrCode?.toLowerCase()?.includes(searchTerm.toLowerCase());
+
+    const statusStr = typeof booking.status === 'string' ? booking.status.toLowerCase() : 'unknown';
+    const matchesStatus = statusFilter === 'All' || statusStr === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const BookingModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, booking = null, evOwners, chargingStations }) => {
+    const [formData, setFormData] = useState({
       evOwnerNic: '',
       chargingStationId: '',
       reservationDateTime: '',
       durationMinutes: 60,
-      notes: ''
-    })
-    setSelectedBooking(null)
-  }
+      notes: '',
+    });
 
-  const getStatusBadgeColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'pending':
-        return 'badge-warning'
-      case 'approved':
-        return 'badge-success'
-      case 'completed':
-        return 'badge-primary'
-      case 'cancelled':
-        return 'badge-danger'
-      case 'active':
-        return 'badge-success'
-      default:
-        return 'badge-secondary'
-    }
-  }
+    useEffect(() => {
+      if (isEdit && booking) {
+        setFormData({
+          evOwnerNic: booking.evOwner?.nic || '',
+          chargingStationId: booking.station?.id || '',
+          reservationDateTime: booking.reservationDateTime
+            ? new Date(booking.reservationDateTime).toISOString().slice(0, 16)
+            : '',
+          durationMinutes: booking.durationMinutes || 60,
+          notes: booking.notes || '',
+        });
+      } else {
+        setFormData({
+          evOwnerNic: '',
+          chargingStationId: '',
+          reservationDateTime: '',
+          durationMinutes: 60,
+          notes: '',
+        });
+      }
+    }, [isOpen, isEdit, booking]);
 
-  const canModifyBooking = (booking) => {
-    if (booking.status?.toLowerCase() === 'cancelled' || booking.status?.toLowerCase() === 'completed') {
-      return false
-    }
-    return isWithin12Hours(booking.reservationDateTime)
-  }
+    if (!isOpen) return null;
 
-  const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = 
-      booking.evOwner?.nic?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.evOwner?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.station?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.qrCode?.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-    const matchesStatus = statusFilter === 'All' || booking.status?.toLowerCase() === statusFilter.toLowerCase()
-
-    return matchesSearch && matchesStatus
-  })
-
-  const BookingModal = ({ isOpen, onClose, onSubmit, title, isEdit = false }) => {
-    if (!isOpen) return null
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">{title}</h3>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             {!isEdit && (
               <div>
                 <label className="label text-secondary-700 mb-2 block">EV Owner</label>
                 <select
+                  name="evOwnerNic"
                   className="input"
                   value={formData.evOwnerNic}
-                  onChange={(e) => setFormData(prev => ({ ...prev, evOwnerNic: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="">Select EV Owner</option>
-                  {evOwners.map(owner => (
+                  {evOwners.map((owner) => (
                     <option key={owner.nic} value={owner.nic}>
                       {owner.fullName} ({owner.nic})
                     </option>
@@ -246,13 +263,14 @@ const BookingManagement = () => {
               <div>
                 <label className="label text-secondary-700 mb-2 block">Charging Station</label>
                 <select
+                  name="chargingStationId"
                   className="input"
                   value={formData.chargingStationId}
-                  onChange={(e) => setFormData(prev => ({ ...prev, chargingStationId: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="">Select Charging Station</option>
-                  {chargingStations.map(station => (
+                  {chargingStations.map((station) => (
                     <option key={station.id} value={station.id}>
                       {station.name} - {station.location?.city} ({station.availableSlots}/{station.totalSlots} slots)
                     </option>
@@ -270,9 +288,10 @@ const BookingManagement = () => {
               </label>
               <input
                 type="datetime-local"
+                name="reservationDateTime"
                 className="input"
                 value={formData.reservationDateTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, reservationDateTime: e.target.value }))}
+                onChange={handleInputChange}
                 min={new Date().toISOString().slice(0, 16)}
                 max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
                 required
@@ -282,9 +301,10 @@ const BookingManagement = () => {
             <div>
               <label className="label text-secondary-700 mb-2 block">Duration (minutes)</label>
               <select
+                name="durationMinutes"
                 className="input"
                 value={formData.durationMinutes}
-                onChange={(e) => setFormData(prev => ({ ...prev, durationMinutes: e.target.value }))}
+                onChange={handleInputChange}
                 required
               >
                 <option value={30}>30 minutes</option>
@@ -299,10 +319,11 @@ const BookingManagement = () => {
             <div>
               <label className="label text-secondary-700 mb-2 block">Notes (Optional)</label>
               <textarea
+                name="notes"
                 className="input"
                 rows="3"
                 value={formData.notes}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                onChange={handleInputChange}
                 placeholder="Any additional notes for this booking..."
               />
             </div>
@@ -314,30 +335,23 @@ const BookingManagement = () => {
                 </p>
               </div>
             )}
-            
+
             <div className="flex space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-secondary btn-md flex-1"
-              >
+              <button type="button" onClick={onClose} className="btn btn-secondary btn-md flex-1">
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="btn btn-primary btn-md flex-1"
-              >
+              <button type="submit" className="btn btn-primary btn-md flex-1">
                 {isEdit ? 'Update Booking' : 'Create Booking'}
               </button>
             </div>
           </form>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const DetailsModal = () => {
-    if (!showDetailsModal || !selectedBooking) return null
+    if (!showDetailsModal || !selectedBooking) return null;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -348,10 +362,10 @@ const BookingManagement = () => {
               onClick={() => setShowDetailsModal(false)}
               className="text-secondary-400 hover:text-secondary-600"
             >
-              ×
+              <X className="w-6 h-6" />
             </button>
           </div>
-          
+
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -359,47 +373,47 @@ const BookingManagement = () => {
                   <label className="text-sm font-medium text-secondary-700">Booking ID</label>
                   <p className="text-secondary-900 font-mono">{selectedBooking.id}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">QR Code</label>
                   <p className="text-secondary-900 font-mono">{selectedBooking.qrCode}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">EV Owner</label>
                   <p className="text-secondary-900">{selectedBooking.evOwner?.fullName}</p>
                   <p className="text-sm text-secondary-600">{selectedBooking.evOwner?.nic}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">Contact</label>
                   <p className="text-secondary-900">{selectedBooking.evOwner?.email}</p>
                   <p className="text-sm text-secondary-600">{selectedBooking.evOwner?.phoneNumber}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-secondary-700">Charging Station</label>
                   <p className="text-secondary-900">{selectedBooking.station?.name}</p>
                   <p className="text-sm text-secondary-600">{selectedBooking.station?.location?.address}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">Reservation Date & Time</label>
                   <p className="text-secondary-900">{formatDateTime(selectedBooking.reservationDateTime)}</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">Duration</label>
                   <p className="text-secondary-900">{selectedBooking.durationMinutes} minutes</p>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium text-secondary-700">Status</label>
                   <div className="flex items-center space-x-2">
                     <span className={`badge ${getStatusBadgeColor(selectedBooking.status)}`}>
-                      {selectedBooking.status}
+                      {typeof selectedBooking.status === 'string' ? selectedBooking.status : 'Unknown'}
                     </span>
                   </div>
                 </div>
@@ -424,7 +438,7 @@ const BookingManagement = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex space-x-3 mt-6 pt-6 border-t border-secondary-200">
             <button
               onClick={() => setShowDetailsModal(false)}
@@ -432,25 +446,25 @@ const BookingManagement = () => {
             >
               Close
             </button>
-            
+
             {canModifyBooking(selectedBooking) && (
               <button
                 onClick={() => {
-                  setShowDetailsModal(false)
-                  openEditModal(selectedBooking)
+                  setShowDetailsModal(false);
+                  openEditModal(selectedBooking);
                 }}
                 className="btn btn-warning btn-md flex-1"
               >
                 Edit Booking
               </button>
             )}
-            
-            {selectedBooking.status?.toLowerCase() === 'pending' && (
+
+            {typeof selectedBooking.status === 'string' && selectedBooking.status.toLowerCase() === 'pending' && (
               <>
                 <button
                   onClick={() => {
-                    handleApproveBooking(selectedBooking.id)
-                    setShowDetailsModal(false)
+                    handleApproveBooking(selectedBooking.id);
+                    setShowDetailsModal(false);
                   }}
                   className="btn btn-success btn-md flex-1"
                 >
@@ -458,8 +472,8 @@ const BookingManagement = () => {
                 </button>
                 <button
                   onClick={() => {
-                    handleCancelBooking(selectedBooking.id)
-                    setShowDetailsModal(false)
+                    handleCancelBooking(selectedBooking.id);
+                    setShowDetailsModal(false);
                   }}
                   className="btn btn-danger btn-md flex-1"
                 >
@@ -470,15 +484,15 @@ const BookingManagement = () => {
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="spinner"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -510,7 +524,7 @@ const BookingManagement = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <div className="md:w-48">
               <select
                 className="input"
@@ -523,6 +537,7 @@ const BookingManagement = () => {
                 <option value="Active">Active</option>
                 <option value="Completed">Completed</option>
                 <option value="Cancelled">Cancelled</option>
+                <option value="Unknown">Unknown</option>
               </select>
             </div>
           </div>
@@ -565,7 +580,7 @@ const BookingManagement = () => {
                   <td className="py-4 px-6 text-secondary-900">{booking.durationMinutes} min</td>
                   <td className="py-4 px-6">
                     <span className={`badge ${getStatusBadgeColor(booking.status)}`}>
-                      {booking.status}
+                      {typeof booking.status === 'string' ? booking.status : 'Unknown'}
                     </span>
                   </td>
                   <td className="py-4 px-6">
@@ -587,8 +602,8 @@ const BookingManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                       )}
-                      
-                      {booking.status?.toLowerCase() === 'pending' && (
+
+                      {typeof booking.status === 'string' && booking.status.toLowerCase() === 'pending' && (
                         <>
                           <button
                             onClick={() => handleApproveBooking(booking.id)}
@@ -622,16 +637,18 @@ const BookingManagement = () => {
         )}
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {['pending', 'approved', 'active', 'completed', 'cancelled'].map(status => {
-          const count = bookings.filter(b => b.status?.toLowerCase() === status).length
+        {['pending', 'approved', 'active', 'completed', 'cancelled', 'unknown'].map((status) => {
+          const count = bookings.filter((b) => {
+            const statusStr = typeof b.status === 'string' ? b.status.toLowerCase() : 'unknown';
+            return statusStr === status;
+          }).length;
           return (
             <div key={status} className="bg-white rounded-lg border border-secondary-200 p-4 text-center">
               <p className="text-2xl font-bold text-secondary-900">{count}</p>
               <p className="text-sm text-secondary-600 capitalize">{status}</p>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -640,19 +657,28 @@ const BookingManagement = () => {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateBooking}
         title="Create New Booking"
+        isEdit={false}
+        evOwners={evOwners}
+        chargingStations={chargingStations}
       />
 
       <BookingModal
         isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedBooking(null);
+        }}
         onSubmit={handleUpdateBooking}
         title="Edit Booking"
         isEdit={true}
+        booking={selectedBooking}
+        evOwners={evOwners}
+        chargingStations={chargingStations}
       />
 
       <DetailsModal />
     </div>
-  )
-}
+  );
+};
 
-export default BookingManagement
+export default BookingManagement;

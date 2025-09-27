@@ -1,51 +1,36 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import api from '../utils/api'
-import { Plus, Edit, Trash2, Search, Power, PowerOff, MapPin, Clock, Battery } from 'lucide-react'
-import { formatDate } from '../utils/helpers'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../utils/api';
+import { Plus, Edit, Trash2, Search, Power, PowerOff, MapPin, Clock, Battery } from 'lucide-react';
+import { formatDate } from '../utils/helpers';
+import toast from 'react-hot-toast';
 
 const ChargingStationManagement = () => {
-  const { hasAccess, isBackOffice } = useAuth()
-  const [stations, setStations] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [selectedStation, setSelectedStation] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-    city: '',
-    province: '',
-    latitude: '',
-    longitude: '',
-    type: 'AC',
-    totalSlots: 1,
-    chargingRate: 0,
-    description: '',
-    amenities: []
-  })
+  const { hasAccess, isBackOffice } = useAuth();
+  const [stations, setStations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedStation, setSelectedStation] = useState(null);
 
   useEffect(() => {
-    fetchStations()
-  }, [])
+    fetchStations();
+  }, []);
 
   const fetchStations = async () => {
     try {
-      setLoading(true)
-      const response = await api.get('/chargingstations')
-      setStations(response.data)
+      setLoading(true);
+      const response = await api.get('/chargingstations');
+      setStations(response.data);
     } catch (error) {
-      toast.error('Failed to fetch charging stations')
+      toast.error('Failed to fetch charging stations');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleCreateStation = async (e) => {
-    e.preventDefault()
-    
+  const handleCreateStation = async (formData) => {
     try {
       const stationData = {
         ...formData,
@@ -54,33 +39,30 @@ const ChargingStationManagement = () => {
           longitude: parseFloat(formData.longitude),
           address: formData.address,
           city: formData.city,
-          province: formData.province
+          province: formData.province,
         },
         totalSlots: parseInt(formData.totalSlots),
         chargingRate: parseFloat(formData.chargingRate),
-        amenities: formData.amenities.filter(a => a.trim() !== '')
-      }
-      
-      delete stationData.latitude
-      delete stationData.longitude
-      delete stationData.address
-      delete stationData.city
-      delete stationData.province
+        amenities: formData.amenities.filter((a) => a.trim() !== ''),
+      };
 
-      await api.post('/chargingstations', stationData)
-      toast.success('Charging station created successfully')
-      setShowCreateModal(false)
-      resetForm()
-      fetchStations()
+      delete stationData.latitude;
+      delete stationData.longitude;
+      delete stationData.address;
+      delete stationData.city;
+      delete stationData.province;
+
+      await api.post('/chargingstations', stationData);
+      toast.success('Charging station created successfully');
+      setShowCreateModal(false);
+      fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create charging station'
-      toast.error(message)
+      const message = error.response?.data?.message || 'Failed to create charging station';
+      toast.error(message);
     }
-  }
+  };
 
-  const handleUpdateStation = async (e) => {
-    e.preventDefault()
-    
+  const handleUpdateStation = async (formData) => {
     try {
       const stationData = {
         ...formData,
@@ -89,58 +71,76 @@ const ChargingStationManagement = () => {
           longitude: parseFloat(formData.longitude),
           address: formData.address,
           city: formData.city,
-          province: formData.province
+          province: formData.province,
         },
         totalSlots: parseInt(formData.totalSlots),
         chargingRate: parseFloat(formData.chargingRate),
-        amenities: formData.amenities.filter(a => a.trim() !== '')
-      }
-      
-      delete stationData.latitude
-      delete stationData.longitude
-      delete stationData.address
-      delete stationData.city
-      delete stationData.province
+        amenities: formData.amenities.filter((a) => a.trim() !== ''),
+      };
 
-      await api.put(`/chargingstations/${selectedStation.id}`, stationData)
-      toast.success('Charging station updated successfully')
-      setShowEditModal(false)
-      resetForm()
-      fetchStations()
+      delete stationData.latitude;
+      delete stationData.longitude;
+      delete stationData.address;
+      delete stationData.city;
+      delete stationData.province;
+
+      await api.put(`/chargingstations/${selectedStation.id}`, stationData);
+      toast.success('Charging station updated successfully');
+      setShowEditModal(false);
+      setSelectedStation(null);
+      fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update charging station'
-      toast.error(message)
+      const message = error.response?.data?.message || 'Failed to update charging station';
+      toast.error(message);
     }
-  }
+  };
 
   const handleDeactivateStation = async (stationId) => {
     if (window.confirm('Are you sure you want to deactivate this charging station?')) {
       try {
-        await api.post(`/chargingstations/${stationId}/deactivate`)
-        toast.success('Charging station deactivated successfully')
-        fetchStations()
+        await api.post(`/chargingstations/${stationId}/deactivate`);
+        toast.success('Charging station deactivated successfully');
+        fetchStations();
       } catch (error) {
-        const message = error.response?.data?.message || 'Failed to deactivate charging station'
-        toast.error(message)
+        const message = error.response?.data?.message || 'Failed to deactivate charging station';
+        toast.error(message);
       }
     }
-  }
+  };
 
   const handleDeleteStation = async (stationId) => {
     if (window.confirm('Are you sure you want to delete this charging station? This action cannot be undone.')) {
       try {
-        await api.delete(`/chargingstations/${stationId}`)
-        toast.success('Charging station deleted successfully')
-        fetchStations()
+        await api.delete(`/chargingstations/${stationId}`);
+        toast.success('Charging station deleted successfully');
+        fetchStations();
       } catch (error) {
-        const message = error.response?.data?.message || 'Failed to delete charging station'
-        toast.error(message)
+        const message = error.response?.data?.message || 'Failed to delete charging station';
+        toast.error(message);
       }
     }
-  }
+  };
 
-  const resetForm = () => {
-    setFormData({
+  const openCreateModal = () => {
+    setSelectedStation(null);
+    setShowCreateModal(true);
+  };
+
+  const openEditModal = (station) => {
+    setSelectedStation(station);
+    setShowEditModal(true);
+  };
+
+  const filteredStations = stations.filter(
+    (station) =>
+      station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      station.location?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      station.location?.province?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      station.type.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const StationModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, station = null }) => {
+    const [formData, setFormData] = useState({
       name: '',
       address: '',
       city: '',
@@ -151,118 +151,132 @@ const ChargingStationManagement = () => {
       totalSlots: 1,
       chargingRate: 0,
       description: '',
-      amenities: []
-    })
-    setSelectedStation(null)
-  }
+      amenities: [],
+    });
 
-  const openCreateModal = () => {
-    resetForm()
-    setShowCreateModal(true)
-  }
+    // Initialize form state when modal opens or station changes
+    useEffect(() => {
+      if (isEdit && station) {
+        setFormData({
+          name: station.name || '',
+          address: station.location?.address || '',
+          city: station.location?.city || '',
+          province: station.location?.province || '',
+          latitude: station.location?.latitude?.toString() || '',
+          longitude: station.location?.longitude?.toString() || '',
+          type: station.type || 'AC',
+          totalSlots: station.totalSlots || 1,
+          chargingRate: station.chargingRate || 0,
+          description: station.description || '',
+          amenities: station.amenities || [],
+        });
+      } else {
+        setFormData({
+          name: '',
+          address: '',
+          city: '',
+          province: '',
+          latitude: '',
+          longitude: '',
+          type: 'AC',
+          totalSlots: 1,
+          chargingRate: 0,
+          description: '',
+          amenities: [],
+        });
+      }
+    }, [isOpen, isEdit, station]);
 
-  const openEditModal = (station) => {
-    setSelectedStation(station)
-    setFormData({
-      name: station.name,
-      address: station.location?.address || '',
-      city: station.location?.city || '',
-      province: station.location?.province || '',
-      latitude: station.location?.latitude?.toString() || '',
-      longitude: station.location?.longitude?.toString() || '',
-      type: station.type,
-      totalSlots: station.totalSlots,
-      chargingRate: station.chargingRate,
-      description: station.description || '',
-      amenities: station.amenities || []
-    })
-    setShowEditModal(true)
-  }
+    if (!isOpen) return null;
 
-  const addAmenity = () => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: [...prev.amenities, '']
-    }))
-  }
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-  const updateAmenity = (index, value) => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: prev.amenities.map((amenity, i) => i === index ? value : amenity)
-    }))
-  }
+    const addAmenity = () => {
+      setFormData((prev) => ({
+        ...prev,
+        amenities: [...prev.amenities, ''],
+      }));
+    };
 
-  const removeAmenity = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: prev.amenities.filter((_, i) => i !== index)
-    }))
-  }
+    const updateAmenity = (index, value) => {
+      setFormData((prev) => ({
+        ...prev,
+        amenities: prev.amenities.map((amenity, i) => (i === index ? value : amenity)),
+      }));
+    };
 
-  const filteredStations = stations.filter(station =>
-    station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    station.location?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    station.location?.province?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    station.type.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+    const removeAmenity = (index) => {
+      setFormData((prev) => ({
+        ...prev,
+        amenities: prev.amenities.filter((_, i) => i !== index),
+      }));
+    };
 
-  const StationModal = ({ isOpen, onClose, onSubmit, title, isEdit = false }) => {
-    if (!isOpen) return null
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">{title}</h3>
-          
-          <form onSubmit={onSubmit} className="space-y-6">
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label text-secondary-700 mb-2 block">Station Name</label>
                 <input
                   type="text"
+                  name="name"
                   className="input"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="label text-secondary-700 mb-2 block">Type</label>
                 <select
+                  name="type"
                   className="input"
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="AC">AC Charging</option>
                   <option value="DC">DC Fast Charging</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="label text-secondary-700 mb-2 block">Total Slots</label>
                 <input
                   type="number"
+                  name="totalSlots"
                   min="1"
                   max="20"
                   className="input"
                   value={formData.totalSlots}
-                  onChange={(e) => setFormData(prev => ({ ...prev, totalSlots: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="label text-secondary-700 mb-2 block">Charging Rate (kW)</label>
                 <input
                   type="number"
+                  name="chargingRate"
                   min="0"
                   step="0.1"
                   className="input"
                   value={formData.chargingRate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, chargingRate: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -272,31 +286,34 @@ const ChargingStationManagement = () => {
               <label className="label text-secondary-700 mb-2 block">Address</label>
               <input
                 type="text"
+                name="address"
                 className="input"
                 value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                onChange={handleInputChange}
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label text-secondary-700 mb-2 block">City</label>
                 <input
                   type="text"
+                  name="city"
                   className="input"
                   value={formData.city}
-                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="label text-secondary-700 mb-2 block">Province</label>
                 <select
+                  name="province"
                   className="input"
                   value={formData.province}
-                  onChange={(e) => setFormData(prev => ({ ...prev, province: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 >
                   <option value="">Select Province</option>
@@ -312,43 +329,46 @@ const ChargingStationManagement = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label text-secondary-700 mb-2 block">Latitude</label>
                 <input
                   type="number"
+                  name="latitude"
                   step="any"
                   className="input"
                   value={formData.latitude}
-                  onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="label text-secondary-700 mb-2 block">Longitude</label>
                 <input
                   type="number"
+                  name="longitude"
                   step="any"
                   className="input"
                   value={formData.longitude}
-                  onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="label text-secondary-700 mb-2 block">Description</label>
               <textarea
+                name="description"
                 className="input"
                 rows="3"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={handleInputChange}
               />
             </div>
-            
+
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="label text-secondary-700">Amenities</label>
@@ -381,7 +401,7 @@ const ChargingStationManagement = () => {
                 ))}
               </div>
             </div>
-            
+
             <div className="flex space-x-3 pt-4">
               <button
                 type="button"
@@ -400,15 +420,15 @@ const ChargingStationManagement = () => {
           </form>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="spinner"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -493,7 +513,7 @@ const ChargingStationManagement = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      
+
                       {hasAccess('BackOffice') && station.isActive && (
                         <button
                           onClick={() => handleDeactivateStation(station.id)}
@@ -503,7 +523,7 @@ const ChargingStationManagement = () => {
                           <PowerOff className="w-4 h-4" />
                         </button>
                       )}
-                      
+
                       {hasAccess('BackOffice') && (
                         <button
                           onClick={() => handleDeleteStation(station.id)}
@@ -533,17 +553,22 @@ const ChargingStationManagement = () => {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateStation}
         title="Create New Charging Station"
+        isEdit={false}
       />
 
       <StationModal
         isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedStation(null);
+        }}
         onSubmit={handleUpdateStation}
         title="Edit Charging Station"
         isEdit={true}
+        station={selectedStation}
       />
     </div>
-  )
-}
+  );
+};
 
-export default ChargingStationManagement
+export default ChargingStationManagement;

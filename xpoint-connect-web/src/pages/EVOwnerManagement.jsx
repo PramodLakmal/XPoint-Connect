@@ -13,15 +13,6 @@ const EVOwnerManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [reactivationRequests, setReactivationRequests] = useState([])
-  const [formData, setFormData] = useState({
-    nic: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    address: '',
-    password: ''
-  })
 
   useEffect(() => {
     fetchEVOwners()
@@ -49,30 +40,29 @@ const EVOwnerManagement = () => {
     }
   }
 
-  const handleCreateEVOwner = async (e) => {
-    e.preventDefault()
-
+  // Note: now receives data object from modal
+  const handleCreateEVOwner = async (data) => {
     // Validation
-    if (!validateNIC(formData.nic)) {
+    if (!validateNIC(data.nic)) {
       toast.error('Please enter a valid Sri Lankan NIC')
       return
     }
 
-    if (!validateEmail(formData.email)) {
+    if (!validateEmail(data.email)) {
       toast.error('Please enter a valid email address')
       return
     }
 
-    if (!validatePhoneNumber(formData.phoneNumber)) {
+    if (!validatePhoneNumber(data.phoneNumber)) {
       toast.error('Please enter a valid Sri Lankan phone number')
       return
     }
 
     try {
-      await api.post('/evowners', formData)
+      await api.post('/evowners', data)
       toast.success('EV Owner created successfully')
       setShowCreateModal(false)
-      resetForm()
+      setSelectedOwner(null)
       fetchEVOwners()
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to create EV owner'
@@ -80,20 +70,21 @@ const EVOwnerManagement = () => {
     }
   }
 
-  const handleUpdateEVOwner = async (e) => {
-    e.preventDefault()
-
+  // Note: now receives data object from modal
+  const handleUpdateEVOwner = async (data) => {
     try {
-      const updateData = { ...formData }
+      const updateData = { ...data }
       if (!updateData.password) {
         delete updateData.password
       }
-      delete updateData.nic // NIC cannot be updated
-      
-      await api.put(`/evowners/${selectedOwner.nic}`, updateData)
+      // NIC cannot be updated on server; remove from payload
+      delete updateData.nic
+
+      const nicToUpdate = selectedOwner?.nic || data.nic
+      await api.put(`/evowners/${nicToUpdate}`, updateData)
       toast.success('EV Owner updated successfully')
       setShowEditModal(false)
-      resetForm()
+      setSelectedOwner(null)
       fetchEVOwners()
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to update EV owner'
@@ -133,35 +124,14 @@ const EVOwnerManagement = () => {
   }
 
   const openCreateModal = () => {
-    resetForm()
+    setSelectedOwner(null) // ensure no owner is selected for create
     setShowCreateModal(true)
   }
 
   const openEditModal = (owner) => {
+    // DO NOT set parent form state here â€” modal will initialize its own local state from owner
     setSelectedOwner(owner)
-    setFormData({
-      nic: owner.nic,
-      firstName: owner.firstName || '',
-      lastName: owner.lastName || '',
-      email: owner.email,
-      phoneNumber: owner.phoneNumber,
-      address: owner.address || '',
-      password: ''
-    })
     setShowEditModal(true)
-  }
-
-  const resetForm = () => {
-    setFormData({
-      nic: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      address: '',
-      password: ''
-    })
-    setSelectedOwner(null)
   }
 
   const filteredOwners = evOwners.filter(owner =>
@@ -173,23 +143,70 @@ const EVOwnerManagement = () => {
     owner.phoneNumber.includes(searchTerm)
   )
 
-  const EVOwnerModal = ({ isOpen, onClose, onSubmit, title, isEdit = false }) => {
+  /**
+   * EVOwnerModal now manages its own form state internally.
+   * onSubmit will receive the final data object from the modal (not an event).
+   */
+  const EVOwnerModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, owner = null }) => {
+    const [localForm, setLocalForm] = useState({
+      nic: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      address: '',
+      password: ''
+    })
+
+    // Initialize local form when modal opens or owner changes
+    useEffect(() => {
+      if (isEdit && owner) {
+        setLocalForm({
+          nic: owner.nic || '',
+          firstName: owner.firstName || '',
+          lastName: owner.lastName || '',
+          email: owner.email || '',
+          phoneNumber: owner.phoneNumber || '',
+          address: owner.address || '',
+          password: ''
+        })
+      } else {
+        // reset for create
+        setLocalForm({
+          nic: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          address: '',
+          password: ''
+        })
+      }
+      // we intentionally depend on isOpen, isEdit, owner
+    }, [isOpen, isEdit, owner])
+
     if (!isOpen) return null
+
+    const submitHandler = (e) => {
+      e.preventDefault()
+      // pass the localForm data object to parent onSubmit
+      onSubmit(localForm)
+    }
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
           <h3 className="text-lg font-semibold text-secondary-900 mb-4">{title}</h3>
           
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={submitHandler} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label text-secondary-700 mb-2 block">NIC</label>
                 <input
                   type="text"
                   className="input"
-                  value={formData.nic}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nic: e.target.value }))}
+                  value={localForm.nic}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, nic: e.target.value }))}
                   required
                   disabled={isEdit}
                   placeholder="200012345678 or 911234567V"
@@ -201,8 +218,8 @@ const EVOwnerManagement = () => {
                 <input
                   type="email"
                   className="input"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  value={localForm.email}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, email: e.target.value }))}
                   required
                 />
               </div>
@@ -214,8 +231,8 @@ const EVOwnerManagement = () => {
                 <input
                   type="text"
                   className="input"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  value={localForm.firstName}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, firstName: e.target.value }))}
                   required
                 />
               </div>
@@ -225,8 +242,8 @@ const EVOwnerManagement = () => {
                 <input
                   type="text"
                   className="input"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  value={localForm.lastName}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, lastName: e.target.value }))}
                   required
                 />
               </div>
@@ -238,8 +255,8 @@ const EVOwnerManagement = () => {
                 <input
                   type="tel"
                   className="input"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  value={localForm.phoneNumber}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                   required
                   placeholder="0771234567 or +94771234567"
                 />
@@ -252,8 +269,8 @@ const EVOwnerManagement = () => {
                 <input
                   type="password"
                   className="input"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  value={localForm.password}
+                  onChange={(e) => setLocalForm(prev => ({ ...prev, password: e.target.value }))}
                   required={!isEdit}
                 />
               </div>
@@ -264,8 +281,8 @@ const EVOwnerManagement = () => {
               <textarea
                 className="input"
                 rows="3"
-                value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                value={localForm.address}
+                onChange={(e) => setLocalForm(prev => ({ ...prev, address: e.target.value }))}
                 placeholder="Enter full address"
               />
             </div>
@@ -303,7 +320,7 @@ const EVOwnerManagement = () => {
               onClick={() => setShowDetailsModal(false)}
               className="text-secondary-400 hover:text-secondary-600"
             >
-              ×
+              ï¿½
             </button>
           </div>
           
@@ -579,14 +596,20 @@ const EVOwnerManagement = () => {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateEVOwner}
         title="Create New EV Owner"
+        isEdit={false}
+        owner={null}
       />
 
       <EVOwnerModal
         isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedOwner(null)
+        }}
         onSubmit={handleUpdateEVOwner}
         title="Edit EV Owner"
         isEdit={true}
+        owner={selectedOwner}
       />
 
       <DetailsModal />
