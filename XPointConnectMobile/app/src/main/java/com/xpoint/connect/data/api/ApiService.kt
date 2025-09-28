@@ -52,41 +52,69 @@ interface ApiService {
                 @Body request: NearbyStationsRequest
         ): Response<List<ChargingStation>>
 
-        // Bookings
-        @POST("api/bookings")
+        // Bookings - Updated to match API specification
+        @POST("api/Bookings")
         suspend fun createBooking(@Body request: CreateBookingRequest): Response<Booking>
 
-        @POST("api/bookings/preview")
-        suspend fun previewBooking(@Body request: CreateBookingRequest): Response<BookingPreview>
+        @PUT("api/Bookings/{id}")
+        suspend fun updateBooking(
+                @Path("id") id: String,
+                @Body request: UpdateBookingRequest
+        ): Response<Booking>
 
-        @GET("api/bookings/{id}")
+        @GET("api/Bookings/{id}")
         suspend fun getBookingById(@Path("id") id: String): Response<Booking>
 
-        @GET("api/bookings/evowner/{nic}")
-        suspend fun getBookingsByEVOwner(@Path("nic") nic: String): Response<List<Booking>>
-
-        @GET("api/bookings/upcoming/{nic}")
-        suspend fun getUpcomingBookings(@Path("nic") nic: String): Response<List<Booking>>
-
-        @GET("api/bookings/history/{nic}")
-        suspend fun getBookingHistory(@Path("nic") nic: String): Response<List<Booking>>
-
-        @GET("api/bookings/dashboard/{nic}")
-        suspend fun getDashboardStats(@Path("nic") nic: String): Response<DashboardStats>
-
-        @POST("api/bookings/{id}/cancel")
+        @POST("api/Bookings/{id}/cancel")
         suspend fun cancelBooking(
                 @Path("id") id: String,
-                @Body reason: Map<String, String>
+                @Body request: CancelBookingRequest
         ): Response<Unit>
 
-        // EV Owner Profile
-        @GET("api/evowners/{nic}")
+        @GET("api/Bookings/evowner/{nic}")
+        suspend fun getBookingsByEVOwner(@Path("nic") nic: String): Response<List<Booking>>
+
+        @GET("api/Bookings/station/{stationId}")
+        suspend fun getBookingsByStation(
+                @Path("stationId") stationId: String
+        ): Response<List<Booking>>
+
+        @GET("api/Bookings/history/{nic}")
+        suspend fun getBookingHistory(@Path("nic") nic: String): Response<List<Booking>>
+
+        @POST("api/Bookings/preview")
+        suspend fun previewBooking(@Body request: CreateBookingRequest): Response<BookingPreview>
+
+        @GET("api/Bookings/upcoming/{nic}")
+        suspend fun getUpcomingBookings(@Path("nic") nic: String): Response<List<Booking>>
+
+        @GET("api/Bookings/dashboard/{nic}")
+        suspend fun getDashboardStats(@Path("nic") nic: String): Response<DashboardStats>
+
+        // EV Owner Profile Management
+        @GET("api/EVOwners/{nic}")
         suspend fun getEVOwnerProfile(@Path("nic") nic: String): Response<EVOwner>
 
-        @PUT("api/evowners/{nic}")
+        @PUT("api/EVOwners/{nic}")
         suspend fun updateEVOwnerProfile(
                 @Path("nic") nic: String,
-                @Body request: RegisterEVOwnerRequest
+                @Body request: UpdateEVOwnerProfileRequest
         ): Response<EVOwner>
+
+        @PUT("api/EVOwners/{nic}/password")
+        suspend fun changePassword(
+                @Path("nic") nic: String,
+                @Body request: ChangePasswordRequest
+        ): Response<Unit>
+
+        @POST("api/EVOwners/{nic}/deactivate")
+        suspend fun deactivateAccount(
+                @Path("nic") nic: String,
+                @Body request: DeactivateAccountRequest
+        ): Response<Unit>
+
+        @POST("api/EVOwners/reactivate")
+        suspend fun reactivateAccount(
+                @Body request: ReactivateAccountRequest
+        ): Response<EVOwnerLoginResponse>
 }

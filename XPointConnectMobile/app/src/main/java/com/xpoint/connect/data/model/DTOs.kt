@@ -75,7 +75,19 @@ data class CreateBookingRequest(
         @SerializedName("evOwnerNIC") val evOwnerNIC: String,
         @SerializedName("chargingStationId") val chargingStationId: String,
         @SerializedName("reservationDateTime") val reservationDateTime: String,
-        @SerializedName("durationMinutes") val durationMinutes: Int = 60
+        @SerializedName("durationMinutes") val durationMinutes: Int = 480
+)
+
+data class UpdateBookingRequest(
+        @SerializedName("reservationDateTime") val reservationDateTime: String,
+        @SerializedName("durationMinutes") val durationMinutes: Int,
+        @SerializedName("status") val status: Int? = null,
+        @SerializedName("cancellationReason") val cancellationReason: String? = null,
+        @SerializedName("operatorNotes") val operatorNotes: String? = null
+)
+
+data class CancelBookingRequest(
+        @SerializedName("cancellationReason") val cancellationReason: String
 )
 
 data class BookingPreview(
@@ -98,6 +110,34 @@ data class ApiResponse<T>(
         @SerializedName("success") val success: Boolean,
         @SerializedName("message") val message: String,
         @SerializedName("data") val data: T?
+)
+
+// Profile Management DTOs
+data class UpdateEVOwnerProfileRequest(
+        @SerializedName("firstName") val firstName: String,
+        @SerializedName("lastName") val lastName: String,
+        @SerializedName("email") val email: String,
+        @SerializedName("phoneNumber") val phoneNumber: String,
+        @SerializedName("address") val address: String,
+        @SerializedName("licenseNumber") val licenseNumber: String?,
+        @SerializedName("vehicleModel") val vehicleModel: String?,
+        @SerializedName("vehicleYear") val vehicleYear: Int?,
+        @SerializedName("batteryCapacity") val batteryCapacity: Double?
+)
+
+data class ChangePasswordRequest(
+        @SerializedName("currentPassword") val currentPassword: String,
+        @SerializedName("newPassword") val newPassword: String
+)
+
+data class DeactivateAccountRequest(
+        @SerializedName("password") val password: String,
+        @SerializedName("reason") val reason: String
+)
+
+data class ReactivateAccountRequest(
+        @SerializedName("nic") val nic: String,
+        @SerializedName("password") val password: String
 )
 
 // Error Response

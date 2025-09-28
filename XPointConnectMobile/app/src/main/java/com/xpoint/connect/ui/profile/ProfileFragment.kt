@@ -39,7 +39,14 @@ class ProfileFragment : Fragment() {
     private fun setupViews(view: View) {
         // Edit Profile button
         view.findViewById<View>(R.id.btnEditProfile)?.setOnClickListener {
-            showToast("Edit profile feature coming soon!")
+            val intent = Intent(requireContext(), EditProfileActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Account Settings button
+        view.findViewById<View>(R.id.layoutAccountSettings)?.setOnClickListener {
+            val intent = Intent(requireContext(), AccountSettingsActivity::class.java)
+            startActivity(intent)
         }
 
         // Logout button

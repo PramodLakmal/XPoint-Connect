@@ -54,7 +54,7 @@ class UserRepository {
      */
     suspend fun updateEVOwnerProfile(
             nic: String,
-            request: RegisterEVOwnerRequest
+            request: UpdateEVOwnerProfileRequest
     ): Resource<EVOwner> {
         return withContext(Dispatchers.IO) {
             try {
