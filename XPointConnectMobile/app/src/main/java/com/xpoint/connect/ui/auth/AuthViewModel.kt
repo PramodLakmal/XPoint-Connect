@@ -156,4 +156,12 @@ class AuthViewModel : ViewModel() {
     fun clearErrors() {
         _validationErrors.value = emptyMap()
     }
+
+    fun reactivateAccount(nic: String, password: String) {
+        _loginResult.value = Resource.Loading()
+
+        viewModelScope.launch {
+            _loginResult.value = authRepository.reactivateAccount(nic, password)
+        }
+    }
 }

@@ -43,9 +43,27 @@
         <activity 
             android:name="com.xpoint.connect.ui.auth.SplashActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
-        
 
+        <!-- Booking Activities -->
+        <activity
+            android:name="com.xpoint.connect.ui.booking.CreateBookingActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
         
+        <activity
+            android:name="com.xpoint.connect.ui.booking.BookingDetailsActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+
+        <!-- Profile Management Activities -->
+        <activity
+            android:name="com.xpoint.connect.ui.profile.EditProfileActivity"
+            android:theme="@style/Theme.XPointConnectMobile"
+            android:parentActivityName="com.xpoint.connect.ui.main.MainActivity" />
+        
+        <activity
+            android:name="com.xpoint.connect.ui.profile.AccountSettingsActivity"
+            android:theme="@style/Theme.XPointConnectMobile"
+            android:parentActivityName="com.xpoint.connect.ui.main.MainActivity" />
+
     </application>
 
 </manifest>

@@ -41,12 +41,12 @@ class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
             tvBookingDate.text = dateFormat.format(booking.startTime)
             tvBookingTime.text =
                     "${timeFormat.format(booking.startTime)} - ${timeFormat.format(booking.endTime)}"
-            tvBookingStatus.text = booking.status.name
+            tvBookingStatus.text = booking.bookingStatus.name
             tvBookingId.text = "ID: ${booking.id}"
 
             // Set status color based on booking status
             val statusColor =
-                    when (booking.status.name.lowercase()) {
+                    when (booking.bookingStatus.name.lowercase()) {
                         "confirmed" -> R.color.md_theme_primary
                         "completed" -> R.color.md_theme_tertiary
                         "cancelled" -> R.color.md_theme_error

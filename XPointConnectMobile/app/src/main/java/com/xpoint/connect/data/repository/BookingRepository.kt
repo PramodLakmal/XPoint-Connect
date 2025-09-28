@@ -88,13 +88,35 @@ class BookingRepository {
         }
     }
 
+    suspend fun updateBooking(id: String, request: UpdateBookingRequest): Resource<Booking> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.updateBooking(id, request)
+                handleApiResponse(response)
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to update booking")
+            }
+        }
+    }
+
     suspend fun cancelBooking(id: String, reason: String): Resource<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = apiService.cancelBooking(id, mapOf("cancellationReason" to reason))
+                val response = apiService.cancelBooking(id, CancelBookingRequest(reason))
                 handleApiResponse(response)
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "Failed to cancel booking")
+            }
+        }
+    }
+
+    suspend fun getBookingsByStation(stationId: String): Resource<List<Booking>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getBookingsByStation(stationId)
+                handleApiResponse(response)
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to fetch station bookings")
             }
         }
     }

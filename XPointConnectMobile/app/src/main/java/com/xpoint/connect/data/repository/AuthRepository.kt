@@ -71,6 +71,23 @@ class AuthRepository {
         }
     }
 
+    /**
+     * Reactivates a deactivated EV owner account using NIC and password
+     * @param nic User's National Identity Card number
+     * @param password User's password
+     * @return Resource wrapper containing login response or error information
+     */
+    suspend fun reactivateAccount(nic: String, password: String): Resource<EVOwnerLoginResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.reactivateAccount(ReactivateAccountRequest(nic, password))
+                handleApiResponse(response)
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "An error occurred during account reactivation")
+            }
+        }
+    }
+
     private fun <T> handleApiResponse(response: Response<T>): Resource<T> {
         return if (response.isSuccessful) {
             response.body()?.let { body -> Resource.Success(body) }

@@ -281,6 +281,41 @@
 
                 </LinearLayout>
 
+                <!-- Account Settings -->
+                <LinearLayout
+                    android:id="@+id/layoutAccountSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_privacy"
+                        android:tint="@color/primary"
+                        android:layout_marginEnd="16dp"
+                        android:layout_gravity="center_vertical" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Account Settings"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_arrow_right"
+                        android:tint="@color/text_hint" />
+
+                </LinearLayout>
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>

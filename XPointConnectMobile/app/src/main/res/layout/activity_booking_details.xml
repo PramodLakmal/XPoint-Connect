@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ui.booking.BookingDetailsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Booking Information Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/bookingIdText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="ID: BK123456"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/statusChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Approved"
+                        android:textColor="@android:color/white"
+                        app:chipBackgroundColor="@color/status_approved" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/stationNameText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Station Name"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/stationLocationText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Station Location"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:drawableStart="@drawable/ic_location"
+                    android:drawablePadding="8dp"
+                    android:layout_marginBottom="16dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider"
+                    android:layout_marginVertical="8dp" />
+
+                <!-- Booking Details Grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Date &amp; Time"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/reservationDateTimeText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Oct 15, 2025 at 14:30"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Duration"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/durationText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="2h 30m"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Total Amount"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/totalAmountText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Rs. 250.00"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Booking Date"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/bookingDateText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Oct 10, 2025"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Additional Information Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Additional Information"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/checkInTimeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Check-in: Not yet"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/checkOutTimeText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Check-out: Not yet"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/cancellationReasonText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Cancellation Reason: Change of plans"
+                    android:textSize="14sp"
+                    android:textColor="@color/status_cancelled"
+                    android:layout_marginBottom="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/operatorNotesText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Operator Notes: Station maintenance scheduled"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_primary"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- QR Code Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/qrCodeCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="QR Code for Check-in"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Use this QR code to check in at the charging station"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="16dp" />
+
+                <ImageView
+                    android:id="@+id/qrCodeImage"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/qr_code_placeholder"
+                    android:scaleType="centerInside"
+                    android:visibility="gone"
+                    android:contentDescription="QR Code for booking check-in" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/generateQRButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Generate QR Code"
+                        android:layout_marginEnd="8dp"
+                        style="@style/Widget.Material3.Button"
+                        app:icon="@drawable/ic_qr_code" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/shareQRButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Share"
+                        android:layout_marginStart="8dp"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:icon="@drawable/ic_share"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/modifyBookingButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="Modify"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:icon="@drawable/ic_edit" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelBookingButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:text="Cancel"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:icon="@drawable/ic_cancel"
+                app:strokeColor="@color/status_cancelled"
+                android:textColor="@color/status_cancelled" />
+
+        </LinearLayout>
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+        <!-- Spacer for better scrolling -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
+
+    </LinearLayout>
+
+</ScrollView>

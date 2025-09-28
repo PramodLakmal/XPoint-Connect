@@ -22,6 +22,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
@@ -98,12 +99,26 @@ class LoginActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     setLoadingState(false)
                     resource.data?.let { loginResponse ->
+                        // Debug logging
+                        android.util.Log.d(
+                                "LoginActivity",
+                                "Login response - NIC: ${loginResponse.nic}, FullName: ${loginResponse.fullName}, Token: ${loginResponse.token}"
+                        )
+
                         // Save user data using coroutines
                         lifecycleScope.launch {
                             userPreferencesManager.saveLoginData(
                                     nic = loginResponse.nic,
                                     fullName = loginResponse.fullName,
                                     token = loginResponse.token
+                            )
+
+                            // Verify data was saved
+                            val savedNIC = userPreferencesManager.getUserNIC()
+                            val savedName = userPreferencesManager.getUserName()
+                            android.util.Log.d(
+                                    "LoginActivity",
+                                    "Saved data - NIC: $savedNIC, Name: $savedName"
                             )
 
                             showToast(getString(R.string.login_successful))
@@ -116,7 +131,14 @@ class LoginActivity : AppCompatActivity() {
                 }
                 is Resource.Error -> {
                     setLoadingState(false)
-                    showToast(resource.message ?: getString(R.string.invalid_credentials))
+                    val errorMessage = resource.message ?: getString(R.string.invalid_credentials)
+
+                    // Check if account is deactivated
+                    if (errorMessage.contains("deactivated", ignoreCase = true)) {
+                        showReactivationOption()
+                    } else {
+                        showToast(errorMessage)
+                    }
                 }
             }
         }
@@ -151,5 +173,27 @@ class LoginActivity : AppCompatActivity() {
     private fun clearFieldErrors() {
         findViewById<TextInputLayout>(R.id.tilNIC).error = null
         findViewById<TextInputLayout>(R.id.tilPassword).error = null
+    }
+
+    /** Shows dialog to reactivate deactivated account */
+    private fun showReactivationOption() {
+        AlertDialog.Builder(this)
+                .setTitle("Account Deactivated")
+                .setMessage("Your account has been deactivated. Would you like to reactivate it?")
+                .setPositiveButton("Reactivate") { _, _ -> reactivateAccount() }
+                .setNegativeButton("Cancel", null)
+                .show()
+    }
+
+    /** Initiates account reactivation process */
+    private fun reactivateAccount() {
+        val nic = findViewById<TextInputEditText>(R.id.etNIC).text.toString().trim()
+        val password = findViewById<TextInputEditText>(R.id.etPassword).text.toString().trim()
+
+        if (nic.isNotEmpty() && password.isNotEmpty()) {
+            viewModel.reactivateAccount(nic, password)
+        } else {
+            showToast("Please enter your credentials to reactivate your account")
+        }
     }
 }
