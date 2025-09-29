@@ -1,3 +1,17 @@
+/**
+ * Purpose: Central database for the XPoint Connect application.
+ *
+ * Description: This class defines the Room database configuration for the application.
+ * It provides access to the application's database and manages the creation and access
+ * to the database instance using the Singleton pattern.
+ *
+ * Key Features:
+ * - Provides a single database instance throughout the application
+ * - Manages UserEntity data via UserDao
+ * - Implements thread-safe lazy initialization
+ * - Supports destructive migration during development
+ */
+
 package com.xpoint.connect.data.database
 
 import android.content.Context
