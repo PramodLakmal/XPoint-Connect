@@ -1,3 +1,18 @@
+/**
+ * Purpose: Represents a user entity in the local database for the XPoint Connect application.
+ *
+ * Description: This entity class maps the user information to the database table 'users'.
+ * It holds persistent data about users, including their authentication details,
+ * personal information, and role within the system.
+ *
+ * Key Features:
+ * - Database entity mapping with Room annotations
+ * - Storage of user authentication credentials
+ * - Persistence of user profile information
+ * - Support for user role management
+ * - Integration with Android's Room persistence library
+ */
+
 package com.xpoint.connect.data.database.entity
 
 import androidx.room.Entity
