@@ -16,21 +16,24 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
 import com.xpoint.connect.data.api.ApiClient
 import com.xpoint.connect.data.api.ApiService
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.data.model.ChargingStation
 import com.xpoint.connect.data.model.CreateBookingRequest
-import com.xpoint.connect.utils.SharedPreferencesManager
 import com.xpoint.connect.utils.showToast
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +43,7 @@ class CreateBookingActivity : AppCompatActivity() {
 
     // API Service for direct calls
     private lateinit var apiService: ApiService
-    private lateinit var preferencesManager: SharedPreferencesManager
+    private lateinit var preferencesManager: UserPreferencesManager
 
     // UI Components
     private lateinit var stationSelectionCard: MaterialCardView
@@ -80,6 +83,12 @@ class CreateBookingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_booking)
 
+        // Setup toolbar with back button
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Create Booking"
+
         initializeViewModel()
         initializeViews()
         setupObservers()
@@ -96,7 +105,7 @@ class CreateBookingActivity : AppCompatActivity() {
     private fun initializeViewModel() {
         // Initialize API service and preferences manager for direct API calls
         apiService = ApiClient.apiService
-        preferencesManager = SharedPreferencesManager(this)
+        preferencesManager = (application as XPointConnectApplication).userPreferencesManager
     }
 
     private fun initializeViews() {
@@ -461,6 +470,16 @@ class CreateBookingActivity : AppCompatActivity() {
     private fun showLoading(show: Boolean) {
         progressBar.visibility = if (show) View.VISIBLE else View.GONE
         createBookingButton.text = if (show) "Creating Booking..." else "Create Booking"
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -12,20 +12,21 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
 import com.xpoint.connect.data.api.ApiClient
 import com.xpoint.connect.data.api.ApiService
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.ui.booking.BookingDetailsActivity
 import com.xpoint.connect.ui.booking.CreateBookingActivity
 import com.xpoint.connect.ui.main.BookingsAdapter
-import com.xpoint.connect.utils.SharedPreferencesManager
 import kotlinx.coroutines.launch
 
 class BookingsFragment : Fragment() {
 
     // Direct API service instead of ViewModel
     private lateinit var apiService: ApiService
-    private lateinit var preferencesManager: SharedPreferencesManager
+    private lateinit var preferencesManager: UserPreferencesManager
     private lateinit var bookingsAdapter: BookingsAdapter
     private var progressBar: ProgressBar? = null
 
@@ -42,7 +43,8 @@ class BookingsFragment : Fragment() {
 
         // Initialize API service and preferences manager
         apiService = ApiClient.apiService
-        preferencesManager = SharedPreferencesManager(requireContext())
+        preferencesManager =
+                (requireActivity().application as XPointConnectApplication).userPreferencesManager
 
         setupViews(view)
         loadBookings()
