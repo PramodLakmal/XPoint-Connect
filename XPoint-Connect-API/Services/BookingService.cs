@@ -390,6 +390,11 @@ namespace XPoint_Connect_API.Services
             return hoursUntilReservation >= 12;
         }
 
+        public async Task<ChargingStationResponseDto?> GetStationAsync(string stationId)
+        {
+            return await _chargingStationService.GetStationByIdAsync(stationId);
+        }
+
         private static double CalculateTotalAmount(double hourlyRate, int durationMinutes)
         {
             var hours = durationMinutes / 60.0;

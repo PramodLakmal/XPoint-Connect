@@ -134,12 +134,34 @@ The API will be available at:
 - `GET /api/bookings/upcoming/{nic}` - Get upcoming bookings
 - `GET /api/bookings/history/{nic}` - Get booking history
 
+### Operator Assignment Management (BackOffice Only)
+- `POST /api/operatorassignments/operators` - Create new Station Operator with optional station assignments
+- `POST /api/operatorassignments/assign` - Assign operator to specific station
+- `POST /api/operatorassignments/bulk-assign` - Assign operator to multiple stations
+- `DELETE /api/operatorassignments/stations/{stationId}/operator` - Unassign operator from station
+- `DELETE /api/operatorassignments/operators/{operatorId}/stations` - Unassign operator from all stations
+- `GET /api/operatorassignments/operators` - Get all operators with their assigned stations
+- `GET /api/operatorassignments/operators/{operatorId}` - Get specific operator's assigned stations
+- `GET /api/operatorassignments/unassigned-stations` - Get all unassigned stations
+- `GET /api/operatorassignments/summary` - Get assignment summary with statistics
+- `PUT /api/operatorassignments/stations/{stationId}/reassign` - Reassign station to different operator
+- `GET /api/operatorassignments/statistics` - Get assignment statistics for dashboard
+
 ## Station-Operator Assignment System
 
 ### How It Works
 1. **Station Assignment**: Each charging station has an `OperatorId` field that links it to a specific Station Operator
 2. **Authorization Logic**: Station Operators can only access bookings and manage stations they are assigned to
 3. **Security Implementation**: All endpoints validate operator assignments before allowing access
+4. **Assignment Management**: BackOffice users can create operators and assign/reassign stations through dedicated endpoints
+
+### Operator Assignment Features
+- **Create Station Operators**: BackOffice can create new operator accounts with initial station assignments
+- **Dynamic Assignment**: Assign/unassign operators to/from stations at any time
+- **Bulk Operations**: Assign operators to multiple stations simultaneously
+- **Assignment Tracking**: Monitor which stations are assigned and which operators have no assignments
+- **Reassignment**: Transfer station ownership from one operator to another
+- **Statistics**: Comprehensive assignment statistics for management oversight
 
 ### Authorization Matrix
 | Action | BackOffice | StationOperator | EV Owner |
