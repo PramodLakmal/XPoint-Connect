@@ -1,13 +1,12 @@
 /**
  * EditBookingActivity.kt
  *
- * Purpose: Activity for editing existing bookings (pending bookings only)
- * Author: XPoint Connect Development Team
- * Date: October 6, 2025
+ * Purpose: Activity for editing existing bookings (pending bookings only) Author: XPoint Connect
+ * Development Team Date: October 6, 2025
  *
- * Description: This activity allows users to modify their pending bookings including
- * changing the reservation date/time, duration, and charging station. Only bookings
- * with PENDING status can be edited to maintain booking integrity.
+ * Description: This activity allows users to modify their pending bookings including changing the
+ * reservation date/time, duration, and charging station. Only bookings with PENDING status can be
+ * edited to maintain booking integrity.
  */
 package com.xpoint.connect.ui.booking
 
@@ -32,9 +31,9 @@ import com.xpoint.connect.data.api.ApiService
 import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.data.model.*
 import com.xpoint.connect.utils.showToast
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.launch
 
 class EditBookingActivity : AppCompatActivity() {
 
@@ -89,7 +88,7 @@ class EditBookingActivity : AppCompatActivity() {
         initializeServices()
         initializeViews()
         setupClickListeners()
-        
+
         val bookingId = intent.getStringExtra(EXTRA_BOOKING_ID)
         if (bookingId != null) {
             loadBooking(bookingId)
@@ -138,17 +137,23 @@ class EditBookingActivity : AppCompatActivity() {
     private fun setupDurationSeekBar() {
         durationSeekBar.max = MAX_DURATION_MINUTES - MIN_DURATION_MINUTES
 
-        durationSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    selectedDurationMinutes = MIN_DURATION_MINUTES + progress
-                    updateDuration()
-                    updateCostEstimate()
+        durationSeekBar.setOnSeekBarChangeListener(
+                object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(
+                            seekBar: SeekBar?,
+                            progress: Int,
+                            fromUser: Boolean
+                    ) {
+                        if (fromUser) {
+                            selectedDurationMinutes = MIN_DURATION_MINUTES + progress
+                            updateDuration()
+                            updateCostEstimate()
+                        }
+                    }
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
                 }
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        )
     }
 
     private fun setupClickListeners() {
@@ -190,7 +195,7 @@ class EditBookingActivity : AppCompatActivity() {
     private fun populateBookingData(booking: Booking) {
         // Set current station info
         currentStationText.text = booking.chargingStationName
-        
+
         // Load station details if needed
         loadStationDetails(booking.chargingStationId)
 
@@ -210,7 +215,7 @@ class EditBookingActivity : AppCompatActivity() {
         selectedDurationMinutes = booking.durationMinutes
         durationSeekBar.progress = selectedDurationMinutes - MIN_DURATION_MINUTES
         updateDuration()
-        
+
         updateCostEstimate()
     }
 
@@ -235,23 +240,37 @@ class EditBookingActivity : AppCompatActivity() {
 
     private fun showDateTimePicker() {
         val calendar = Calendar.getInstance()
-        DatePickerDialog(this, { _, year, month, dayOfMonth ->
-            selectedDateTime.set(Calendar.YEAR, year)
-            selectedDateTime.set(Calendar.MONTH, month)
-            selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            showTimePicker()
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+        DatePickerDialog(
+                        this,
+                        { _, year, month, dayOfMonth ->
+                            selectedDateTime.set(Calendar.YEAR, year)
+                            selectedDateTime.set(Calendar.MONTH, month)
+                            selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                            showTimePicker()
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                )
+                .show()
     }
 
     private fun showTimePicker() {
         val calendar = Calendar.getInstance()
-        TimePickerDialog(this, { _, hourOfDay, minute ->
-            selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
-            selectedDateTime.set(Calendar.MINUTE, minute)
-            selectedDateTime.set(Calendar.SECOND, 0)
-            updateDateTime()
-            updateCostEstimate()
-        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+        TimePickerDialog(
+                        this,
+                        { _, hourOfDay, minute ->
+                            selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                            selectedDateTime.set(Calendar.MINUTE, minute)
+                            selectedDateTime.set(Calendar.SECOND, 0)
+                            updateDateTime()
+                            updateCostEstimate()
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true
+                )
+                .show()
     }
 
     private fun updateDateTime() {
@@ -262,25 +281,28 @@ class EditBookingActivity : AppCompatActivity() {
     private fun updateDuration() {
         val hours = selectedDurationMinutes / 60
         val minutes = selectedDurationMinutes % 60
-        val durationText = when {
-            hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
-            hours > 0 -> "${hours}h"
-            else -> "${minutes}m"
-        }
+        val durationText =
+                when {
+                    hours > 0 && minutes > 0 -> "${hours}h ${minutes}m"
+                    hours > 0 -> "${hours}h"
+                    else -> "${minutes}m"
+                }
         durationInput.setText(durationText)
         this.durationText.text = "Duration: $durationText"
     }
 
     private fun updateCostEstimate() {
         selectedStation?.let { station ->
-            val estimatedCost = calculateEstimatedCost(station.chargingRate, selectedDurationMinutes)
+            val estimatedCost =
+                    calculateEstimatedCost(station.chargingRate, selectedDurationMinutes)
             estimatedCostText.text = "Rs. %.2f".format(estimatedCost)
             val hours = selectedDurationMinutes / 60.0
             costDetailsText.text = "Rs. %.2f/hour × %.1f hours".format(station.chargingRate, hours)
-        } ?: run {
-            estimatedCostText.text = "Calculating..."
-            costDetailsText.text = "Cost will be updated after station selection"
         }
+                ?: run {
+                    estimatedCostText.text = "Calculating..."
+                    costDetailsText.text = "Cost will be updated after station selection"
+                }
     }
 
     private fun calculateEstimatedCost(ratePerHour: Double, durationMinutes: Int): Double {
@@ -297,10 +319,11 @@ class EditBookingActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val reservationDateTime = formatDateTimeForAPI(selectedDateTime.time)
-                val updateRequest = UpdateBookingRequest(
-                    reservationDateTime = reservationDateTime,
-                    durationMinutes = selectedDurationMinutes
-                )
+                val updateRequest =
+                        UpdateBookingRequest(
+                                reservationDateTime = reservationDateTime,
+                                durationMinutes = selectedDurationMinutes
+                        )
 
                 val response = apiService.updateBooking(booking.id, updateRequest)
                 if (response.isSuccessful) {
@@ -319,11 +342,13 @@ class EditBookingActivity : AppCompatActivity() {
 
     private fun cancelBooking() {
         androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Cancel Booking")
-            .setMessage("Are you sure you want to cancel this booking? This action cannot be undone.")
-            .setPositiveButton("Yes, Cancel") { _, _ -> performCancelBooking() }
-            .setNegativeButton("No", null)
-            .show()
+                .setTitle("Cancel Booking")
+                .setMessage(
+                        "Are you sure you want to cancel this booking? This action cannot be undone."
+                )
+                .setPositiveButton("Yes, Cancel") { _, _ -> performCancelBooking() }
+                .setNegativeButton("No", null)
+                .show()
     }
 
     private fun performCancelBooking() {
@@ -332,9 +357,10 @@ class EditBookingActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val cancelRequest = CancelBookingRequest(
-                    cancellationReason = "Cancelled by user from mobile app"
-                )
+                val cancelRequest =
+                        CancelBookingRequest(
+                                cancellationReason = "Cancelled by user from mobile app"
+                        )
                 val response = apiService.cancelBooking(booking.id, cancelRequest)
                 if (response.isSuccessful) {
                     showToast("Booking cancelled successfully")
@@ -384,8 +410,10 @@ class EditBookingActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_SELECT_STATION && resultCode == RESULT_OK) {
-            data?.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_ID)?.let { stationId ->
-                val stationName = data.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_NAME)
+            data?.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_ID)?.let {
+                    stationId ->
+                val stationName =
+                        data.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_NAME)
                 loadSelectedStation(stationId, stationName)
             }
         }

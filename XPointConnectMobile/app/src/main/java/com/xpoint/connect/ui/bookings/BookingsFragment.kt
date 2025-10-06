@@ -71,20 +71,20 @@ class BookingsFragment : Fragment() {
         val btnPending = view.findViewById<View>(R.id.btnPending)
         val btnUpcoming = view.findViewById<View>(R.id.btnUpcoming)
         val btnHistory = view.findViewById<View>(R.id.btnHistory)
-        
-        btnPending?.setOnClickListener { 
+
+        btnPending?.setOnClickListener {
             selectTab(btnPending, listOf(btnUpcoming, btnHistory))
-            loadPendingBookings() 
+            loadPendingBookings()
         }
-        
-        btnUpcoming?.setOnClickListener { 
+
+        btnUpcoming?.setOnClickListener {
             selectTab(btnUpcoming, listOf(btnPending, btnHistory))
             loadUpcomingBookings() // Load upcoming bookings
         }
 
-        btnHistory?.setOnClickListener { 
+        btnHistory?.setOnClickListener {
             selectTab(btnHistory, listOf(btnPending, btnUpcoming))
-            loadBookingHistory() 
+            loadBookingHistory()
         }
 
         // Setup FAB for creating new booking
@@ -95,12 +95,10 @@ class BookingsFragment : Fragment() {
 
         // Load pending bookings by default and make sure RecyclerView is visible
         view.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.visibility = View.VISIBLE
-        
+
         // Select pending tab by default
-        btnPending?.let { 
-            selectTab(it, listOf(btnUpcoming!!, btnHistory!!))
-        }
-        
+        btnPending?.let { selectTab(it, listOf(btnUpcoming!!, btnHistory!!)) }
+
         loadPendingBookings()
     }
 
@@ -111,12 +109,12 @@ class BookingsFragment : Fragment() {
     private fun showError(message: String) {
         Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show()
     }
-    
+
     private fun selectTab(selectedTab: View, otherTabs: List<View>) {
         // Update selected tab style
         selectedTab.setBackgroundResource(R.drawable.tab_selected_background)
         selectedTab.alpha = 1.0f
-        
+
         // Update other tabs style
         otherTabs.forEach { tab ->
             tab.setBackgroundResource(R.drawable.tab_unselected_background)
@@ -127,9 +125,9 @@ class BookingsFragment : Fragment() {
     private fun updateBookingsList(bookings: List<Booking>, type: String = "Bookings") {
         val recyclerView = view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)
         val emptyStateLayout = view?.findViewById<View>(R.id.layoutEmptyState)
-        
+
         bookingsAdapter.submitList(bookings)
-        
+
         if (bookings.isEmpty()) {
             recyclerView?.visibility = View.GONE
             emptyStateLayout?.visibility = View.VISIBLE
@@ -140,7 +138,9 @@ class BookingsFragment : Fragment() {
             println("BookingsFragment: Displaying ${bookings.size} $type")
             // Log booking details for debugging
             bookings.take(3).forEach { booking ->
-                println("BookingsFragment: ${type} - ID: ${booking.id}, Station: ${booking.chargingStationName}, Status: ${booking.bookingStatus}")
+                println(
+                        "BookingsFragment: ${type} - ID: ${booking.id}, Station: ${booking.chargingStationName}, Status: ${booking.bookingStatus}"
+                )
             }
         }
     }
@@ -231,10 +231,14 @@ class BookingsFragment : Fragment() {
                     if (response.isSuccessful) {
                         response.body()?.let { allBookings: List<Booking> ->
                             // Filter for pending bookings (status = 0)
-                            val pendingBookings = allBookings.filter { 
-                                it.bookingStatus == com.xpoint.connect.data.model.BookingStatus.Pending 
-                            }
-                            println("BookingsFragment: Found ${pendingBookings.size} pending bookings out of ${allBookings.size} total")
+                            val pendingBookings =
+                                    allBookings.filter {
+                                        it.bookingStatus ==
+                                                com.xpoint.connect.data.model.BookingStatus.Pending
+                                    }
+                            println(
+                                    "BookingsFragment: Found ${pendingBookings.size} pending bookings out of ${allBookings.size} total"
+                            )
                             updateBookingsList(pendingBookings, "Pending")
                         }
                     } else {

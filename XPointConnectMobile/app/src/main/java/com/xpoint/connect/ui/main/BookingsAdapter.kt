@@ -14,11 +14,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
-    ListAdapter<Booking, BookingsAdapter.BookingViewHolder>(BookingDiffCallback()) {
+        ListAdapter<Booking, BookingsAdapter.BookingViewHolder>(BookingDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookingViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_booking, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_booking, parent, false)
         return BookingViewHolder(view)
     }
 
@@ -37,28 +36,30 @@ class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
             tvStationName.text = booking.chargingStationName
             tvBookingDate.text = formatDate(booking.reservationDateTime)
             tvBookingTime.text = formatTime(booking.reservationDateTime)
-            tvBookingStatus.text = when (booking.bookingStatus) {
-                BookingStatus.Pending -> "Pending"
-                BookingStatus.Approved -> "Approved"
-                BookingStatus.CheckedIn -> "Checked In"
-                BookingStatus.Completed -> "Completed"
-                BookingStatus.Cancelled -> "Cancelled"
-                BookingStatus.NoShow -> "No Show"
-            }
+            tvBookingStatus.text =
+                    when (booking.bookingStatus) {
+                        BookingStatus.Pending -> "Pending"
+                        BookingStatus.Approved -> "Approved"
+                        BookingStatus.CheckedIn -> "Checked In"
+                        BookingStatus.Completed -> "Completed"
+                        BookingStatus.Cancelled -> "Cancelled"
+                        BookingStatus.NoShow -> "No Show"
+                    }
             tvBookingId.text = "ID: ${booking.id.take(8)}..."
 
             // Set status color based on booking status
-            val statusColor = when (booking.bookingStatus) {
-                BookingStatus.Pending -> R.color.warning
-                BookingStatus.Approved -> R.color.success
-                BookingStatus.CheckedIn -> R.color.primary
-                BookingStatus.Completed -> R.color.success
-                BookingStatus.Cancelled -> R.color.error
-                BookingStatus.NoShow -> R.color.error
-            }
-            
+            val statusColor =
+                    when (booking.bookingStatus) {
+                        BookingStatus.Pending -> R.color.warning
+                        BookingStatus.Approved -> R.color.success
+                        BookingStatus.CheckedIn -> R.color.primary
+                        BookingStatus.Completed -> R.color.success
+                        BookingStatus.Cancelled -> R.color.error
+                        BookingStatus.NoShow -> R.color.error
+                    }
+
             tvBookingStatus.setTextColor(itemView.context.getColor(statusColor))
-            
+
             // Make pending bookings more prominent
             if (booking.bookingStatus == BookingStatus.Pending) {
                 itemView.alpha = 1.0f
