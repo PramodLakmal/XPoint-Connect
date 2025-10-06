@@ -179,9 +179,10 @@ const BookingManagement = () => {
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
-      booking.evOwner?.nic?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      booking.evOwner?.fullName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      booking.station?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.evOwnerName.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.evOwnerNIC.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.id.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.chargingStationName.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       booking.qrCode?.toLowerCase()?.includes(searchTerm.toLowerCase());
 
     const statusStr = typeof booking.status === 'string' ? booking.status.toLowerCase() : 'unknown';
@@ -189,6 +190,8 @@ const BookingManagement = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  console.log('Filtered Bookings:', filteredBookings);
 
   const BookingModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, booking = null, evOwners, chargingStations }) => {
     const [formData, setFormData] = useState({
@@ -381,8 +384,8 @@ const BookingManagement = () => {
 
                 <div>
                   <label className="text-sm font-medium text-secondary-700">EV Owner</label>
-                  <p className="text-secondary-900">{selectedBooking.evOwner?.fullName}</p>
-                  <p className="text-sm text-secondary-600">{selectedBooking.evOwner?.nic}</p>
+                  <p className="text-secondary-900">{selectedBooking.evOwnerName}</p>
+                  <p className="text-sm text-secondary-600">{selectedBooking.evOwnerNIC}</p>
                 </div>
 
                 <div>
@@ -566,12 +569,10 @@ const BookingManagement = () => {
                     <div className="font-mono text-xs text-secondary-600">{booking.qrCode}</div>
                   </td>
                   <td className="py-4 px-6">
-                    <div className="font-medium text-secondary-900">{booking.evOwner?.fullName}</div>
-                    <div className="text-sm text-secondary-600">{booking.evOwner?.nic}</div>
+                    <div className="font-medium text-secondary-900">{booking.evOwnerName}</div>
                   </td>
                   <td className="py-4 px-6">
-                    <div className="text-secondary-900">{booking.station?.name}</div>
-                    <div className="text-sm text-secondary-600">{booking.station?.location?.city}</div>
+                    <div className="text-secondary-900">{booking.chargingStationName}</div>
                   </td>
                   <td className="py-4 px-6">
                     <div className="text-secondary-900">{formatDate(booking.reservationDateTime)}</div>
