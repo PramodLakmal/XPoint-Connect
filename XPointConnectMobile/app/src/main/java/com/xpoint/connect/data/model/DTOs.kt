@@ -1,3 +1,21 @@
+/**
+ * DTOs.kt
+ *
+ * Purpose: Defines data transfer objects for API communication and data serialization Author:
+ * XPoint Connect Development Team Date: September 27, 2025
+ *
+ * Description: This file contains all Data Transfer Objects (DTOs) used for API communication
+ * between the mobile application and backend services. DTOs are structured to match the JSON
+ * formats expected by REST API endpoints and include proper serialization annotations for automatic
+ * parsing with Gson.
+ *
+ * Key Features:
+ * - Authentication DTOs for login and registration processes
+ * - Booking management DTOs for reservation operations
+ * - Charging station DTOs for location and availability data
+ * - Error handling DTOs for API response management
+ * - Proper JSON serialization with @SerializedName annotations
+ */
 package com.xpoint.connect.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -23,10 +41,9 @@ data class EVOwnerLoginRequest(
 
 data class EVOwnerLoginResponse(
         @SerializedName("token") val token: String,
-        @SerializedName("refreshToken") val refreshToken: String,
-        @SerializedName("userType") val userType: String,
-        @SerializedName("expirationTime") val expirationTime: String,
-        @SerializedName("evOwner") val evOwner: EVOwner
+        @SerializedName("nic") val nic: String,
+        @SerializedName("fullName") val fullName: String,
+        @SerializedName("expiresAt") val expiresAt: String
 )
 
 data class RegisterEVOwnerRequest(
@@ -35,11 +52,22 @@ data class RegisterEVOwnerRequest(
         @SerializedName("lastName") val lastName: String,
         @SerializedName("email") val email: String,
         @SerializedName("phoneNumber") val phoneNumber: String,
-        @SerializedName("password") val password: String,
-        @SerializedName("licenseNumber") val licenseNumber: String,
-        @SerializedName("vehicleModel") val vehicleModel: String,
-        @SerializedName("vehicleYear") val vehicleYear: Int,
-        @SerializedName("batteryCapacity") val batteryCapacity: Double
+        @SerializedName("address") val address: String,
+        @SerializedName("password") val password: String
+)
+
+data class RegisterEVOwnerResponse(
+        @SerializedName("nic") val nic: String = "",
+        @SerializedName("firstName") val firstName: String = "",
+        @SerializedName("lastName") val lastName: String = "",
+        @SerializedName("fullName") val fullName: String = "",
+        @SerializedName("email") val email: String = "",
+        @SerializedName("phoneNumber") val phoneNumber: String = "",
+        @SerializedName("address") val address: String = "",
+        @SerializedName("isActive") val isActive: Boolean = true,
+        @SerializedName("createdAt") val createdAt: String = "",
+        @SerializedName("updatedAt") val updatedAt: String = "",
+        @SerializedName("requiresReactivation") val requiresReactivation: Boolean = false
 )
 
 // Booking DTOs
@@ -47,7 +75,19 @@ data class CreateBookingRequest(
         @SerializedName("evOwnerNIC") val evOwnerNIC: String,
         @SerializedName("chargingStationId") val chargingStationId: String,
         @SerializedName("reservationDateTime") val reservationDateTime: String,
-        @SerializedName("durationMinutes") val durationMinutes: Int = 60
+        @SerializedName("durationMinutes") val durationMinutes: Int = 480
+)
+
+data class UpdateBookingRequest(
+        @SerializedName("reservationDateTime") val reservationDateTime: String,
+        @SerializedName("durationMinutes") val durationMinutes: Int,
+        @SerializedName("status") val status: Int? = null,
+        @SerializedName("cancellationReason") val cancellationReason: String? = null,
+        @SerializedName("operatorNotes") val operatorNotes: String? = null
+)
+
+data class CancelBookingRequest(
+        @SerializedName("cancellationReason") val cancellationReason: String
 )
 
 data class BookingPreview(
@@ -70,6 +110,34 @@ data class ApiResponse<T>(
         @SerializedName("success") val success: Boolean,
         @SerializedName("message") val message: String,
         @SerializedName("data") val data: T?
+)
+
+// Profile Management DTOs
+data class UpdateEVOwnerProfileRequest(
+        @SerializedName("firstName") val firstName: String,
+        @SerializedName("lastName") val lastName: String,
+        @SerializedName("email") val email: String,
+        @SerializedName("phoneNumber") val phoneNumber: String,
+        @SerializedName("address") val address: String,
+        @SerializedName("licenseNumber") val licenseNumber: String?,
+        @SerializedName("vehicleModel") val vehicleModel: String?,
+        @SerializedName("vehicleYear") val vehicleYear: Int?,
+        @SerializedName("batteryCapacity") val batteryCapacity: Double?
+)
+
+data class ChangePasswordRequest(
+        @SerializedName("currentPassword") val currentPassword: String,
+        @SerializedName("newPassword") val newPassword: String
+)
+
+data class DeactivateAccountRequest(
+        @SerializedName("password") val password: String,
+        @SerializedName("reason") val reason: String
+)
+
+data class ReactivateAccountRequest(
+        @SerializedName("nic") val nic: String,
+        @SerializedName("password") val password: String
 )
 
 // Error Response

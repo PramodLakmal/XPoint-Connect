@@ -1,8 +1,29 @@
+/**
+ * ApiClient.kt
+ *
+ * Purpose: Centralized HTTP client configuration for API communication Author: XPoint Connect
+ * Development Team Date: September 27, 2025
+ *
+ * Description: This singleton object provides a centralized configuration for all HTTP API
+ * communications in the XPoint Connect application. It manages authentication tokens,
+ * request/response logging, timeout configurations, and JSON serialization. The client
+ * automatically handles authorization headers and provides retry logic for network operations.
+ *
+ * Key Features:
+ * - Singleton pattern for centralized API client management
+ * - Automatic JWT token injection for authenticated requests
+ * - HTTP request/response logging for debugging and monitoring
+ * - Configurable timeout settings for network operations
+ * - JSON serialization/deserialization with Gson
+ * - Interceptor chain for request/response processing
+ * - Integration with UserPreferencesManager for token management
+ */
 package com.xpoint.connect.data.api
 
 import com.google.gson.GsonBuilder
-import com.xpoint.connect.utils.SharedPreferencesManager
+import com.xpoint.connect.data.database.UserPreferencesManager
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -11,17 +32,20 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    private const val BASE_URL =
-            "https://your-api-base-url.com/" // Replace with your actual API URL
+    private const val BASE_URL = "http://10.0.2.2:5034/" // Replace with your actual API URL
 
-    private var sharedPreferencesManager: SharedPreferencesManager? = null
+    private var userPreferencesManager: UserPreferencesManager? = null
 
-    fun init(prefsManager: SharedPreferencesManager) {
-        sharedPreferencesManager = prefsManager
+    /**
+     * Initializes the API client with user preferences manager for token management
+     * @param prefsManager UserPreferencesManager instance for authentication token access
+     */
+    fun init(prefsManager: UserPreferencesManager) {
+        userPreferencesManager = prefsManager
     }
 
     private val authInterceptor = Interceptor { chain ->
-        val token = sharedPreferencesManager?.getAuthToken()
+        val token = runBlocking { userPreferencesManager?.getAuthToken() }
         val request =
                 if (token != null) {
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()

@@ -217,11 +217,12 @@
             android:layout_marginBottom="16dp" />
 
         <!-- Quick Action Cards -->
+        <!-- First Row of Quick Actions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="16dp">
 
             <!-- Find Stations -->
             <com.google.android.material.card.MaterialCardView
@@ -248,7 +249,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_stations"
-                        android:tint="@color/white"
+                        app:tint="@color/white"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
@@ -289,7 +290,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_bookings"
-                        android:tint="@color/white"
+                        app:tint="@color/white"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
@@ -300,6 +301,53 @@
                         android:textStyle="bold"
                         android:textColor="@color/white"
                         android:textAlignment="center" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Second Row - Create Booking -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <!-- Create Booking -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCreateBooking"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/success"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_add"
+                        app:tint="@color/white"
+                        android:layout_marginEnd="16dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Create New Booking"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white" />
 
                 </LinearLayout>
 

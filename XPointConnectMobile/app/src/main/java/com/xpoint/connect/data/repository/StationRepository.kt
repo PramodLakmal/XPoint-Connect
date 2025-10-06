@@ -1,3 +1,23 @@
+/**
+ * StationRepository.kt
+ *
+ * Purpose: Repository class for managing charging station data and operations Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This repository class handles all charging station related data operations including
+ * station discovery, detailed information retrieval, and location-based searches. It provides a
+ * clean abstraction layer between the UI components and the backend API, managing network calls and
+ * data transformation for charging station features.
+ *
+ * Key Features:
+ * - Comprehensive charging station data retrieval
+ * - Location-based station discovery with radius filtering
+ * - Individual station detailed information access
+ * - Active/inactive station filtering capabilities
+ * - Centralized error handling for station operations
+ * - Coroutine-based asynchronous operations
+ * - Resource wrapper for consistent state management
+ */
 package com.xpoint.connect.data.repository
 
 import com.xpoint.connect.data.api.ApiClient

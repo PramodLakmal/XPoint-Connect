@@ -1,8 +1,8 @@
 package com.xpoint.connect.utils
 
+import android.content.Context
 import android.content.SharedPreferences
 import com.xpoint.connect.data.model.EVOwner
-import android.content.Context
 
 class SharedPreferencesManager(context: Context) {
 
@@ -58,6 +58,16 @@ class SharedPreferencesManager(context: Context) {
             putString(KEY_LICENSE_NUMBER, evOwner.licenseNumber)
             putString(KEY_VEHICLE_MODEL, evOwner.vehicleModel)
             putFloat(KEY_BATTERY_CAPACITY, evOwner.batteryCapacity.toFloat())
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            apply()
+        }
+    }
+
+    fun saveLoginData(nic: String, fullName: String, token: String) {
+        with(sharedPreferences.edit()) {
+            putString(KEY_USER_NIC, nic)
+            putString(KEY_USER_NAME, fullName)
+            putString(KEY_AUTH_TOKEN, token)
             putBoolean(KEY_IS_LOGGED_IN, true)
             apply()
         }

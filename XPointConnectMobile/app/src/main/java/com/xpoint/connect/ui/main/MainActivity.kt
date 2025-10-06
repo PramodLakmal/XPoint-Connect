@@ -1,3 +1,23 @@
+/**
+ * MainActivity.kt
+ *
+ * Purpose: Main container activity with bottom navigation for authenticated users Author: XPoint
+ * Connect Development Team Date: September 27, 2025
+ *
+ * Description: This activity serves as the main container for the XPoint Connect application,
+ * providing bottom navigation between key features including dashboard, charging stations,
+ * bookings, and user profile. It manages fragment navigation, user authentication validation, and
+ * provides logout functionality for authenticated EV owners.
+ *
+ * Key Features:
+ * - Bottom navigation with fragment management
+ * - Dashboard with charging statistics and quick actions
+ * - Charging station discovery and booking interface
+ * - Booking management and history tracking
+ * - User profile management and settings
+ * - Authentication validation and logout functionality
+ * - Android 12+ splash screen API integration
+ */
 package com.xpoint.connect.ui.main
 
 import android.content.Intent
@@ -5,16 +25,19 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.auth.LoginActivity
 import com.xpoint.connect.ui.bookings.BookingsFragment
 import com.xpoint.connect.ui.profile.ProfileFragment
-import com.xpoint.connect.utils.SharedPreferencesManager
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+    private lateinit var userPreferencesManager: UserPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before calling super.onCreate()
@@ -23,13 +46,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        sharedPreferencesManager = SharedPreferencesManager(this)
+        userPreferencesManager = (application as XPointConnectApplication).userPreferencesManager
 
         // Check if user is logged in
-        if (!sharedPreferencesManager.isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-            return
+        lifecycleScope.launch {
+            if (!userPreferencesManager.isLoggedIn()) {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
+                return@launch
+            }
         }
 
         // Initialize with Dashboard fragment
