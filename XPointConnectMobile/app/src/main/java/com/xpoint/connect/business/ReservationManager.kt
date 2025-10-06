@@ -366,10 +366,8 @@ class ReservationManager(
                                 )
 
                         // Assuming each station has capacity for multiple concurrent bookings
-                        // Using connectorTypes count as a proxy for available slots
-                        val maxSlots =
-                                if (station.connectorTypes.isNotEmpty()) station.connectorTypes.size
-                                else 1
+                        // Using totalSlots from the API response
+                        val maxSlots = if (station.totalSlots > 0) station.totalSlots else 1
                         if (concurrentBookings >= maxSlots) {
                             return AvailabilityResult(
                                     false,

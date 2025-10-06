@@ -39,15 +39,15 @@ interface ApiService {
         ): Response<RegisterEVOwnerResponse>
 
         // Charging Stations
-        @GET("api/chargingstations")
+        @GET("api/ChargingStations")
         suspend fun getAllStations(
                 @Query("activeOnly") activeOnly: Boolean = true
         ): Response<List<ChargingStation>>
 
-        @GET("api/chargingstations/{id}")
+        @GET("api/ChargingStations/{id}")
         suspend fun getStationById(@Path("id") id: String): Response<ChargingStation>
 
-        @POST("api/chargingstations/nearby")
+        @POST("api/ChargingStations/nearby")
         suspend fun getNearbyStations(
                 @Body request: NearbyStationsRequest
         ): Response<List<ChargingStation>>

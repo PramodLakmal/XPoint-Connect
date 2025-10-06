@@ -27,22 +27,33 @@ class StationsAdapter(private val onStationClick: (ChargingStation) -> Unit) :
     class StationViewHolder(itemView: View, private val onStationClick: (ChargingStation) -> Unit) :
             RecyclerView.ViewHolder(itemView) {
 
-        private val tvStationName: TextView = itemView.findViewById(R.id.tvStationName)
-        private val tvStationAddress: TextView = itemView.findViewById(R.id.tvStationAddress)
-        private val tvStationType: TextView = itemView.findViewById(R.id.tvStationType)
-        private val tvCostPerKWh: TextView = itemView.findViewById(R.id.tvCostPerKWh)
-        private val tvMaxPower: TextView = itemView.findViewById(R.id.tvMaxPower)
-        private val tvDistance: TextView = itemView.findViewById(R.id.tvDistance)
+        private val stationName: TextView = itemView.findViewById(R.id.stationName)
+        private val stationLocation: TextView = itemView.findViewById(R.id.stationLocation)
+        private val stationDescription: TextView = itemView.findViewById(R.id.stationDescription)
+        private val costPerKWh: TextView = itemView.findViewById(R.id.costPerKWh)
+        private val availabilityStatus: TextView = itemView.findViewById(R.id.availabilityStatus)
 
         fun bind(station: ChargingStation) {
-            tvStationName.text = station.name
-            tvStationAddress.text = station.location.address
-            tvStationType.text = station.chargingType.name
-            tvCostPerKWh.text = "Rs. ${String.format("%.2f", station.costPerKWh)}/kWh"
-            tvMaxPower.text = "${station.maxPowerKW} kW"
+            stationName.text = station.name
+            stationLocation.text =
+                    "${station.location.address}, ${station.location.city}".takeIf { it != ", " }
+                            ?: "Location not specified"
+            stationDescription.text = station.description
+            costPerKWh.text = "Rs. %.2f/hour".format(station.costPerKWh)
 
-            // For now, distance will be calculated when location is available
-            tvDistance.text = "-- km"
+            // Set availability status
+            availabilityStatus.text =
+                    if (station.isActive) {
+                        "Available"
+                    } else {
+                        "Unavailable"
+                    }
+
+            availabilityStatus.setTextColor(
+                    itemView.context.getColor(
+                            if (station.isActive) R.color.success else R.color.error
+                    )
+            )
 
             itemView.setOnClickListener { onStationClick(station) }
         }

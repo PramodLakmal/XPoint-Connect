@@ -50,6 +50,10 @@
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
         
         <activity
+            android:name="com.xpoint.connect.ui.booking.StationSelectionActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+        
+        <activity
             android:name="com.xpoint.connect.ui.booking.BookingDetailsActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
