@@ -34,6 +34,7 @@ import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.data.model.ChargingStation
 import com.xpoint.connect.data.model.CreateBookingRequest
+import com.xpoint.connect.data.model.Location
 import com.xpoint.connect.utils.showToast
 import java.text.SimpleDateFormat
 import java.util.*
@@ -223,10 +224,8 @@ class CreateBookingActivity : AppCompatActivity() {
     }
 
     private fun selectStation() {
-        // TODO: Create StationSelectionActivity
-        showToast("Station selection feature coming soon")
-        // val intent = Intent(this, StationSelectionActivity::class.java)
-        // startActivityForResult(intent, REQUEST_SELECT_STATION)
+        val intent = Intent(this, StationSelectionActivity::class.java)
+        startActivityForResult(intent, REQUEST_SELECT_STATION)
     }
 
     private fun showDateTimePicker() {
@@ -486,9 +485,50 @@ class CreateBookingActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_SELECT_STATION && resultCode == RESULT_OK) {
-            data?.getStringExtra("selected_station_id")?.let { _ ->
-                // Load station by ID - simplified for now
-                // setSelectedStationById(stationId)
+            data?.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_ID)?.let {
+                    stationId ->
+                val stationName =
+                        data.getStringExtra(StationSelectionActivity.EXTRA_SELECTED_STATION_NAME)
+                loadSelectedStation(stationId, stationName)
+            }
+        }
+    }
+
+    private fun loadSelectedStation(stationId: String, stationName: String?) {
+        // Show loading state
+        selectedStationText.text = "Loading station..."
+
+        lifecycleScope.launch {
+            try {
+                val response = apiService.getStationById(stationId)
+
+                if (response.isSuccessful) {
+                    val station = response.body()
+                    if (station != null) {
+                        setSelectedStation(station)
+                    } else {
+                        // Fallback if station details aren't available
+                        showToast("Station selected: ${stationName ?: "Unknown"}")
+                        selectedStationText.text = stationName ?: "Selected Station"
+                        // Create a simple station object for now
+                        selectedStation =
+                                ChargingStation(
+                                        id = stationId,
+                                        name = stationName ?: "Selected Station",
+                                        location = Location(),
+                                        description = "",
+                                        chargingRate = 25.0 // Default rate
+                                )
+                        updateCostEstimate()
+                        validateForm()
+                    }
+                } else {
+                    showToast("Failed to load station details")
+                    selectedStationText.text = stationName ?: "Selected Station"
+                }
+            } catch (e: Exception) {
+                showToast("Error loading station: ${e.message}")
+                selectedStationText.text = stationName ?: "Selected Station"
             }
         }
     }

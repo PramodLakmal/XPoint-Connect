@@ -26,30 +26,33 @@ import com.google.gson.annotations.SerializedName
 data class ChargingStation(
         @SerializedName("id") val id: String = "",
         @SerializedName("name") val name: String = "",
-        @SerializedName("description") val description: String = "",
         @SerializedName("location") val location: Location = Location(),
-        @SerializedName("chargingType")
-        val chargingType: ChargingStationType = ChargingStationType.AC,
-        @SerializedName("connectorTypes") val connectorTypes: List<String> = emptyList(),
-        @SerializedName("maxPowerKW") val maxPowerKW: Double = 0.0,
-        @SerializedName("costPerKWh") val costPerKWh: Double = 0.0,
-        @SerializedName("operatingHours") val operatingHours: OperatingHours = OperatingHours(),
-        @SerializedName("availableTimeSlots") val availableTimeSlots: List<TimeSlot> = emptyList(),
-        @SerializedName("amenities") val amenities: List<String> = emptyList(),
-        @SerializedName("operatorId") val operatorId: String = "",
-        @SerializedName("operatorName") val operatorName: String = "",
+        @SerializedName("type") val type: Int = 0,
+        @SerializedName("totalSlots") val totalSlots: Int = 0,
+        @SerializedName("availableSlots") val availableSlots: Int = 0,
+        @SerializedName("schedule") val schedule: List<TimeSlot> = emptyList(),
         @SerializedName("isActive") val isActive: Boolean = true,
-        @SerializedName("createdDate") val createdDate: String = "",
-        @SerializedName("imageUrl") val imageUrl: String? = null,
-        @SerializedName("rating") val rating: Double = 0.0,
-        @SerializedName("totalReviews") val totalReviews: Int = 0
-)
+        @SerializedName("operatorId") val operatorId: String = "",
+        @SerializedName("createdAt") val createdAt: String = "",
+        @SerializedName("updatedAt") val updatedAt: String = "",
+        @SerializedName("chargingRate") val chargingRate: Double = 0.0,
+        @SerializedName("description") val description: String = "",
+        @SerializedName("amenities") val amenities: List<String> = emptyList(),
+        @SerializedName("distance") val distance: Double = 0.0
+) {
+        // Helper properties for backward compatibility
+        val costPerKWh: Double
+                get() = chargingRate
+        val maxPowerKW: Double
+                get() = 50.0 // Default value for UI
+}
 
 data class Location(
+        @SerializedName("latitude") val latitude: Double = 0.0,
+        @SerializedName("longitude") val longitude: Double = 0.0,
         @SerializedName("address") val address: String = "",
         @SerializedName("city") val city: String = "",
-        @SerializedName("latitude") val latitude: Double = 0.0,
-        @SerializedName("longitude") val longitude: Double = 0.0
+        @SerializedName("province") val province: String = ""
 )
 
 data class OperatingHours(
@@ -61,8 +64,7 @@ data class OperatingHours(
 data class TimeSlot(
         @SerializedName("startTime") val startTime: String = "",
         @SerializedName("endTime") val endTime: String = "",
-        @SerializedName("isAvailable") val isAvailable: Boolean = true,
-        @SerializedName("date") val date: String = ""
+        @SerializedName("availableSlots") val availableSlots: Int = 0
 )
 
 enum class ChargingStationType {
