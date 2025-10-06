@@ -10,6 +10,7 @@ namespace XPoint_Connect_API.Services
         Task<BookingResponseDto?> GetBookingByIdAsync(string id);
         Task<List<BookingResponseDto>> GetBookingsByEVOwnerAsync(string evOwnerNIC);
         Task<List<BookingResponseDto>> GetBookingsByStationAsync(string stationId);
+        Task<List<BookingResponseDto>> GetBookingsByOperatorAsync(string operatorId);
         Task<List<BookingResponseDto>> GetAllBookingsAsync();
         Task<BookingResponseDto?> UpdateBookingAsync(string id, UpdateBookingDto updateBookingDto);
         Task<bool> CancelBookingAsync(string id, string cancellationReason);
@@ -22,6 +23,7 @@ namespace XPoint_Connect_API.Services
         Task<List<BookingResponseDto>> GetUpcomingBookingsAsync(string evOwnerNIC);
         Task<List<BookingResponseDto>> GetBookingHistoryAsync(string evOwnerNIC);
         Task<bool> CanModifyBookingAsync(string id);
+        Task<ChargingStationResponseDto?> GetStationAsync(string stationId);
     }
 
     public class BookingService : IBookingService
@@ -105,6 +107,28 @@ namespace XPoint_Connect_API.Services
         {
             var bookings = await _context.Bookings
                 .Find(b => b.ChargingStationId == stationId)
+                .SortByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
+            var result = new List<BookingResponseDto>();
+            foreach (var booking in bookings)
+            {
+                var dto = await MapToResponseDto(booking);
+                if (dto != null) result.Add(dto);
+            }
+
+            return result;
+        }
+
+        public async Task<List<BookingResponseDto>> GetBookingsByOperatorAsync(string operatorId)
+        {
+            // Get all stations assigned to this operator
+            var operatorStations = await _chargingStationService.GetStationsByOperatorAsync(operatorId);
+            var stationIds = operatorStations.Select(s => s.Id).ToList();
+
+            // Get bookings for all operator's stations
+            var bookings = await _context.Bookings
+                .Find(b => stationIds.Contains(b.ChargingStationId))
                 .SortByDescending(b => b.CreatedAt)
                 .ToListAsync();
 
