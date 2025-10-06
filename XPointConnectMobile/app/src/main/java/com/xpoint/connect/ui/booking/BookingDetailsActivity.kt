@@ -368,12 +368,11 @@ class BookingDetailsActivity : AppCompatActivity() {
                     View.GONE
                 }
 
-        // Update modify button - can modify pending and approved bookings
-        val canModify =
-                booking.bookingStatus == BookingStatus.Pending ||
-                        booking.bookingStatus == BookingStatus.Approved
+        // Update modify button - can only edit pending bookings
+        val canModify = booking.bookingStatus == BookingStatus.Pending
         modifyBookingButton.isEnabled = canModify
         modifyBookingButton.alpha = if (canModify) 1.0f else 0.5f
+        modifyBookingButton.text = if (canModify) "Edit Booking" else "Cannot Edit"
 
         // Update cancel button
         // Check if booking can be cancelled (only pending and approved bookings)
@@ -435,12 +434,15 @@ class BookingDetailsActivity : AppCompatActivity() {
     }
 
     private fun modifyBooking() {
-        currentBooking?.let { _ ->
-            // TODO: Create ModifyBookingActivity
-            showToast("Modify booking feature coming soon")
-            // val intent = Intent(this, ModifyBookingActivity::class.java)
-            // intent.putExtra("booking_id", currentBooking?.id)
-            // startActivity(intent)
+        currentBooking?.let { booking ->
+            // Only allow editing of pending bookings
+            if (booking.bookingStatus == BookingStatus.Pending) {
+                val intent = Intent(this, EditBookingActivity::class.java)
+                intent.putExtra("booking_id", booking.id)
+                startActivity(intent)
+            } else {
+                showToast("Only pending bookings can be edited")
+            }
         }
     }
 
