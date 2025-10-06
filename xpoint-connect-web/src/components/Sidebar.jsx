@@ -103,7 +103,7 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {!collapsed && (
+      {/* {!collapsed && (
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-secondary-200 bg-white">
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
@@ -123,7 +123,7 @@ const Sidebar = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   )
 }
