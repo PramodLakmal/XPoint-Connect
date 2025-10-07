@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { Plus, Edit, Trash2, Search, Power, PowerOff, MapPin, Clock, Battery } from 'lucide-react';
-import { formatDate } from '../utils/helpers';
+import { Plus, Edit, Trash2, Search, PowerOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix leaflet marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 const ChargingStationManagement = () => {
   const { hasAccess, isBackOffice } = useAuth();
@@ -30,70 +43,73 @@ const ChargingStationManagement = () => {
     }
   };
 
-  const handleCreateStation = async (formData) => {
-    try {
-      const stationData = {
-        ...formData,
-        location: {
-          latitude: parseFloat(formData.latitude),
-          longitude: parseFloat(formData.longitude),
-          address: formData.address,
-          city: formData.city,
-          province: formData.province,
-        },
-        totalSlots: parseInt(formData.totalSlots),
-        chargingRate: parseFloat(formData.chargingRate),
-        amenities: formData.amenities.filter((a) => a.trim() !== ''),
-      };
+const handleCreateStation = async (formData) => {
+  try {
+    const stationData = {
+      name: formData.name,
+      location: {
+        latitude: parseFloat(formData.latitude),
+        longitude: parseFloat(formData.longitude),
+        address: formData.address,
+        city: formData.city,
+        province: formData.province,
+      },
+      type: formData.type === 'AC' ? 0 : 1, // Convert to enum value
+      totalSlots: parseInt(formData.totalSlots),
+      chargingRate: parseFloat(formData.chargingRate),
+      amenities: formData.amenities.filter((a) => a.trim() !== ''),
+      description: formData.description || '',
+      schedule: [], // Send empty array if not used
+      operatorId: '', // Send empty string if not used
+    };
 
-      delete stationData.latitude;
-      delete stationData.longitude;
-      delete stationData.address;
-      delete stationData.city;
-      delete stationData.province;
+    console.log('Payload:', stationData); // Debug payload
 
-      await api.post('/chargingstations', stationData);
-      toast.success('Charging station created successfully');
-      setShowCreateModal(false);
-      fetchStations();
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create charging station';
-      toast.error(message);
-    }
-  };
+    await api.post('/chargingstations', stationData);
+    toast.success('Charging station created successfully');
+    setShowCreateModal(false);
+    fetchStations();
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to create charging station';
+    toast.error(message);
+  }
+};
 
   const handleUpdateStation = async (formData) => {
-    try {
-      const stationData = {
-        ...formData,
-        location: {
-          latitude: parseFloat(formData.latitude),
-          longitude: parseFloat(formData.longitude),
-          address: formData.address,
-          city: formData.city,
-          province: formData.province,
-        },
-        totalSlots: parseInt(formData.totalSlots),
-        chargingRate: parseFloat(formData.chargingRate),
-        amenities: formData.amenities.filter((a) => a.trim() !== ''),
-      };
+  try {
+    const stationData = {
+      ...formData,
+      location: {
+        latitude: parseFloat(formData.latitude),
+        longitude: parseFloat(formData.longitude),
+        address: formData.address,
+        city: formData.city,
+        province: formData.province,
+      },
+      totalSlots: parseInt(formData.totalSlots),
+      chargingRate: parseFloat(formData.chargingRate),
+      amenities: formData.amenities.filter((a) => a.trim() !== ''),
+      type: typeof formData.type === 'string'
+        ? (formData.type === 'AC' ? 0 : 1)
+        : formData.type, // <-- Always send as number
+    };
 
-      delete stationData.latitude;
-      delete stationData.longitude;
-      delete stationData.address;
-      delete stationData.city;
-      delete stationData.province;
+    delete stationData.latitude;
+    delete stationData.longitude;
+    delete stationData.address;
+    delete stationData.city;
+    delete stationData.province;
 
-      await api.put(`/chargingstations/${selectedStation.id}`, stationData);
-      toast.success('Charging station updated successfully');
-      setShowEditModal(false);
-      setSelectedStation(null);
-      fetchStations();
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update charging station';
-      toast.error(message);
-    }
-  };
+    await api.put(`/chargingstations/${selectedStation.id}`, stationData);
+    toast.success('Charging station updated successfully');
+    setShowEditModal(false);
+    setSelectedStation(null);
+    fetchStations();
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to update charging station';
+    toast.error(message);
+  }
+};
 
   const handleDeactivateStation = async (stationId) => {
     if (window.confirm('Are you sure you want to deactivate this charging station?')) {
@@ -139,6 +155,16 @@ const ChargingStationManagement = () => {
       station.type.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // Map location picker
+  const LocationPicker = ({ latitude, longitude, setLocation }) => {
+    useMapEvents({
+      click(e) {
+        setLocation(e.latlng);
+      },
+    });
+    return latitude && longitude ? <Marker position={[latitude, longitude]} /> : null;
+  };
+
   const StationModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, station = null }) => {
     const [formData, setFormData] = useState({
       name: '',
@@ -154,7 +180,6 @@ const ChargingStationManagement = () => {
       amenities: [],
     });
 
-    // Initialize form state when modal opens or station changes
     useEffect(() => {
       if (isEdit && station) {
         setFormData({
@@ -212,6 +237,15 @@ const ChargingStationManagement = () => {
       setFormData((prev) => ({
         ...prev,
         amenities: prev.amenities.filter((_, i) => i !== index),
+      }));
+    };
+
+    // Map location setter
+    const setLocation = ({ lat, lng }) => {
+      setFormData((prev) => ({
+        ...prev,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
       }));
     };
 
@@ -330,9 +364,28 @@ const ChargingStationManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Latitude</label>
+            {/* Map location picker */}
+            <div>
+              <label className="label text-secondary-700 mb-2 block">Select Location on Map</label>
+              <MapContainer
+                center={[
+                  formData.latitude ? parseFloat(formData.latitude) : 7.8731,
+                  formData.longitude ? parseFloat(formData.longitude) : 80.7718,
+                ]}
+                zoom={8}
+                style={{ height: '300px', width: '100%' }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <LocationPicker
+                  latitude={formData.latitude ? parseFloat(formData.latitude) : null}
+                  longitude={formData.longitude ? parseFloat(formData.longitude) : null}
+                  setLocation={setLocation}
+                />
+              </MapContainer>
+              <div className="mt-2 text-sm text-secondary-700">
+                Click on the map to set latitude and longitude.
+              </div>
+              <div className="flex space-x-2 mt-2">
                 <input
                   type="number"
                   name="latitude"
@@ -341,11 +394,8 @@ const ChargingStationManagement = () => {
                   value={formData.latitude}
                   onChange={handleInputChange}
                   required
+                  placeholder="Latitude"
                 />
-              </div>
-
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Longitude</label>
                 <input
                   type="number"
                   name="longitude"
@@ -354,6 +404,7 @@ const ChargingStationManagement = () => {
                   value={formData.longitude}
                   onChange={handleInputChange}
                   required
+                  placeholder="Longitude"
                 />
               </div>
             </div>
@@ -438,7 +489,6 @@ const ChargingStationManagement = () => {
           <h1 className="text-2xl font-bold text-secondary-900">Charging Station Management</h1>
           <p className="text-secondary-600 mt-1">Manage charging stations and their availability</p>
         </div>
-        {hasAccess('BackOffice') && (
           <button
             onClick={openCreateModal}
             className="btn btn-primary btn-md flex items-center space-x-2"
@@ -446,7 +496,7 @@ const ChargingStationManagement = () => {
             <Plus className="w-4 h-4" />
             <span>Add Station</span>
           </button>
-        )}
+        
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
