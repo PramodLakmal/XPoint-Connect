@@ -73,6 +73,17 @@
             android:theme="@style/Theme.XPointConnectMobile"
             android:parentActivityName="com.xpoint.connect.ui.main.MainActivity" />
 
+        <!-- Map Activity -->
+        <activity
+            android:name="com.xpoint.connect.ui.map.NearbyStationsActivity"
+            android:theme="@style/Theme.XPointConnectMobile"
+            android:parentActivityName="com.xpoint.connect.ui.main.MainActivity" />
+
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA7n7MQw6VYWePzKAQVC13wQQhHW2EeTgY" />
+
     </application>
 
 </manifest>

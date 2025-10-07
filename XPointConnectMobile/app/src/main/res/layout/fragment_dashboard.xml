@@ -353,7 +353,7 @@
 
         </LinearLayout>
 
-        <!-- Second Row - Create Booking -->
+        <!-- Second Row - Create Booking & Nearby Stations -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -363,8 +363,10 @@
             <!-- Create Booking -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardCreateBooking"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="@color/success"
@@ -375,24 +377,66 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:gravity="center"
                     android:padding="16dp">
 
                     <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_add"
                         app:tint="@color/white"
-                        android:layout_marginEnd="16dp" />
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Create New Booking"
-                        android:textSize="18sp"
+                        android:text="Create Booking"
+                        android:textSize="14sp"
                         android:textStyle="bold"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/white"
+                        android:textAlignment="center" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Nearby Stations -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNearbyStations"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/primary"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_location"
+                        app:tint="@color/white"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nearby Stations"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:textAlignment="center" />
 
                 </LinearLayout>
 
