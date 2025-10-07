@@ -56,6 +56,11 @@
         <activity
             android:name="com.xpoint.connect.ui.booking.BookingDetailsActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+            
+        <activity
+            android:name="com.xpoint.connect.ui.booking.EditBookingActivity"
+            android:theme="@style/Theme.XPointConnectMobile"
+            android:parentActivityName="com.xpoint.connect.ui.booking.BookingDetailsActivity" />
 
         <!-- Profile Management Activities -->
         <activity

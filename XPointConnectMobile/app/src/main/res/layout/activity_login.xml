@@ -21,13 +21,14 @@
             android:layout_marginTop="48dp"
             android:layout_marginBottom="48dp">
 
-            <!-- Logo -->
+            <!-- XPoint Logo -->
             <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@mipmap/ic_launcher"
-                android:layout_marginBottom="16dp"
-                android:contentDescription="@string/app_name" />
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@mipmap/xpoint_logo"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="@string/app_name"
+                android:scaleType="centerInside" />
 
             <!-- Welcome Text -->
             <TextView

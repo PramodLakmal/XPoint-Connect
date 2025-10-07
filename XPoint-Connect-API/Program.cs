@@ -37,6 +37,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEVOwnerService, EVOwnerService>();
 builder.Services.AddScoped<IChargingStationService, ChargingStationService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IOperatorAssignmentService, OperatorAssignmentService>();
 builder.Services.AddScoped<IDataSeedService, DataSeedService>();
 
 // Add JWT Authentication
@@ -83,14 +84,63 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo 
     { 
         Title = "XPoint Connect API", 
-        Version = "v1",
-        Description = "EV Charging Station Booking System API"
+        Version = "v1.0.0",
+        Description = @"
+# XPoint Connect API - EV Charging Station Booking System
+
+A comprehensive RESTful API for managing electric vehicle charging stations, user accounts, and booking reservations.
+
+## Features
+- **User Management**: BackOffice and Station Operator accounts with role-based access
+- **EV Owner Management**: Profile management with Sri Lankan NIC validation
+- **Charging Station Management**: AC/DC stations with location and slot management
+- **Booking Management**: Reservation system with business rule enforcement
+- **Operator Assignment**: Station-operator assignment system for secure access control
+- **QR Code Integration**: Booking identification and check-in/check-out
+- **Real-time Analytics**: Dashboard statistics and monitoring
+
+## Authentication
+All endpoints (except registration) require JWT Bearer authentication. Use the 'Authorize' button above to authenticate.
+
+## Roles
+- **BackOffice**: Full system access including user management and operator assignments
+- **StationOperator**: Limited access to assigned stations and related bookings
+- **EVOwner**: Access to own profile and bookings (mobile app users)
+
+## Business Rules
+- Reservations must be within 7 days from booking date
+- Bookings can only be modified/cancelled at least 12 hours before reservation
+- Stations cannot be deactivated if they have active bookings
+- Operators can only access stations assigned to them
+
+## Support
+API Documentation: https://github.com/PramodLakmal/XPoint-Connect
+",
+        Contact = new OpenApiContact
+        {
+            Name = "XPoint Connect Development Team",
+            Email = "support@xpointconnect.com"
+        }
     });
+
+    // Include XML comments for better documentation
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 
     // Configure JWT Authentication for Swagger with automatic "Bearer " prefix
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header. Enter your token below (Bearer prefix will be added automatically):",
+        Description = @"
+JWT Authorization header using the Bearer scheme. 
+
+Enter your token in the text input below.
+Example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+The 'Bearer ' prefix will be added automatically.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -111,6 +161,47 @@ builder.Services.AddSwaggerGen(c =>
             },
             Array.Empty<string>()
         }
+    });
+
+    // Group endpoints by tags for better organization
+    c.TagActionsBy(api => 
+    {
+        var controllerName = api.ActionDescriptor.RouteValues["controller"];
+        return new[] { controllerName switch
+        {
+            "Auth" => "?? Authentication",
+            "Users" => "?? User Management",
+            "EVOwners" => "?? EV Owner Management", 
+            "ChargingStations" => "? Charging Station Management",
+            "Bookings" => "?? Booking Management",
+            "OperatorAssignments" => "?? Operator Assignment Management",
+            "Dev" => "??? Development Tools",
+            _ => controllerName ?? "Other"
+        }};
+    });
+
+    // Enable annotations for better endpoint descriptions
+    c.EnableAnnotations();
+
+    // Configure operation ordering
+    c.OrderActionsBy(apiDesc => 
+    {
+        var routeValues = apiDesc.ActionDescriptor.RouteValues;
+        var controllerName = routeValues.TryGetValue("controller", out var controller) ? controller : "Unknown";
+        var actionName = routeValues.TryGetValue("action", out var action) ? action : "Unknown";
+        
+        var order = controllerName switch
+        {
+            "Auth" => "1",
+            "Users" => "2", 
+            "EVOwners" => "3",
+            "ChargingStations" => "4",
+            "Bookings" => "5",
+            "OperatorAssignments" => "6",
+            "Dev" => "9",
+            _ => "8"
+        };
+        return $"{order}-{actionName}";
     });
 });
 
@@ -167,14 +258,27 @@ app.MapGet("/", () => new {
         "GET /api/chargingstations - Get Charging Stations",
         "POST /api/chargingstations/nearby - Find Nearby Stations",
         "POST /api/bookings - Create Booking",
+        "POST /api/operatorassignments/operators - Create Station Operator",
+        "GET /api/operatorassignments/summary - Assignment Overview",
         "POST /api/seed-data - Initialize Default Data",
         "GET /api/dev/health - Health Check"
+    },
+    features = new[] {
+        "?? JWT Authentication with Role-based Access",
+        "?? User Management (BackOffice/StationOperator)",
+        "?? EV Owner Management with NIC Validation",
+        "? Charging Station Management",
+        "?? Booking System with Business Rules",
+        "?? Operator Assignment Management",
+        "?? QR Code Integration",
+        "?? Real-time Analytics & Statistics",
+        "??? Secure Authorization with Station Assignments"
     }
 });
 
 Console.WriteLine("?? XPoint Connect API Starting...");
-Console.WriteLine($"?? Environment: {app.Environment.EnvironmentName}");
-Console.WriteLine($"?? Server: Kestrel (Development Server)");
+Console.WriteLine($"??? Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"? Server: Kestrel (Development Server)");
 Console.WriteLine("?? Access your API at:");
 Console.WriteLine("   • HTTP:    http://localhost:5034");
 Console.WriteLine("   • Swagger: http://localhost:5034/swagger");

@@ -19,11 +19,29 @@ namespace XPoint_Connect_API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "BackOffice")]
         public async Task<ActionResult<List<BookingResponseDto>>> GetAllBookings()
         {
-            var bookings = await _bookingService.GetAllBookingsAsync();
-            return Ok(bookings);
+            var userType = User.FindFirst("UserType")?.Value;
+            
+            // BackOffice can see all bookings
+            if (User.IsInRole("BackOffice"))
+            {
+                var allBookings = await _bookingService.GetAllBookingsAsync();
+                return Ok(allBookings);
+            }
+            
+            // StationOperator can only see bookings for their assigned stations
+            if (User.IsInRole("StationOperator"))
+            {
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(currentUserId))
+                    return Forbid();
+                    
+                var operatorBookings = await _bookingService.GetBookingsByOperatorAsync(currentUserId);
+                return Ok(operatorBookings);
+            }
+            
+            return Forbid();
         }
 
         [HttpGet("{id}")]
@@ -136,6 +154,20 @@ namespace XPoint_Connect_API.Controllers
         [Authorize(Roles = "BackOffice,StationOperator")]
         public async Task<IActionResult> ApproveBooking(string id)
         {
+            // For station operators, check if they can approve this booking
+            if (User.IsInRole("StationOperator"))
+            {
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var booking = await _bookingService.GetBookingByIdAsync(id);
+                
+                if (booking == null)
+                    return NotFound();
+                    
+                var station = await _bookingService.GetStationAsync(booking.ChargingStationId);
+                if (station?.OperatorId != currentUserId)
+                    return Forbid("You can only approve bookings for stations assigned to you");
+            }
+            
             var success = await _bookingService.ApproveBookingAsync(id);
             
             if (!success)
@@ -151,6 +183,17 @@ namespace XPoint_Connect_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // Check if this operator is assigned to the station for this booking
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var booking = await _bookingService.GetBookingByIdAsync(id);
+            
+            if (booking == null)
+                return NotFound();
+                
+            var station = await _bookingService.GetStationAsync(booking.ChargingStationId);
+            if (station?.OperatorId != currentUserId)
+                return Forbid("You can only check-in bookings for stations assigned to you");
+
             var result = await _bookingService.CheckInBookingAsync(id, checkInDto.OperatorNotes);
             
             if (result == null)
@@ -165,6 +208,17 @@ namespace XPoint_Connect_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            // Check if this operator is assigned to the station for this booking
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var booking = await _bookingService.GetBookingByIdAsync(id);
+            
+            if (booking == null)
+                return NotFound();
+                
+            var station = await _bookingService.GetStationAsync(booking.ChargingStationId);
+            if (station?.OperatorId != currentUserId)
+                return Forbid("You can only check-out bookings for stations assigned to you");
 
             var result = await _bookingService.CheckOutBookingAsync(id, checkOutDto.OperatorNotes);
             
@@ -194,6 +248,20 @@ namespace XPoint_Connect_API.Controllers
         [Authorize(Roles = "BackOffice,StationOperator")]
         public async Task<ActionResult<List<BookingResponseDto>>> GetBookingsByStation(string stationId)
         {
+            // Station operators can only view bookings for their assigned stations
+            if (User.IsInRole("StationOperator"))
+            {
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                
+                // Check if this operator is assigned to this station
+                var station = await _bookingService.GetStationAsync(stationId);
+                if (station == null)
+                    return NotFound("Station not found");
+                    
+                if (station.OperatorId != currentUserId)
+                    return Forbid("You can only view bookings for stations assigned to you");
+            }
+            
             var bookings = await _bookingService.GetBookingsByStationAsync(stationId);
             return Ok(bookings);
         }
@@ -209,6 +277,13 @@ namespace XPoint_Connect_API.Controllers
             
             if (booking == null)
                 return NotFound("Invalid QR Code");
+
+            // Check if this operator is assigned to the station for this booking
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var station = await _bookingService.GetStationAsync(booking.ChargingStationId);
+            
+            if (station?.OperatorId != currentUserId)
+                return Forbid("This QR code is for a station not assigned to you");
 
             return Ok(booking);
         }

@@ -24,6 +24,15 @@ import com.xpoint.connect.data.model.*
 import retrofit2.Response
 import retrofit2.http.*
 
+/**
+ * Retrofit service interface
+ *
+ * Reference: Structure and annotations based on Retrofit official documentation
+ * https://square.github.io/retrofit/
+ *
+ * Also informed by Android Developers guide to REST API integration using Retrofit
+ * https://developer.android.com/training/volley/retrofit
+ */
 interface ApiService {
 
         // Authentication
