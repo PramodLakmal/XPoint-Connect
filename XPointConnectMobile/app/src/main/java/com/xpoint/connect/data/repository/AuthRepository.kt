@@ -25,6 +25,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
+/**
+ * Reference:
+ * Repository design pattern and use of Retrofit with Kotlin coroutines adapted from:
+ * - Android Developers official documentation: https://developer.android.com/topic/architecture
+ * - Retrofit and coroutine usage examples from Square's Retrofit documentation:
+ *   https://square.github.io/retrofit/
+ */
 class AuthRepository {
 
     private val apiService = ApiClient.apiService
