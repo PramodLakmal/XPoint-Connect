@@ -47,7 +47,13 @@ class ReservationManager(
         private const val MIN_BOOKING_DURATION_MINUTES = 30
     }
 
-    /** Creates a new charging station reservation */
+    /**
+     * Creates a new charging station reservation
+     *
+     * Note: Coroutine Flow and Resource handling pattern adapted from
+     * Android official architecture sample on Kotlin Coroutines and Flow:
+     * https://developer.android.com/kotlin/flow
+     */
     suspend fun createReservation(
             evOwnerNIC: String,
             chargingStationId: String,
@@ -111,7 +117,13 @@ class ReservationManager(
         }
     }
 
-    /** Modifies an existing reservation */
+    /** 
+     * Modifies an existing reservation 
+     *
+     * Reference: Update booking logic adapted from Android clean architecture sample
+     * to demonstrate repository-based state updates using Kotlin Flow.
+     * https://developer.android.com/topic/architecture
+     */
     suspend fun modifyReservation(
             bookingId: String,
             newReservationDateTime: String? = null,
@@ -182,7 +194,12 @@ class ReservationManager(
         }
     }
 
-    /** Cancels a booking with reason */
+    /**
+     * Cancels a booking with reason
+     *
+     * Reference: Cancellation logic pattern inspired by Android Jetpack sample for
+     * coroutine-based data repository operations.
+     */
     suspend fun cancelReservation(
             bookingId: String,
             cancellationReason: String
@@ -228,7 +245,12 @@ class ReservationManager(
         }
     }
 
-    /** Generates QR code for approved booking */
+    /**
+     * Generates QR code for approved booking
+     *
+     * Code reference: QR code generation logic adapted from Android QR code tutorial
+     * Source: https://www.geeksforgeeks.org/how-to-generate-qr-code-in-android/
+     */
     suspend fun generateBookingQRCode(booking: Booking): Flow<Resource<String>> = flow {
         emit(Resource.Loading())
 

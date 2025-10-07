@@ -24,6 +24,17 @@ import com.xpoint.connect.data.database.entity.UserEntity
 import com.xpoint.connect.data.model.EVOwner
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Reference:
+ * General implementation approach adapted from Android Room documentation and
+ * Kotlin coroutines best practices for data persistence:
+ * https://developer.android.com/training/data-storage/room
+ * https://developer.android.com/kotlin/flow
+ *
+ * The structural idea of replacing SharedPreferences with Room for token storage
+ * follows guidance from official Android Developers documentation on Room and
+ * offline data persistence.
+ */
 class UserPreferencesManager(context: Context) {
 
     private val database = XPointDatabase.getDatabase(context)

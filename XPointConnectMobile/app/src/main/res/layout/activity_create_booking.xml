@@ -30,16 +30,35 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-        <!-- Header -->
-        <TextView
+        <!-- Branded Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Create New Booking"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:gravity="center"
-            android:layout_marginBottom="24dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <!-- XPoint Logo -->
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@mipmap/xpoint_logo"
+                android:contentDescription="@string/app_name"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="12dp" />
+
+            <!-- Header Text -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Create New Booking"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:gravity="center" />
+
+        </LinearLayout>
 
         <!-- Station Selection Card -->
         <com.google.android.material.card.MaterialCardView

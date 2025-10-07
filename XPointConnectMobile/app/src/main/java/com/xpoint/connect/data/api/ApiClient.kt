@@ -44,6 +44,15 @@ object ApiClient {
         userPreferencesManager = prefsManager
     }
 
+    /**
+     * Auth interceptor for adding JWT token to all requests
+     *
+     * Reference: Pattern adapted from OkHttp interceptor example in the official documentation:
+     * https://square.github.io/okhttp/interceptors/
+     *
+     * Token retrieval pattern using `runBlocking` adapted from
+     * Kotlin coroutines best practices (https://developer.android.com/kotlin/coroutines)
+     */
     private val authInterceptor = Interceptor { chain ->
         val token = runBlocking { userPreferencesManager?.getAuthToken() }
         val request =
@@ -55,9 +64,21 @@ object ApiClient {
         chain.proceed(request)
     }
 
+    /**
+     * Logging interceptor configuration
+     *
+     * Reference: Standard implementation adapted from Android Retrofit logging tutorial:
+     * https://square.github.io/okhttp/features/interceptors/
+     */
     private val loggingInterceptor =
             HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
 
+    /**
+     * OkHttpClient configuration
+     *
+     * Reference: Client setup pattern adapted from official Retrofit + OkHttp integration sample:
+     * https://square.github.io/retrofit/
+     */
     private val okHttpClient =
             OkHttpClient.Builder()
                     .addInterceptor(authInterceptor)
@@ -67,6 +88,12 @@ object ApiClient {
                     .writeTimeout(30, TimeUnit.SECONDS)
                     .build()
 
+    /**
+     * Gson and Retrofit initialization
+     *
+     * Reference: Standard configuration for Retrofit JSON serialization adapted from
+     * Retrofit documentation: https://square.github.io/retrofit/
+     */
     private val gson = GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create()
 
     val retrofit: Retrofit =

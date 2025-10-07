@@ -24,6 +24,14 @@ package com.xpoint.connect.data.model
 import com.google.gson.annotations.SerializedName
 import java.util.Date
 
+/**
+ * Reference:
+ * Data class and JSON field mapping structure based on Gson serialization documentation:
+ * https://github.com/google/gson
+ *
+ * Kotlin data class conventions based on JetBrains Kotlin language reference:
+ * https://kotlinlang.org/docs/data-classes.html
+ */
 data class Booking(
         @SerializedName("id") val id: String = "",
         @SerializedName("evOwnerNIC") val evOwnerNIC: String = "",
@@ -52,6 +60,13 @@ data class Booking(
                 get() = BookingStatus.fromInt(status)
 }
 
+/**
+ * Enum representation of booking lifecycle states.
+ *
+ * Reference:
+ * Kotlin enum implementation style based on JetBrains official documentation:
+ * https://kotlinlang.org/docs/enum-classes.html
+ */
 enum class BookingStatus(val value: Int) {
         Pending(0),
         Approved(1),

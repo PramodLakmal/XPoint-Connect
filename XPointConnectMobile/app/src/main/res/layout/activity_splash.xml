@@ -20,7 +20,7 @@
             android:id="@+id/ivLogo"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:src="@mipmap/ic_launcher"
+            android:src="@mipmap/xpoint_logo"
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/app_name" />
 
