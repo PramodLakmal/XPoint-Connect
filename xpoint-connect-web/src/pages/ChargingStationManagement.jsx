@@ -43,73 +43,91 @@ const ChargingStationManagement = () => {
     }
   };
 
-const handleCreateStation = async (formData) => {
-  try {
-    const stationData = {
-      name: formData.name,
-      location: {
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        address: formData.address,
-        city: formData.city,
-        province: formData.province,
-      },
-      type: formData.type === 'AC' ? 0 : 1, // Convert to enum value
-      totalSlots: parseInt(formData.totalSlots),
-      chargingRate: parseFloat(formData.chargingRate),
-      amenities: formData.amenities.filter((a) => a.trim() !== ''),
-      description: formData.description || '',
-      schedule: [], // Send empty array if not used
-      operatorId: '', // Send empty string if not used
-    };
+  const handleCreateStation = async (formData) => {
+    try {
+      // 1. Create operator
+      const operatorPayload = {
+        Username: formData.operatorUsername,
+        Email: formData.operatorEmail,
+        Password: formData.operatorPassword,
+        Role: 1, // Operator role
+      };
+      const operatorRes = await api.post('/users', operatorPayload);
+      const operatorId = operatorRes.data.id || operatorRes.data._id;
 
-    console.log('Payload:', stationData); // Debug payload
+      // 2. Create charging station with operatorId
+      const stationData = {
+        name: formData.name,
+        location: {
+          latitude: parseFloat(formData.latitude),
+          longitude: parseFloat(formData.longitude),
+          address: formData.address,
+          city: formData.city,
+          province: formData.province,
+        },
+        type: formData.type === 'AC' ? 0 : 1,
+        totalSlots: parseInt(formData.totalSlots),
+        chargingRate: parseFloat(formData.chargingRate),
+        amenities: formData.amenities.filter((a) => a.trim() !== ''),
+        description: formData.description || '',
+        schedule: [],
+        operatorId,
+      };
 
-    await api.post('/chargingstations', stationData);
-    toast.success('Charging station created successfully');
-    setShowCreateModal(false);
-    fetchStations();
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to create charging station';
-    toast.error(message);
-  }
-};
+      await api.post('/chargingstations', stationData);
+      toast.success('Charging station and operator created successfully');
+      setShowCreateModal(false);
+      fetchStations();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to create charging station or operator';
+      toast.error(message);
+    }
+  };
 
   const handleUpdateStation = async (formData) => {
-  try {
-    const stationData = {
-      ...formData,
-      location: {
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        address: formData.address,
-        city: formData.city,
-        province: formData.province,
-      },
-      totalSlots: parseInt(formData.totalSlots),
-      chargingRate: parseFloat(formData.chargingRate),
-      amenities: formData.amenities.filter((a) => a.trim() !== ''),
-      type: typeof formData.type === 'string'
-        ? (formData.type === 'AC' ? 0 : 1)
-        : formData.type, // <-- Always send as number
-    };
+    try {
+      // Update operator if operatorId exists and fields are changed
+      if (formData.operatorId && (formData.operatorUsername || formData.operatorEmail || formData.operatorPassword)) {
+        const updateOperatorPayload = {
+          Username: formData.operatorUsername,
+          Email: formData.operatorEmail,
+        };
+        if (formData.operatorPassword) {
+          updateOperatorPayload.Password = formData.operatorPassword;
+        }
+        await api.put(`/users/${formData.operatorId}`, updateOperatorPayload);
+      }
 
-    delete stationData.latitude;
-    delete stationData.longitude;
-    delete stationData.address;
-    delete stationData.city;
-    delete stationData.province;
+      // Prepare station update payload
+      const stationData = {
+        name: formData.name,
+        location: {
+          latitude: parseFloat(formData.latitude),
+          longitude: parseFloat(formData.longitude),
+          address: formData.address,
+          city: formData.city,
+          province: formData.province,
+        },
+        type: typeof formData.type === 'string'
+          ? (formData.type === 'AC' ? 0 : 1)
+          : formData.type,
+        totalSlots: parseInt(formData.totalSlots),
+        chargingRate: parseFloat(formData.chargingRate),
+        amenities: formData.amenities.filter((a) => a.trim() !== ''),
+        description: formData.description || '',
+        operatorId: formData.operatorId || '',
+      };
 
-    await api.put(`/chargingstations/${selectedStation.id}`, stationData);
-    toast.success('Charging station updated successfully');
-    setShowEditModal(false);
-    setSelectedStation(null);
-    fetchStations();
-  } catch (error) {
-    const message = error.response?.data?.message || 'Failed to update charging station';
-    toast.error(message);
-  }
-};
+      await api.put(`/chargingstations/${selectedStation.id}`, stationData);
+      toast.success('Charging station updated successfully');
+      setShowEditModal(false);
+      setSelectedStation(null);
+      fetchStations();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update charging station or operator';
+      toast.error(message);
+    }
+  };
 
   const handleDeactivateStation = async (stationId) => {
     if (window.confirm('Are you sure you want to deactivate this charging station?')) {
@@ -178,10 +196,14 @@ const handleCreateStation = async (formData) => {
       chargingRate: 0,
       description: '',
       amenities: [],
+      operatorUsername: '',
+      operatorEmail: '',
+      operatorPassword: '',
     });
 
     useEffect(() => {
       if (isEdit && station) {
+        // Set initial form data
         setFormData({
           name: station.name || '',
           address: station.location?.address || '',
@@ -189,12 +211,29 @@ const handleCreateStation = async (formData) => {
           province: station.location?.province || '',
           latitude: station.location?.latitude?.toString() || '',
           longitude: station.location?.longitude?.toString() || '',
-          type: station.type || 'AC',
+          type: typeof station.type === 'number' ? (station.type === 0 ? 'AC' : 'DC') : station.type,
           totalSlots: station.totalSlots || 1,
           chargingRate: station.chargingRate || 0,
           description: station.description || '',
           amenities: station.amenities || [],
+          operatorUsername: '',
+          operatorEmail: '',
+          operatorPassword: '',
+          operatorId: station.operatorId || '',
         });
+
+        console.log('Station data for edit:', station);
+        // Fetch operator details if operatorId exists
+        if (station.operatorId) {
+          api.get(`/users/${station.operatorId}`).then(res => {
+            console.log('Fetched operator data:', res.data);
+            setFormData(prev => ({
+              ...prev,
+              operatorUsername: res.data.username || '',
+              operatorEmail: res.data.email || '',
+            }));
+          });
+        }
       } else {
         setFormData({
           name: '',
@@ -208,6 +247,10 @@ const handleCreateStation = async (formData) => {
           chargingRate: 0,
           description: '',
           amenities: [],
+          operatorUsername: '',
+          operatorEmail: '',
+          operatorPassword: '',
+          operatorId: '',
         });
       }
     }, [isOpen, isEdit, station]);
@@ -453,6 +496,44 @@ const handleCreateStation = async (formData) => {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Username</label>
+                <input
+                  type="text"
+                  name="operatorUsername"
+                  className="input"
+                  value={formData.operatorUsername}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Email</label>
+                <input
+                  type="email"
+                  name="operatorEmail"
+                  className="input"
+                  value={formData.operatorEmail}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Password</label>
+                <input
+                  type="password"
+                  name="operatorPassword"
+                  className="input"
+                  value={formData.operatorPassword}
+                  onChange={handleInputChange}
+                  required={!isEdit} // Conditionally apply required attribute
+                  placeholder={isEdit ? 'Leave blank to keep current password' : ''}
+                  minLength={6}
+                />
+              </div>
+            </div>
+
             <div className="flex space-x-3 pt-4">
               <button
                 type="button"
@@ -489,14 +570,14 @@ const handleCreateStation = async (formData) => {
           <h1 className="text-2xl font-bold text-secondary-900">Charging Station Management</h1>
           <p className="text-secondary-600 mt-1">Manage charging stations and their availability</p>
         </div>
-          <button
-            onClick={openCreateModal}
-            className="btn btn-primary btn-md flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Station</span>
-          </button>
-        
+        <button
+          onClick={openCreateModal}
+          className="btn btn-primary btn-md flex items-center space-x-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add Station</span>
+        </button>
+
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
