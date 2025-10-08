@@ -28,7 +28,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
     private lateinit var progressBar: View
     private lateinit var recyclerBookings: RecyclerView
     private lateinit var tvEmptyState: TextView
-    private lateinit var btnRefresh: MaterialButton
+    // removed refresh; bookings shown on demand
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,9 +58,9 @@ class OperatorDashboardActivity : AppCompatActivity() {
             "Operator Dashboard"
         }
 
-        // Setup refresh functionality
-        btnRefresh.setOnClickListener {
-            viewModel.refresh(operatorId)
+        // View bookings on demand
+        findViewById<View>(R.id.cardViewBookings).setOnClickListener {
+            viewModel.loadOperatorBookings(operatorId)
         }
 
         // Wire Scan QR card
@@ -80,7 +80,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
         recyclerBookings = findViewById(R.id.recyclerBookings)
         tvEmptyState = findViewById(R.id.tvEmptyState)
-        btnRefresh = findViewById(R.id.btnRefresh)
+        // no refresh button
     }
 
     private fun setupRecyclerView() {
@@ -118,7 +118,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
                 }
                 state.error != null -> {
                     tvEmptyState.visibility = View.VISIBLE
-                    tvEmptyState.text = "❌ ${state.error}\n\nTap refresh to try again."
+                    tvEmptyState.text = "❌ ${state.error}\n\nTap View Bookings to try again."
                 }
                 state.userMessage != null -> {
                     tvEmptyState.visibility = View.VISIBLE
