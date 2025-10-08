@@ -58,7 +58,18 @@
                 android:text="History"
                 android:textSize="12sp"
                 style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_marginStart="2dp" />
+                android:layout_margin="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text=""
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_marginStart="4dp"
+                app:icon="@drawable/ic_refresh"
+                app:iconSize="20dp"
+                app:iconTint="@color/primary" />
 
         </LinearLayout>
 
