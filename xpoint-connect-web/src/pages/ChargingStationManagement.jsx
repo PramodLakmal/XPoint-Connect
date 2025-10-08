@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { Plus, Edit, Trash2, Search, PowerOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, PowerOff, UserPlus, UserMinus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,14 +21,17 @@ L.Icon.Default.mergeOptions({
 const ChargingStationManagement = () => {
   const { hasAccess, isBackOffice } = useAuth();
   const [stations, setStations] = useState([]);
+  const [operators, setOperators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
 
   useEffect(() => {
     fetchStations();
+    fetchOperators();
   }, []);
 
   const fetchStations = async () => {
@@ -43,19 +46,19 @@ const ChargingStationManagement = () => {
     }
   };
 
+  const fetchOperators = async () => {
+    try {
+      const response = await api.get('/users');
+      // Filter only operators (role "StationOperator")
+      const operatorUsers = response.data.filter(user => user.role === "StationOperator");
+      setOperators(operatorUsers);
+    } catch (error) {
+      console.log('Failed to fetch operators:', error);
+    }
+  };
+
   const handleCreateStation = async (formData) => {
     try {
-      // 1. Create operator
-      const operatorPayload = {
-        Username: formData.operatorUsername,
-        Email: formData.operatorEmail,
-        Password: formData.operatorPassword,
-        Role: 1, // Operator role
-      };
-      const operatorRes = await api.post('/users', operatorPayload);
-      const operatorId = operatorRes.data.id || operatorRes.data._id;
-
-      // 2. Create charging station with operatorId
       const stationData = {
         name: formData.name,
         location: {
@@ -71,34 +74,30 @@ const ChargingStationManagement = () => {
         amenities: formData.amenities.filter((a) => a.trim() !== ''),
         description: formData.description || '',
         schedule: [],
-        operatorId,
       };
 
-      await api.post('/chargingstations', stationData);
-      toast.success('Charging station and operator created successfully');
+      const response = await api.post('/chargingstations', stationData);
+      const newStationId = response.data.id;
+
+      // Assign operator if selected
+      if (formData.operatorId) {
+        await api.post('/operatorassignments/assign', {
+          OperatorId: formData.operatorId,
+          StationId: newStationId
+        });
+      }
+
+      toast.success('Charging station created successfully');
       setShowCreateModal(false);
       fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create charging station or operator';
+      const message = error.response?.data?.message || 'Failed to create charging station';
       toast.error(message);
     }
   };
 
   const handleUpdateStation = async (formData) => {
     try {
-      // Update operator if operatorId exists and fields are changed
-      if (formData.operatorId && (formData.operatorUsername || formData.operatorEmail || formData.operatorPassword)) {
-        const updateOperatorPayload = {
-          Username: formData.operatorUsername,
-          Email: formData.operatorEmail,
-        };
-        if (formData.operatorPassword) {
-          updateOperatorPayload.Password = formData.operatorPassword;
-        }
-        await api.put(`/users/${formData.operatorId}`, updateOperatorPayload);
-      }
-
-      // Prepare station update payload
       const stationData = {
         name: formData.name,
         location: {
@@ -115,16 +114,35 @@ const ChargingStationManagement = () => {
         chargingRate: parseFloat(formData.chargingRate),
         amenities: formData.amenities.filter((a) => a.trim() !== ''),
         description: formData.description || '',
-        operatorId: formData.operatorId || '',
       };
 
       await api.put(`/chargingstations/${selectedStation.id}`, stationData);
+
+      // Handle operator assignment changes
+      const currentOperatorId = selectedStation.operatorId;
+      const newOperatorId = formData.operatorId;
+
+      if (currentOperatorId !== newOperatorId) {
+        // Remove current operator if exists
+        if (currentOperatorId) {
+          await api.delete(`/operatorassignments/stations/${selectedStation.id}/operator`);
+        }
+        
+        // Assign new operator if selected
+        if (newOperatorId) {
+          await api.post('/operatorassignments/assign', {
+            OperatorId: newOperatorId,
+            StationId: selectedStation.id
+          });
+        }
+      }
+
       toast.success('Charging station updated successfully');
       setShowEditModal(false);
       setSelectedStation(null);
       fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update charging station or operator';
+      const message = error.response?.data?.message || 'Failed to update charging station';
       toast.error(message);
     }
   };
@@ -155,6 +173,33 @@ const ChargingStationManagement = () => {
     }
   };
 
+  const handleAssignOperator = async (stationId, operatorId) => {
+    try {
+      await api.post('/operatorassignments/assign', {
+        OperatorId: operatorId,
+        StationId: stationId
+      });
+      toast.success('Operator assigned to station successfully');
+      fetchStations();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to assign operator to station';
+      toast.error(message);
+    }
+  };
+
+  const handleUnassignOperator = async (stationId) => {
+    if (window.confirm('Are you sure you want to remove the operator from this station?')) {
+      try {
+        await api.delete(`/operatorassignments/stations/${stationId}/operator`);
+        toast.success('Operator removed from station successfully');
+        fetchStations();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Failed to remove operator from station';
+        toast.error(message);
+      }
+    }
+  };
+
   const openCreateModal = () => {
     setSelectedStation(null);
     setShowCreateModal(true);
@@ -163,6 +208,30 @@ const ChargingStationManagement = () => {
   const openEditModal = (station) => {
     setSelectedStation(station);
     setShowEditModal(true);
+  };
+
+  const openAssignModal = (station) => {
+    setSelectedStation(station);
+    setShowAssignModal(true);
+  };
+
+  const getAssignedOperator = (station) => {
+    if (!station.operatorId) return null;
+    return operators.find(operator => operator.id === station.operatorId);
+  };
+
+  const getUnassignedOperators = (excludeStationId = null) => {
+    // Get all operator IDs that are currently assigned to stations (excluding the current station if editing)
+    const assignedOperatorIds = stations
+      .filter(station => 
+        station.operatorId && 
+        station.operatorId.trim() !== '' && 
+        station.id !== excludeStationId
+      )
+      .map(station => station.operatorId);
+    
+    // Return operators who are not assigned to any station (or assigned to the excluded station)
+    return operators.filter(operator => !assignedOperatorIds.includes(operator.id));
   };
 
   const filteredStations = stations.filter(
@@ -196,9 +265,7 @@ const ChargingStationManagement = () => {
       chargingRate: 0,
       description: '',
       amenities: [],
-      operatorUsername: '',
-      operatorEmail: '',
-      operatorPassword: '',
+      operatorId: '',
     });
 
     useEffect(() => {
@@ -216,24 +283,10 @@ const ChargingStationManagement = () => {
           chargingRate: station.chargingRate || 0,
           description: station.description || '',
           amenities: station.amenities || [],
-          operatorUsername: '',
-          operatorEmail: '',
-          operatorPassword: '',
           operatorId: station.operatorId || '',
         });
 
         console.log('Station data for edit:', station);
-        // Fetch operator details if operatorId exists
-        if (station.operatorId) {
-          api.get(`/users/${station.operatorId}`).then(res => {
-            console.log('Fetched operator data:', res.data);
-            setFormData(prev => ({
-              ...prev,
-              operatorUsername: res.data.username || '',
-              operatorEmail: res.data.email || '',
-            }));
-          });
-        }
       } else {
         setFormData({
           name: '',
@@ -247,9 +300,6 @@ const ChargingStationManagement = () => {
           chargingRate: 0,
           description: '',
           amenities: [],
-          operatorUsername: '',
-          operatorEmail: '',
-          operatorPassword: '',
           operatorId: '',
         });
       }
@@ -496,42 +546,29 @@ const ChargingStationManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Operator Username</label>
-                <input
-                  type="text"
-                  name="operatorUsername"
-                  className="input"
-                  value={formData.operatorUsername}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Operator Email</label>
-                <input
-                  type="email"
-                  name="operatorEmail"
-                  className="input"
-                  value={formData.operatorEmail}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Operator Password</label>
-                <input
-                  type="password"
-                  name="operatorPassword"
-                  className="input"
-                  value={formData.operatorPassword}
-                  onChange={handleInputChange}
-                  required={!isEdit} // Conditionally apply required attribute
-                  placeholder={isEdit ? 'Leave blank to keep current password' : ''}
-                  minLength={6}
-                />
-              </div>
+            <div>
+              <label className="label text-secondary-700 mb-2 block">Assigned Operator</label>
+              <select
+                name="operatorId"
+                className="input"
+                value={formData.operatorId}
+                onChange={handleInputChange}
+              >
+                <option value="">Select an operator (optional)</option>
+                {getUnassignedOperators(isEdit ? station?.id : null).map((operator) => (
+                  <option key={operator.id} value={operator.id}>
+                    {operator.username} ({operator.email})
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-secondary-500 mt-1">
+                You can assign an operator later or create one in the Station Operators page.
+                {getUnassignedOperators(isEdit ? station?.id : null).length === 0 && (
+                  <span className="text-warning-600 block mt-1">
+                    No unassigned operators available. All operators are currently assigned to stations.
+                  </span>
+                )}
+              </p>
             </div>
 
             <div className="flex space-x-3 pt-4">
@@ -547,6 +584,76 @@ const ChargingStationManagement = () => {
                 className="btn btn-primary btn-md flex-1"
               >
                 {isEdit ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  const OperatorAssignModal = ({ isOpen, onClose, station }) => {
+    const [selectedOperatorId, setSelectedOperatorId] = useState('');
+
+    useEffect(() => {
+      if (isOpen && station) {
+        setSelectedOperatorId(station.operatorId || '');
+      }
+    }, [isOpen, station]);
+
+    if (!isOpen || !station) return null;
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (selectedOperatorId) {
+        handleAssignOperator(station.id, selectedOperatorId);
+        onClose();
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+            Assign Operator to {station.name}
+          </h3>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="label text-secondary-700 mb-2 block">Select Operator</label>
+              <select
+                value={selectedOperatorId}
+                onChange={(e) => setSelectedOperatorId(e.target.value)}
+                className="input"
+                required
+              >
+                <option value="">Choose an operator</option>
+                {getUnassignedOperators().map((operator) => (
+                  <option key={operator.id} value={operator.id}>
+                    {operator.username} ({operator.email})
+                  </option>
+                ))}
+              </select>
+              {getUnassignedOperators().length === 0 && (
+                <p className="text-sm text-warning-600 mt-2">
+                  No unassigned operators available. All operators are currently assigned to stations.
+                </p>
+              )}
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn btn-secondary btn-md flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-md flex-1"
+              >
+                Assign Operator
               </button>
             </div>
           </form>
@@ -603,6 +710,7 @@ const ChargingStationManagement = () => {
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Type</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Slots</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Rate (kW)</th>
+                <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Operator</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Status</th>
                 <th className="text-right py-3 px-6 text-sm font-semibold text-secondary-900">Actions</th>
               </tr>
@@ -631,6 +739,19 @@ const ChargingStationManagement = () => {
                   </td>
                   <td className="py-4 px-6 text-secondary-900">{station.chargingRate} kW</td>
                   <td className="py-4 px-6">
+                    {(() => {
+                      const assignedOperator = getAssignedOperator(station);
+                      return assignedOperator ? (
+                        <div className="space-y-1">
+                          <div className="text-sm font-medium text-secondary-900">{assignedOperator.username}</div>
+                          <div className="text-xs text-secondary-600">{assignedOperator.email}</div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-secondary-500">No operator assigned</span>
+                      );
+                    })()}
+                  </td>
+                  <td className="py-4 px-6">
                     <span className={`badge ${station.isActive ? 'badge-success' : 'badge-danger'}`}>
                       {station.isActive ? 'Active' : 'Inactive'}
                     </span>
@@ -644,6 +765,28 @@ const ChargingStationManagement = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
+
+                      {hasAccess('BackOffice') && (
+                        <>
+                          {getAssignedOperator(station) ? (
+                            <button
+                              onClick={() => handleUnassignOperator(station.id)}
+                              className="p-2 text-warning-600 hover:bg-warning-50 rounded-lg transition-colors"
+                              title="Remove operator"
+                            >
+                              <UserMinus className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => openAssignModal(station)}
+                              className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                              title="Assign operator"
+                            >
+                              <UserPlus className="w-4 h-4" />
+                            </button>
+                          )}
+                        </>
+                      )}
 
                       {hasAccess('BackOffice') && station.isActive && (
                         <button
@@ -696,6 +839,15 @@ const ChargingStationManagement = () => {
         onSubmit={handleUpdateStation}
         title="Edit Charging Station"
         isEdit={true}
+        station={selectedStation}
+      />
+
+      <OperatorAssignModal
+        isOpen={showAssignModal}
+        onClose={() => {
+          setShowAssignModal(false);
+          setSelectedStation(null);
+        }}
         station={selectedStation}
       />
     </div>

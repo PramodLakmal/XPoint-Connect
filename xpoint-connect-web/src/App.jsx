@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import UserManagement from './pages/UserManagement'
 import EVOwnerManagement from './pages/EVOwnerManagement'
 import ChargingStationManagement from './pages/ChargingStationManagement'
+import StationOperatorManagement from './pages/StationOperatorManagement'
 import BookingManagement from './pages/BookingManagement'
 import './App.css'
 
@@ -51,6 +52,7 @@ function App() {
               <Route path="/users" element={<UserManagement />} />
               <Route path="/evowners" element={<EVOwnerManagement />} />
               <Route path="/stations" element={<ChargingStationManagement />} />
+              <Route path="/operators" element={<StationOperatorManagement />} />
               <Route path="/bookings" element={<BookingManagement />} />
             </Route>
           </Routes>

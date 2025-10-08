@@ -9,7 +9,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Battery
+  Battery,
+  UserCheck
 } from 'lucide-react'
 
 const Sidebar = () => {
@@ -41,6 +42,12 @@ const Sidebar = () => {
       href: '/stations',
       icon: Battery,
       requiredRole: null
+    },
+    {
+      name: 'Station Operators',
+      href: '/operators',
+      icon: UserCheck,
+      requiredRole: 'BackOffice'
     },
     {
       name: 'Bookings',
