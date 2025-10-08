@@ -20,6 +20,7 @@ import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.ui.booking.BookingDetailsActivity
 import com.xpoint.connect.ui.booking.CreateBookingActivity
 import com.xpoint.connect.ui.main.BookingsAdapter
+import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
 class BookingsFragment : Fragment() {
@@ -48,6 +49,13 @@ class BookingsFragment : Fragment() {
 
         setupViews(view)
         loadBookings()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        println("BookingsFragment: onResume - refreshing booking data")
+        // Refresh the current tab data
+        refreshCurrentTab()
     }
 
     private fun setupViews(view: View) {
@@ -91,6 +99,14 @@ class BookingsFragment : Fragment() {
                 selectTab(btnHistory, listOf(btnPending, btnUpcoming))
                 loadBookingHistory()
             }
+        }
+
+        // Refresh Button
+        view.findViewById<View>(R.id.btnRefresh)?.setOnClickListener {
+            it.animate().rotation(360f).setDuration(500).withEndAction { it.rotation = 0f }.start()
+
+            refreshCurrentTab()
+            showToast("Refreshing booking data...")
         }
 
         // Setup FAB for creating new booking with animation
@@ -273,14 +289,11 @@ class BookingsFragment : Fragment() {
         bookingsAdapter.submitList(bookings) {
             // Callback after list is submitted
             println("BookingsFragment: List submitted with ${bookings.size} items")
-            
+
             // Then handle animations if RecyclerView is available
             recyclerView?.let { rv ->
                 if (rv.alpha < 1.0f) {
-                    rv.animate()
-                        .alpha(1.0f)
-                        .setDuration(200)
-                        .start()
+                    rv.animate().alpha(1.0f).setDuration(200).start()
                 }
             }
         }
@@ -288,66 +301,54 @@ class BookingsFragment : Fragment() {
         // Handle visibility and empty states more reliably
         if (bookings.isEmpty()) {
             println("BookingsFragment: No $type found - showing empty state")
-            
+
             // Ensure RecyclerView is hidden
             recyclerView?.let { rv ->
                 if (rv.visibility == View.VISIBLE) {
                     rv.animate()
-                        .alpha(0f)
-                        .setDuration(200)
-                        .withEndAction {
-                            rv.visibility = View.GONE
-                        }
-                        .start()
+                            .alpha(0f)
+                            .setDuration(200)
+                            .withEndAction { rv.visibility = View.GONE }
+                            .start()
                 }
             }
-            
+
             // Show empty state
             emptyStateLayout?.let { emptyLayout ->
                 if (emptyLayout.visibility != View.VISIBLE) {
                     emptyLayout.visibility = View.VISIBLE
                     emptyLayout.alpha = 0f
-                    emptyLayout.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .start()
+                    emptyLayout.animate().alpha(1f).setDuration(300).start()
                 }
             }
-            
+
             showError("No $type found")
         } else {
             println("BookingsFragment: Displaying ${bookings.size} $type")
-            
+
             // Ensure empty state is hidden
             emptyStateLayout?.let { emptyLayout ->
                 if (emptyLayout.visibility == View.VISIBLE) {
-                    emptyLayout.animate()
-                        .alpha(0f)
-                        .setDuration(200)
-                        .withEndAction {
-                            emptyLayout.visibility = View.GONE
-                        }
-                        .start()
+                    emptyLayout
+                            .animate()
+                            .alpha(0f)
+                            .setDuration(200)
+                            .withEndAction { emptyLayout.visibility = View.GONE }
+                            .start()
                 }
             }
-            
+
             // Ensure RecyclerView is visible
             recyclerView?.let { rv ->
                 if (rv.visibility != View.VISIBLE) {
                     rv.visibility = View.VISIBLE
                     rv.alpha = 0f
-                    rv.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .start()
+                    rv.animate().alpha(1f).setDuration(300).start()
                 } else if (rv.alpha < 1f) {
-                    rv.animate()
-                        .alpha(1f)
-                        .setDuration(200)
-                        .start()
+                    rv.animate().alpha(1f).setDuration(200).start()
                 }
             }
-            
+
             // Log booking details for debugging
             bookings.take(3).forEach { booking ->
                 println(
@@ -387,19 +388,40 @@ class BookingsFragment : Fragment() {
             try {
                 showLoading(true)
                 val userNIC = preferencesManager.getUserNIC()
+                println("BookingsFragment: Loading upcoming bookings for user: $userNIC")
+
                 if (userNIC != null) {
                     val response = apiService.getUpcomingBookings(userNIC)
+                    println("BookingsFragment: Upcoming bookings API response: ${response.code()}")
+
                     if (response.isSuccessful) {
                         response.body()?.let { bookings: List<Booking> ->
+                            println("BookingsFragment: Received ${bookings.size} upcoming bookings")
+                            bookings.forEachIndexed { index, booking ->
+                                println(
+                                        "  $index. ID: ${booking.id}, Status: ${booking.bookingStatus} (${booking.status}), Station: ${booking.chargingStationName}, Date: ${booking.reservationDateTime}"
+                                )
+                            }
                             updateBookingsList(bookings, "Upcoming")
                         }
+                                ?: run {
+                                    println(
+                                            "BookingsFragment: Upcoming bookings response body is null"
+                                    )
+                                    updateBookingsList(emptyList(), "Upcoming")
+                                }
                     } else {
+                        println(
+                                "BookingsFragment: Failed to load upcoming bookings: ${response.code()} - ${response.message()}"
+                        )
                         showError("Failed to load upcoming bookings: ${response.message()}")
                     }
                 } else {
+                    println("BookingsFragment: User not logged in")
                     showError("User not logged in")
                 }
             } catch (e: Exception) {
+                println("BookingsFragment: Exception loading upcoming bookings: ${e.message}")
                 showError("Error loading upcoming bookings: ${e.message}")
             } finally {
                 showLoading(false)
@@ -452,11 +474,13 @@ class BookingsFragment : Fragment() {
                                     "BookingsFragment: Found ${pendingBookings.size} pending bookings out of ${allBookings.size} total"
                             )
                             updateBookingsList(pendingBookings, "Pending")
-                            
+
                             // Ensure data is visible after a short delay
-                            view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.postDelayed({
-                                ensureDataVisibility(pendingBookings, "Pending")
-                            }, 500)
+                            view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)
+                                    ?.postDelayed(
+                                            { ensureDataVisibility(pendingBookings, "Pending") },
+                                            500
+                                    )
                         }
                     } else {
                         showError("Failed to load pending bookings: ${response.message()}")
@@ -468,6 +492,32 @@ class BookingsFragment : Fragment() {
                 showError("Error loading pending bookings: ${e.message}")
             } finally {
                 showLoading(false)
+            }
+        }
+    }
+
+    private fun refreshCurrentTab() {
+        // Determine which tab is currently selected and refresh its data
+        val pendingTab = view?.findViewById<View>(R.id.btnPending)
+        val upcomingTab = view?.findViewById<View>(R.id.btnUpcoming)
+        val historyTab = view?.findViewById<View>(R.id.btnHistory)
+
+        when {
+            pendingTab?.isSelected == true -> {
+                println("BookingsFragment: Refreshing pending bookings tab")
+                loadPendingBookings()
+            }
+            upcomingTab?.isSelected == true -> {
+                println("BookingsFragment: Refreshing upcoming bookings tab")
+                loadUpcomingBookings()
+            }
+            historyTab?.isSelected == true -> {
+                println("BookingsFragment: Refreshing history tab")
+                loadBookingHistory()
+            }
+            else -> {
+                println("BookingsFragment: No tab selected, loading pending by default")
+                loadPendingBookings()
             }
         }
     }
@@ -486,18 +536,18 @@ class BookingsFragment : Fragment() {
     }
 
     private fun ensureDataVisibility(bookings: List<Booking>, type: String) {
-        println("BookingsFragment: ensureDataVisibility called with ${bookings.size} $type bookings")
-        
+        println(
+                "BookingsFragment: ensureDataVisibility called with ${bookings.size} $type bookings"
+        )
+
         view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.post {
             // Double-check adapter state
             val currentList = bookingsAdapter.currentList?.size ?: 0
             println("BookingsFragment: Adapter currently has $currentList items")
-            
+
             if (bookings.isNotEmpty() && currentList == 0) {
                 println("BookingsFragment: Data mismatch detected, forcing refresh")
-                bookingsAdapter.submitList(bookings) {
-                    forceAdapterRefresh()
-                }
+                bookingsAdapter.submitList(bookings) { forceAdapterRefresh() }
             }
         }
     }
