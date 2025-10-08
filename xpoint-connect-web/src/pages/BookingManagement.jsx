@@ -179,10 +179,10 @@ const BookingManagement = () => {
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
-      booking.evOwnerName.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      booking.evOwnerNIC.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      booking.id.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-      booking.chargingStationName.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.evOwnerName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.evOwnerNIC?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.id?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      booking.chargingStationName?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
       booking.qrCode?.toLowerCase()?.includes(searchTerm.toLowerCase());
 
     const statusStr = typeof booking.status === 'string' ? booking.status.toLowerCase() : 'unknown';
@@ -462,17 +462,21 @@ const BookingManagement = () => {
               </button>
             )}
 
-            {typeof selectedBooking.status === 'string' && selectedBooking.status.toLowerCase() === 'pending' && (
+            {typeof selectedBooking.status === 'string' && 
+             (selectedBooking.status.toLowerCase() === 'pending' || 
+              (selectedBooking.status.toLowerCase() === 'approved' && isWithin12Hours(selectedBooking.reservationDateTime))) && (
               <>
-                <button
-                  onClick={() => {
-                    handleApproveBooking(selectedBooking.id);
-                    setShowDetailsModal(false);
-                  }}
-                  className="btn btn-success btn-md flex-1"
-                >
-                  Approve
-                </button>
+                {selectedBooking.status.toLowerCase() === 'pending' && (
+                  <button
+                    onClick={() => {
+                      handleApproveBooking(selectedBooking.id);
+                      setShowDetailsModal(false);
+                    }}
+                    className="btn btn-success btn-md flex-1"
+                  >
+                    Approve
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     handleCancelBooking(selectedBooking.id);
@@ -604,15 +608,19 @@ const BookingManagement = () => {
                         </button>
                       )}
 
-                      {typeof booking.status === 'string' && booking.status.toLowerCase() === 'pending' && (
+                      {typeof booking.status === 'string' && 
+                       (booking.status.toLowerCase() === 'pending' || 
+                        (booking.status.toLowerCase() === 'approved' && isWithin12Hours(booking.reservationDateTime))) && (
                         <>
-                          <button
-                            onClick={() => handleApproveBooking(booking.id)}
-                            className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
-                            title="Approve booking"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
+                          {booking.status.toLowerCase() === 'pending' && (
+                            <button
+                              onClick={() => handleApproveBooking(booking.id)}
+                              className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                              title="Approve booking"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleCancelBooking(booking.id)}
                             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"

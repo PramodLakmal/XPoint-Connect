@@ -75,7 +75,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger with JWT Authentication that automatically adds "Bearer " prefix
@@ -280,8 +284,8 @@ Console.WriteLine("?? XPoint Connect API Starting...");
 Console.WriteLine($"??? Environment: {app.Environment.EnvironmentName}");
 Console.WriteLine($"? Server: Kestrel (Development Server)");
 Console.WriteLine("?? Access your API at:");
-Console.WriteLine("   • HTTP:    http://localhost:5034");
-Console.WriteLine("   • Swagger: http://localhost:5034/swagger");
+Console.WriteLine("   ï¿½ HTTP:    http://localhost:5034");
+Console.WriteLine("   ï¿½ Swagger: http://localhost:5034/swagger");
 Console.WriteLine("? Ready for development!");
 
 app.Run();
