@@ -98,21 +98,25 @@ class BookingsFragment : Fragment() {
             fab.setOnClickListener {
                 // Add subtle click animation
                 fab.animate()
-                    .scaleX(0.9f)
-                    .scaleY(0.9f)
-                    .setDuration(100)
-                    .withEndAction {
-                        fab.animate()
-                            .scaleX(1.0f)
-                            .scaleY(1.0f)
-                            .setDuration(100)
-                            .withEndAction {
-                                val intent = Intent(requireContext(), CreateBookingActivity::class.java)
-                                startActivity(intent)
-                            }
-                            .start()
-                    }
-                    .start()
+                        .scaleX(0.9f)
+                        .scaleY(0.9f)
+                        .setDuration(100)
+                        .withEndAction {
+                            fab.animate()
+                                    .scaleX(1.0f)
+                                    .scaleY(1.0f)
+                                    .setDuration(100)
+                                    .withEndAction {
+                                        val intent =
+                                                Intent(
+                                                        requireContext(),
+                                                        CreateBookingActivity::class.java
+                                                )
+                                        startActivity(intent)
+                                    }
+                                    .start()
+                        }
+                        .start()
             }
         }
 
@@ -123,15 +127,16 @@ class BookingsFragment : Fragment() {
         animateInitialAppearance(view, btnPending, btnUpcoming, btnHistory)
 
         // Select pending tab by default with delay for smooth animation
-        view.postDelayed({
-            btnPending?.let { selectTab(it, listOf(btnUpcoming!!, btnHistory!!)) }
-            loadPendingBookings()
-        }, 100)
+        view.postDelayed(
+                {
+                    btnPending?.let { selectTab(it, listOf(btnUpcoming!!, btnHistory!!)) }
+                    loadPendingBookings()
+                },
+                100
+        )
     }
 
-    /**
-     * Animates the initial appearance of the bookings interface
-     */
+    /** Animates the initial appearance of the bookings interface */
     private fun animateInitialAppearance(view: View, vararg tabs: View?) {
         // Start tabs slightly off-screen and animate them in
         tabs.forEachIndexed { index, tab ->
@@ -139,11 +144,11 @@ class BookingsFragment : Fragment() {
                 t.alpha = 0f
                 t.translationY = -50f
                 t.animate()
-                    .alpha(1f)
-                    .translationY(0f)
-                    .setDuration(300)
-                    .setStartDelay(index * 50L)
-                    .start()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(300)
+                        .setStartDelay(index * 50L)
+                        .start()
             }
         }
 
@@ -151,12 +156,7 @@ class BookingsFragment : Fragment() {
         view.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.let { rv ->
             rv.alpha = 0f
             rv.translationY = 100f
-            rv.animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(400)
-                .setStartDelay(200)
-                .start()
+            rv.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(200).start()
         }
     }
 
@@ -164,18 +164,13 @@ class BookingsFragment : Fragment() {
         progressBar?.let { pb ->
             if (isLoading) {
                 pb.visibility = View.VISIBLE
-                pb.animate()
-                    .alpha(1.0f)
-                    .setDuration(200)
-                    .start()
+                pb.animate().alpha(1.0f).setDuration(200).start()
             } else {
                 pb.animate()
-                    .alpha(0.0f)
-                    .setDuration(200)
-                    .withEndAction {
-                        pb.visibility = View.GONE
-                    }
-                    .start()
+                        .alpha(0.0f)
+                        .setDuration(200)
+                        .withEndAction { pb.visibility = View.GONE }
+                        .start()
             }
         }
     }
@@ -186,96 +181,88 @@ class BookingsFragment : Fragment() {
 
     private fun selectTab(selectedTab: View, otherTabs: List<View>) {
         // Enhanced selected tab animation with multiple effects
-        selectedTab.animate()
-            .scaleX(1.05f)
-            .scaleY(1.05f)
-            .alpha(1.0f)
-            .translationZ(8f)
-            .setDuration(250)
-            .withStartAction {
-                selectedTab.setBackgroundResource(R.drawable.tab_selected_background)
-            }
-            .withEndAction {
-                // Gentle bounce back with subtle glow effect
-                selectedTab.animate()
-                    .scaleX(1.0f)
-                    .scaleY(1.0f)
-                    .translationZ(4f)
-                    .setDuration(200)
-                    .start()
-                
-                // Add subtle pulse animation
-                addPulseAnimation(selectedTab)
-            }
-            .start()
+        selectedTab
+                .animate()
+                .scaleX(1.05f)
+                .scaleY(1.05f)
+                .alpha(1.0f)
+                .translationZ(8f)
+                .setDuration(250)
+                .withStartAction {
+                    selectedTab.setBackgroundResource(R.drawable.tab_selected_background)
+                }
+                .withEndAction {
+                    // Gentle bounce back with subtle glow effect
+                    selectedTab
+                            .animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .translationZ(4f)
+                            .setDuration(200)
+                            .start()
+
+                    // Add subtle pulse animation
+                    addPulseAnimation(selectedTab)
+                }
+                .start()
 
         // Enhanced animation for other tabs
         otherTabs.forEachIndexed { index, tab ->
             tab.animate()
-                .scaleX(0.92f)
-                .scaleY(0.92f)
-                .alpha(0.6f)
-                .translationZ(0f)
-                .setDuration(250)
-                .setStartDelay(index * 25L) // Stagger animation
-                .withStartAction {
-                    tab.setBackgroundResource(R.drawable.tab_unselected_background)
-                }
-                .withEndAction {
-                    // Scale back to normal with smooth transition
-                    tab.animate()
-                        .scaleX(1.0f)
-                        .scaleY(1.0f)
-                        .setDuration(200)
-                        .start()
-                }
-                .start()
+                    .scaleX(0.92f)
+                    .scaleY(0.92f)
+                    .alpha(0.6f)
+                    .translationZ(0f)
+                    .setDuration(250)
+                    .setStartDelay(index * 25L) // Stagger animation
+                    .withStartAction {
+                        tab.setBackgroundResource(R.drawable.tab_unselected_background)
+                    }
+                    .withEndAction {
+                        // Scale back to normal with smooth transition
+                        tab.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start()
+                    }
+                    .start()
         }
     }
 
-    /**
-     * Adds a subtle pulse animation to the selected tab
-     */
+    /** Adds a subtle pulse animation to the selected tab */
     private fun addPulseAnimation(tab: View) {
         tab.animate()
-            .scaleX(1.02f)
-            .scaleY(1.02f)
-            .setDuration(800)
-            .withEndAction {
-                tab.animate()
-                    .scaleX(1.0f)
-                    .scaleY(1.0f)
-                    .setDuration(800)
-                    .withEndAction {
-                        // Repeat pulse if tab is still selected (check by scale)
-                        if (tab.scaleX >= 0.99f) {
-                            addPulseAnimation(tab)
-                        }
-                    }
-                    .start()
-            }
-            .start()
+                .scaleX(1.02f)
+                .scaleY(1.02f)
+                .setDuration(800)
+                .withEndAction {
+                    tab.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(800)
+                            .withEndAction {
+                                // Repeat pulse if tab is still selected (check by scale)
+                                if (tab.scaleX >= 0.99f) {
+                                    addPulseAnimation(tab)
+                                }
+                            }
+                            .start()
+                }
+                .start()
     }
 
-    /**
-     * Provides immediate tactile feedback for tab clicks
-     */
+    /** Provides immediate tactile feedback for tab clicks */
     private fun animateTabClick(tab: View, onComplete: () -> Unit) {
         tab.animate()
-            .scaleX(0.95f)
-            .scaleY(0.95f)
-            .setDuration(100)
-            .withEndAction {
-                tab.animate()
-                    .scaleX(1.0f)
-                    .scaleY(1.0f)
-                    .setDuration(100)
-                    .withEndAction {
-                        onComplete()
-                    }
-                    .start()
-            }
-            .start()
+                .scaleX(0.95f)
+                .scaleY(0.95f)
+                .setDuration(100)
+                .withEndAction {
+                    tab.animate()
+                            .scaleX(1.0f)
+                            .scaleY(1.0f)
+                            .setDuration(100)
+                            .withEndAction { onComplete() }
+                            .start()
+                }
+                .start()
     }
 
     private fun updateBookingsList(bookings: List<Booking>, type: String = "Bookings") {
@@ -285,73 +272,70 @@ class BookingsFragment : Fragment() {
         // Animate content transition
         recyclerView?.let { rv ->
             rv.animate()
-                .alpha(0.5f)
-                .setDuration(100)
-                .withEndAction {
-                    bookingsAdapter.submitList(bookings)
-                    
-                    // Animate content back in
-                    rv.animate()
-                        .alpha(1.0f)
-                        .setDuration(200)
-                        .start()
-                }
-                .start()
-        } ?: run {
-            // Fallback if no animation
-            bookingsAdapter.submitList(bookings)
+                    .alpha(0.5f)
+                    .setDuration(100)
+                    .withEndAction {
+                        bookingsAdapter.submitList(bookings)
+
+                        // Animate content back in
+                        rv.animate().alpha(1.0f).setDuration(200).start()
+                    }
+                    .start()
         }
+                ?: run {
+                    // Fallback if no animation
+                    bookingsAdapter.submitList(bookings)
+                }
 
         // Handle empty state with smooth animations
         if (bookings.isEmpty()) {
             // Animate out RecyclerView
-            recyclerView?.animate()
-                ?.alpha(0f)
-                ?.translationY(-50f)
-                ?.setDuration(200)
-                ?.withEndAction {
-                    recyclerView.visibility = View.GONE
-                    
-                    // Animate in empty state
-                    emptyStateLayout?.let { emptyLayout ->
-                        emptyLayout.visibility = View.VISIBLE
-                        emptyLayout.alpha = 0f
-                        emptyLayout.translationY = 100f
-                        emptyLayout.animate()
-                            .alpha(1f)
-                            .translationY(0f)
-                            .setDuration(300)
-                            .start()
+            recyclerView
+                    ?.animate()
+                    ?.alpha(0f)
+                    ?.translationY(-50f)
+                    ?.setDuration(200)
+                    ?.withEndAction {
+                        recyclerView.visibility = View.GONE
+
+                        // Animate in empty state
+                        emptyStateLayout?.let { emptyLayout ->
+                            emptyLayout.visibility = View.VISIBLE
+                            emptyLayout.alpha = 0f
+                            emptyLayout.translationY = 100f
+                            emptyLayout
+                                    .animate()
+                                    .alpha(1f)
+                                    .translationY(0f)
+                                    .setDuration(300)
+                                    .start()
+                        }
                     }
-                }
-                ?.start()
-                
+                    ?.start()
+
             showError("No $type found")
         } else {
             // Animate out empty state
-            emptyStateLayout?.animate()
-                ?.alpha(0f)
-                ?.translationY(100f)
-                ?.setDuration(200)
-                ?.withEndAction {
-                    emptyStateLayout.visibility = View.GONE
-                    
-                    // Animate in RecyclerView
-                    recyclerView?.let { rv ->
-                        rv.visibility = View.VISIBLE
-                        if (rv.alpha == 0f) {
-                            rv.alpha = 0f
-                            rv.translationY = 50f
-                            rv.animate()
-                                .alpha(1f)
-                                .translationY(0f)
-                                .setDuration(300)
-                                .start()
+            emptyStateLayout
+                    ?.animate()
+                    ?.alpha(0f)
+                    ?.translationY(100f)
+                    ?.setDuration(200)
+                    ?.withEndAction {
+                        emptyStateLayout.visibility = View.GONE
+
+                        // Animate in RecyclerView
+                        recyclerView?.let { rv ->
+                            rv.visibility = View.VISIBLE
+                            if (rv.alpha == 0f) {
+                                rv.alpha = 0f
+                                rv.translationY = 50f
+                                rv.animate().alpha(1f).translationY(0f).setDuration(300).start()
+                            }
                         }
                     }
-                }
-                ?.start()
-                
+                    ?.start()
+
             println("BookingsFragment: Displaying ${bookings.size} $type")
             // Log booking details for debugging
             bookings.take(3).forEach { booking ->

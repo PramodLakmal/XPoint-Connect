@@ -63,11 +63,12 @@ class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
             tvBookingStatus.setTextColor(itemView.context.getColor(statusColor))
 
             // Show QR code indicator for approved bookings
-            ivQRCodeIndicator.visibility = if (booking.bookingStatus == BookingStatus.Approved) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+            ivQRCodeIndicator.visibility =
+                    if (booking.bookingStatus == BookingStatus.Approved) {
+                        View.VISIBLE
+                    } else {
+                        View.GONE
+                    }
 
             // Make pending bookings more prominent
             if (booking.bookingStatus == BookingStatus.Pending) {
