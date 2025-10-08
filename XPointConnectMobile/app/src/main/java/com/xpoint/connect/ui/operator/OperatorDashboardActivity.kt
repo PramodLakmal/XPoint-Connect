@@ -26,9 +26,10 @@ class OperatorDashboardActivity : AppCompatActivity() {
     // UI components
     private lateinit var tvTitle: TextView
     private lateinit var progressBar: View
+    private lateinit var progressContainer: View
     private lateinit var recyclerBookings: RecyclerView
     private lateinit var tvEmptyState: TextView
-    // removed refresh; bookings shown on demand
+    private lateinit var emptyStateContainer: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,16 +72,16 @@ class OperatorDashboardActivity : AppCompatActivity() {
         // Observe UI state changes
         observeUiState()
 
-        // Load initial data
-        viewModel.loadOperatorBookings(operatorId)
+        // Don't load initial data automatically - wait for user to tap "View Bookings"
     }
 
     private fun initializeViews() {
         tvTitle = findViewById(R.id.tvTitle)
         progressBar = findViewById(R.id.progressBar)
+        progressContainer = findViewById(R.id.progressContainer)
         recyclerBookings = findViewById(R.id.recyclerBookings)
         tvEmptyState = findViewById(R.id.tvEmptyState)
-        // no refresh button
+        emptyStateContainer = findViewById(R.id.emptyStateContainer)
     }
 
     private fun setupRecyclerView() {
@@ -101,31 +102,31 @@ class OperatorDashboardActivity : AppCompatActivity() {
 
     private fun updateUI(state: OperatorBookingsUiState) {
         // Update loading state
-        progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+        progressContainer.visibility = if (state.isLoading) View.VISIBLE else View.GONE
 
         // Update bookings list
         if (state.hasBookings) {
             bookingsAdapter.submit(state.bookings)
             recyclerBookings.visibility = View.VISIBLE
-            tvEmptyState.visibility = View.GONE
+            emptyStateContainer.visibility = View.GONE
         } else {
             recyclerBookings.visibility = View.GONE
             
             // Show appropriate empty state message
             when {
                 state.isLoading -> {
-                    tvEmptyState.visibility = View.GONE
+                    emptyStateContainer.visibility = View.GONE
                 }
                 state.error != null -> {
-                    tvEmptyState.visibility = View.VISIBLE
+                    emptyStateContainer.visibility = View.VISIBLE
                     tvEmptyState.text = "❌ ${state.error}\n\nTap View Bookings to try again."
                 }
                 state.userMessage != null -> {
-                    tvEmptyState.visibility = View.VISIBLE
+                    emptyStateContainer.visibility = View.VISIBLE
                     tvEmptyState.text = state.userMessage
                 }
                 else -> {
-                    tvEmptyState.visibility = View.VISIBLE
+                    emptyStateContainer.visibility = View.VISIBLE
                     tvEmptyState.text = "📋 No bookings available\n\nBookings will appear here when customers make reservations."
                 }
             }
