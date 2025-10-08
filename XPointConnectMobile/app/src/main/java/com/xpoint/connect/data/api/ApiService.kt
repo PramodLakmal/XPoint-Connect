@@ -39,6 +39,10 @@ interface ApiService {
         @POST("api/auth/login")
         suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+        // Operator login (BackOffice & StationOperator)
+        @POST("api/Auth/login")
+        suspend fun operatorLogin(@Body request: OperatorLoginRequest): Response<OperatorLoginResponse>
+
         @POST("api/Auth/evowner/login")
         suspend fun evOwnerLogin(@Body request: EVOwnerLoginRequest): Response<EVOwnerLoginResponse>
 
@@ -87,6 +91,12 @@ interface ApiService {
         suspend fun getBookingsByStation(
                 @Path("stationId") stationId: String
         ): Response<List<Booking>>
+
+        // Operator Management
+        @GET("api/operatorassignments/operators/{operatorId}")
+        suspend fun getOperatorStations(
+                @Path("operatorId") operatorId: String
+        ): Response<List<AssignedStation>>
 
         @GET("api/Bookings/history/{nic}")
         suspend fun getBookingHistory(@Path("nic") nic: String): Response<List<Booking>>
