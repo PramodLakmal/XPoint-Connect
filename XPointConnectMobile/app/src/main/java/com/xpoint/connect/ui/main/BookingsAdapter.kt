@@ -3,6 +3,7 @@ package com.xpoint.connect.ui.main
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -31,6 +32,7 @@ class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
         private val tvBookingTime: TextView = itemView.findViewById(R.id.tvBookingTime)
         private val tvBookingStatus: TextView = itemView.findViewById(R.id.tvBookingStatus)
         private val tvBookingId: TextView = itemView.findViewById(R.id.tvBookingId)
+        private val ivQRCodeIndicator: ImageView = itemView.findViewById(R.id.ivQRCodeIndicator)
 
         fun bind(booking: Booking) {
             tvStationName.text = booking.chargingStationName
@@ -59,6 +61,13 @@ class BookingsAdapter(private val onBookingClick: (Booking) -> Unit) :
                     }
 
             tvBookingStatus.setTextColor(itemView.context.getColor(statusColor))
+
+            // Show QR code indicator for approved bookings
+            ivQRCodeIndicator.visibility = if (booking.bookingStatus == BookingStatus.Approved) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
 
             // Make pending bookings more prominent
             if (booking.bookingStatus == BookingStatus.Pending) {
