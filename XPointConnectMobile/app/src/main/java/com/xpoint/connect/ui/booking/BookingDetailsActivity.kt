@@ -10,6 +10,7 @@
  */
 package com.xpoint.connect.ui.booking
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -241,9 +242,10 @@ class BookingDetailsActivity : AppCompatActivity() {
                         currentBooking = booking
                         updateUI(booking)
 
-                        // Generate QR code if booking is approved
+                        // Auto-generate and display QR code if booking is approved
                         if (booking.bookingStatus == BookingStatus.Approved) {
-                            generateQRCode(booking)
+                            handleApprovedBookingQR(booking)
+                            showApprovalMessage()
                         }
                     } else {
                         showToast("Booking not found")
@@ -361,12 +363,23 @@ class BookingDetailsActivity : AppCompatActivity() {
 
     private fun updateActionButtons(booking: Booking) {
         // Show/hide QR code section - only show for approved bookings
-        qrCodeCard.visibility =
-                if (booking.bookingStatus == BookingStatus.Approved) {
-                    View.VISIBLE
-                } else {
-                    View.GONE
-                }
+        val isApproved = booking.bookingStatus == BookingStatus.Approved
+        qrCodeCard.visibility = if (isApproved) View.VISIBLE else View.GONE
+        
+        // Update QR code button text based on booking status and QR availability
+        if (isApproved) {
+            generateQRButton.text = if (booking.qrCode.isNotEmpty()) {
+                "View QR Code"
+            } else {
+                "Generate QR Code"
+            }
+            generateQRButton.isEnabled = true
+            generateQRButton.alpha = 1.0f
+        } else {
+            generateQRButton.text = "QR Code Unavailable"
+            generateQRButton.isEnabled = false
+            generateQRButton.alpha = 0.5f
+        }
 
         // Update modify button - can only edit pending bookings
         val canModify = booking.bookingStatus == BookingStatus.Pending
@@ -374,26 +387,81 @@ class BookingDetailsActivity : AppCompatActivity() {
         modifyBookingButton.alpha = if (canModify) 1.0f else 0.5f
         modifyBookingButton.text = if (canModify) "Edit Booking" else "Cannot Edit"
 
-        // Update cancel button
-        // Check if booking can be cancelled (only pending and approved bookings)
-        val canCancel =
-                booking.bookingStatus == BookingStatus.Pending ||
+        // Update cancel button - can cancel pending and approved bookings
+        val canCancel = booking.bookingStatus == BookingStatus.Pending ||
                         booking.bookingStatus == BookingStatus.Approved
         cancelBookingButton.isEnabled = canCancel
         cancelBookingButton.alpha = if (canCancel) 1.0f else 0.5f
+        cancelBookingButton.text = if (canCancel) "Cancel Booking" else "Cannot Cancel"
     }
 
+    /**
+     * Handles QR code generation for approved bookings
+     * Uses server-generated QR code if available, otherwise generates locally
+     */
+    private fun handleApprovedBookingQR(booking: Booking) {
+        if (booking.qrCode.isNotEmpty()) {
+            // Use server-generated QR code
+            displayServerQRCode(booking.qrCode)
+        } else {
+            // Generate local QR code as fallback
+            generateLocalQRCode(booking)
+        }
+    }
+
+    /**
+     * Manual QR code generation triggered by user
+     */
     private fun generateQRCode() {
         currentBooking?.let { booking ->
             if (booking.bookingStatus == BookingStatus.Approved) {
-                // Generate QR code with booking information
-                val qrCodeData =
-                        "BOOKING:${booking.id}:${booking.evOwnerNIC}:${booking.chargingStationId}"
-                val bitmap = qrCodeGenerator.generateQRCode(qrCodeData, 512)
-                bitmap?.let { displayQRCode(qrCodeData) }
+                // Use server QR code if available, otherwise generate locally
+                handleApprovedBookingQR(booking)
             } else {
-                showError("QR code can only be generated for approved bookings")
+                showToast("QR code can only be generated for approved bookings")
             }
+        }
+    }
+
+    /**
+     * Displays server-generated QR code from the booking
+     */
+    private fun displayServerQRCode(qrCodeData: String) {
+        try {
+            // Server QR code is base64 encoded, decode and display
+            val decodedQRData = String(android.util.Base64.decode(qrCodeData, android.util.Base64.DEFAULT))
+            val bitmap = qrCodeGenerator.generateQRCode(decodedQRData, 512)
+            
+            bitmap?.let {
+                qrCodeImage.setImageBitmap(it)
+                qrCodeImage.visibility = View.VISIBLE
+                shareQRButton.visibility = View.VISIBLE
+                generateQRButton.text = "Refresh QR Code"
+                qrCodeCard.visibility = View.VISIBLE
+                
+                showToast("QR Code ready for scanning")
+            } ?: run {
+                // Fallback to local generation
+                currentBooking?.let { generateLocalQRCode(it) }
+            }
+        } catch (e: Exception) {
+            // If server QR code is invalid, generate local one
+            currentBooking?.let { generateLocalQRCode(it) }
+        }
+    }
+
+    /**
+     * Generates QR code locally for approved booking
+     */
+    private fun generateLocalQRCode(booking: Booking) {
+        val qrCodeData = "XPOINT_BOOKING:${booking.id}:${booking.evOwnerNIC}:${booking.chargingStationId}:${System.currentTimeMillis()}"
+        val bitmap = qrCodeGenerator.generateQRCode(qrCodeData, 512)
+        
+        bitmap?.let { 
+            displayQRCode(qrCodeData)
+            showToast("QR Code generated successfully")
+        } ?: run {
+            showToast("Failed to generate QR code")
         }
     }
 
@@ -416,19 +484,67 @@ class BookingDetailsActivity : AppCompatActivity() {
     }
 
     private fun shareQRCode() {
-        // Implementation for sharing QR code
-        showToast("QR Code sharing feature coming soon")
+        currentBooking?.let { booking ->
+            if (booking.bookingStatus == BookingStatus.Approved && qrCodeImage.drawable != null) {
+                try {
+                    // Create share intent with QR code image and booking details
+                    val shareText = """
+                        XPoint Connect - Booking QR Code
+                        
+                        Booking ID: ${booking.id}
+                        Station: ${booking.chargingStationName}
+                        Date: ${booking.reservationDateTime}
+                        Duration: ${booking.durationMinutes} minutes
+                        
+                        Use this QR code for easy check-in at the charging station.
+                        
+                        Generated by XPoint Connect Mobile App
+                    """.trimIndent()
+                    
+                    val shareIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        putExtra(Intent.EXTRA_SUBJECT, "XPoint Connect - Booking QR Code")
+                    }
+                    
+                    startActivity(Intent.createChooser(shareIntent, "Share QR Code"))
+                } catch (e: Exception) {
+                    showToast("Failed to share QR code: ${e.message}")
+                }
+            } else {
+                showToast("QR code not available for sharing")
+            }
+        }
     }
 
     private fun showFullScreenQRCode() {
         currentBooking?.let { booking ->
-            if (booking.qrCode.isNotEmpty()) {
-                // TODO: Create QRCodeFullScreenActivity
-                showToast("QR Code: ${booking.qrCode}")
-                // val intent = Intent(this, QRCodeFullScreenActivity::class.java)
-                // intent.putExtra("qr_code_data", booking.qrCode)
-                // intent.putExtra("booking_id", booking.id)
-                // startActivity(intent)
+            if (booking.bookingStatus == BookingStatus.Approved && qrCodeImage.drawable != null) {
+                // Create dialog with full-screen QR code
+                val dialog = Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+                dialog.setContentView(R.layout.dialog_fullscreen_qr)
+                
+                val fullscreenQR = dialog.findViewById<ImageView>(R.id.fullscreen_qr_image)
+                val closeButton = dialog.findViewById<ImageButton>(R.id.close_button)
+                val bookingInfo = dialog.findViewById<TextView>(R.id.booking_info_text)
+                
+                // Set the same QR code bitmap
+                fullscreenQR.setImageDrawable(qrCodeImage.drawable)
+                
+                // Set booking information
+                bookingInfo.text = """
+                    Booking ID: ${booking.id}
+                    Station: ${booking.chargingStationName}
+                    Time: ${booking.reservationDateTime}
+                    Duration: ${booking.durationMinutes} minutes
+                """.trimIndent()
+                
+                closeButton.setOnClickListener { dialog.dismiss() }
+                
+                dialog.show()
+            } else {
+                showToast("QR code not available")
             }
         }
     }
@@ -588,5 +704,17 @@ class BookingDetailsActivity : AppCompatActivity() {
 
             startActivity(Intent.createChooser(shareIntent, "Share Booking Details"))
         }
+    }
+
+    /**
+     * Shows approval message when booking is approved
+     */
+    private fun showApprovalMessage() {
+        val message = "🎉 Great news! Your booking has been approved!\n\n" +
+                "✅ QR code is now available for easy check-in\n" +
+                "📱 Present the QR code at the charging station\n" +
+                "⚡ Start charging when you arrive"
+        
+        showToast(message)
     }
 }
