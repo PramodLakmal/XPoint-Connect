@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { Plus, Edit, Trash2, Search, Power, PowerOff, MapPin, Clock, Battery } from 'lucide-react';
-import { formatDate } from '../utils/helpers';
+import { Plus, Edit, Trash2, Search, PowerOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix leaflet marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 const ChargingStationManagement = () => {
   const { hasAccess, isBackOffice } = useAuth();
@@ -32,8 +45,19 @@ const ChargingStationManagement = () => {
 
   const handleCreateStation = async (formData) => {
     try {
+      // 1. Create operator
+      const operatorPayload = {
+        Username: formData.operatorUsername,
+        Email: formData.operatorEmail,
+        Password: formData.operatorPassword,
+        Role: 1, // Operator role
+      };
+      const operatorRes = await api.post('/users', operatorPayload);
+      const operatorId = operatorRes.data.id || operatorRes.data._id;
+
+      // 2. Create charging station with operatorId
       const stationData = {
-        ...formData,
+        name: formData.name,
         location: {
           latitude: parseFloat(formData.latitude),
           longitude: parseFloat(formData.longitude),
@@ -41,31 +65,42 @@ const ChargingStationManagement = () => {
           city: formData.city,
           province: formData.province,
         },
+        type: formData.type === 'AC' ? 0 : 1,
         totalSlots: parseInt(formData.totalSlots),
         chargingRate: parseFloat(formData.chargingRate),
         amenities: formData.amenities.filter((a) => a.trim() !== ''),
+        description: formData.description || '',
+        schedule: [],
+        operatorId,
       };
 
-      delete stationData.latitude;
-      delete stationData.longitude;
-      delete stationData.address;
-      delete stationData.city;
-      delete stationData.province;
-
       await api.post('/chargingstations', stationData);
-      toast.success('Charging station created successfully');
+      toast.success('Charging station and operator created successfully');
       setShowCreateModal(false);
       fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to create charging station';
+      const message = error.response?.data?.message || 'Failed to create charging station or operator';
       toast.error(message);
     }
   };
 
   const handleUpdateStation = async (formData) => {
     try {
+      // Update operator if operatorId exists and fields are changed
+      if (formData.operatorId && (formData.operatorUsername || formData.operatorEmail || formData.operatorPassword)) {
+        const updateOperatorPayload = {
+          Username: formData.operatorUsername,
+          Email: formData.operatorEmail,
+        };
+        if (formData.operatorPassword) {
+          updateOperatorPayload.Password = formData.operatorPassword;
+        }
+        await api.put(`/users/${formData.operatorId}`, updateOperatorPayload);
+      }
+
+      // Prepare station update payload
       const stationData = {
-        ...formData,
+        name: formData.name,
         location: {
           latitude: parseFloat(formData.latitude),
           longitude: parseFloat(formData.longitude),
@@ -73,16 +108,15 @@ const ChargingStationManagement = () => {
           city: formData.city,
           province: formData.province,
         },
+        type: typeof formData.type === 'string'
+          ? (formData.type === 'AC' ? 0 : 1)
+          : formData.type,
         totalSlots: parseInt(formData.totalSlots),
         chargingRate: parseFloat(formData.chargingRate),
         amenities: formData.amenities.filter((a) => a.trim() !== ''),
+        description: formData.description || '',
+        operatorId: formData.operatorId || '',
       };
-
-      delete stationData.latitude;
-      delete stationData.longitude;
-      delete stationData.address;
-      delete stationData.city;
-      delete stationData.province;
 
       await api.put(`/chargingstations/${selectedStation.id}`, stationData);
       toast.success('Charging station updated successfully');
@@ -90,7 +124,7 @@ const ChargingStationManagement = () => {
       setSelectedStation(null);
       fetchStations();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to update charging station';
+      const message = error.response?.data?.message || 'Failed to update charging station or operator';
       toast.error(message);
     }
   };
@@ -139,6 +173,16 @@ const ChargingStationManagement = () => {
       station.type.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // Map location picker
+  const LocationPicker = ({ latitude, longitude, setLocation }) => {
+    useMapEvents({
+      click(e) {
+        setLocation(e.latlng);
+      },
+    });
+    return latitude && longitude ? <Marker position={[latitude, longitude]} /> : null;
+  };
+
   const StationModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, station = null }) => {
     const [formData, setFormData] = useState({
       name: '',
@@ -152,11 +196,14 @@ const ChargingStationManagement = () => {
       chargingRate: 0,
       description: '',
       amenities: [],
+      operatorUsername: '',
+      operatorEmail: '',
+      operatorPassword: '',
     });
 
-    // Initialize form state when modal opens or station changes
     useEffect(() => {
       if (isEdit && station) {
+        // Set initial form data
         setFormData({
           name: station.name || '',
           address: station.location?.address || '',
@@ -164,12 +211,29 @@ const ChargingStationManagement = () => {
           province: station.location?.province || '',
           latitude: station.location?.latitude?.toString() || '',
           longitude: station.location?.longitude?.toString() || '',
-          type: station.type || 'AC',
+          type: typeof station.type === 'number' ? (station.type === 0 ? 'AC' : 'DC') : station.type,
           totalSlots: station.totalSlots || 1,
           chargingRate: station.chargingRate || 0,
           description: station.description || '',
           amenities: station.amenities || [],
+          operatorUsername: '',
+          operatorEmail: '',
+          operatorPassword: '',
+          operatorId: station.operatorId || '',
         });
+
+        console.log('Station data for edit:', station);
+        // Fetch operator details if operatorId exists
+        if (station.operatorId) {
+          api.get(`/users/${station.operatorId}`).then(res => {
+            console.log('Fetched operator data:', res.data);
+            setFormData(prev => ({
+              ...prev,
+              operatorUsername: res.data.username || '',
+              operatorEmail: res.data.email || '',
+            }));
+          });
+        }
       } else {
         setFormData({
           name: '',
@@ -183,6 +247,10 @@ const ChargingStationManagement = () => {
           chargingRate: 0,
           description: '',
           amenities: [],
+          operatorUsername: '',
+          operatorEmail: '',
+          operatorPassword: '',
+          operatorId: '',
         });
       }
     }, [isOpen, isEdit, station]);
@@ -212,6 +280,15 @@ const ChargingStationManagement = () => {
       setFormData((prev) => ({
         ...prev,
         amenities: prev.amenities.filter((_, i) => i !== index),
+      }));
+    };
+
+    // Map location setter
+    const setLocation = ({ lat, lng }) => {
+      setFormData((prev) => ({
+        ...prev,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
       }));
     };
 
@@ -330,9 +407,28 @@ const ChargingStationManagement = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Latitude</label>
+            {/* Map location picker */}
+            <div>
+              <label className="label text-secondary-700 mb-2 block">Select Location on Map</label>
+              <MapContainer
+                center={[
+                  formData.latitude ? parseFloat(formData.latitude) : 7.8731,
+                  formData.longitude ? parseFloat(formData.longitude) : 80.7718,
+                ]}
+                zoom={8}
+                style={{ height: '300px', width: '100%' }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <LocationPicker
+                  latitude={formData.latitude ? parseFloat(formData.latitude) : null}
+                  longitude={formData.longitude ? parseFloat(formData.longitude) : null}
+                  setLocation={setLocation}
+                />
+              </MapContainer>
+              <div className="mt-2 text-sm text-secondary-700">
+                Click on the map to set latitude and longitude.
+              </div>
+              <div className="flex space-x-2 mt-2">
                 <input
                   type="number"
                   name="latitude"
@@ -341,11 +437,8 @@ const ChargingStationManagement = () => {
                   value={formData.latitude}
                   onChange={handleInputChange}
                   required
+                  placeholder="Latitude"
                 />
-              </div>
-
-              <div>
-                <label className="label text-secondary-700 mb-2 block">Longitude</label>
                 <input
                   type="number"
                   name="longitude"
@@ -354,6 +447,7 @@ const ChargingStationManagement = () => {
                   value={formData.longitude}
                   onChange={handleInputChange}
                   required
+                  placeholder="Longitude"
                 />
               </div>
             </div>
@@ -402,6 +496,44 @@ const ChargingStationManagement = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Username</label>
+                <input
+                  type="text"
+                  name="operatorUsername"
+                  className="input"
+                  value={formData.operatorUsername}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Email</label>
+                <input
+                  type="email"
+                  name="operatorEmail"
+                  className="input"
+                  value={formData.operatorEmail}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label text-secondary-700 mb-2 block">Operator Password</label>
+                <input
+                  type="password"
+                  name="operatorPassword"
+                  className="input"
+                  value={formData.operatorPassword}
+                  onChange={handleInputChange}
+                  required={!isEdit} // Conditionally apply required attribute
+                  placeholder={isEdit ? 'Leave blank to keep current password' : ''}
+                  minLength={6}
+                />
+              </div>
+            </div>
+
             <div className="flex space-x-3 pt-4">
               <button
                 type="button"
@@ -438,15 +570,14 @@ const ChargingStationManagement = () => {
           <h1 className="text-2xl font-bold text-secondary-900">Charging Station Management</h1>
           <p className="text-secondary-600 mt-1">Manage charging stations and their availability</p>
         </div>
-        {hasAccess('BackOffice') && (
-          <button
-            onClick={openCreateModal}
-            className="btn btn-primary btn-md flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Station</span>
-          </button>
-        )}
+        <button
+          onClick={openCreateModal}
+          className="btn btn-primary btn-md flex items-center space-x-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add Station</span>
+        </button>
+
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
