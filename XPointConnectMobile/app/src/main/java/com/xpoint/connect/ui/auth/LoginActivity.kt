@@ -73,6 +73,11 @@ class LoginActivity : AppCompatActivity() {
             // TODO: Implement forgot password functionality
             showToast("Forgot password feature coming soon!")
         }
+
+        // Navigate to Operator Login
+        findViewById<View>(R.id.tvOperatorLogin).setOnClickListener {
+            startActivity(Intent(this, OperatorLoginActivity::class.java))
+        }
     }
 
     /**

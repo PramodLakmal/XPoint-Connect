@@ -47,6 +47,17 @@ class AuthRepository {
         }
     }
 
+    suspend fun operatorLogin(username: String, password: String): Resource<OperatorLoginResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.operatorLogin(OperatorLoginRequest(username, password))
+                handleApiResponse(response)
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "An error occurred during operator login")
+            }
+        }
+    }
+
     /**
      * Authenticates EV owner using NIC and password through backend API Makes API call to login
      * endpoint and returns simplified authentication data

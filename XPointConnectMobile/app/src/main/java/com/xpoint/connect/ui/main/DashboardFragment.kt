@@ -12,6 +12,7 @@ import com.xpoint.connect.R
 import com.xpoint.connect.XPointConnectApplication
 import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.booking.CreateBookingActivity
+import com.xpoint.connect.ui.map.NearbyStationsActivity
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
@@ -71,6 +72,12 @@ class DashboardFragment : Fragment() {
         view.findViewById<View>(R.id.cardCreateBooking)?.setOnClickListener {
             // Navigate to create booking activity
             val intent = Intent(requireContext(), CreateBookingActivity::class.java)
+            startActivity(intent)
+        }
+
+        view.findViewById<View>(R.id.cardNearbyStations)?.setOnClickListener {
+            // Navigate to nearby stations map activity
+            val intent = Intent(requireContext(), NearbyStationsActivity::class.java)
             startActivity(intent)
         }
     }

@@ -80,4 +80,27 @@
     <color name="battery_full">#4CAF50</color>
     <color name="battery_medium">#FF9800</color>
     <color name="battery_low">#F44336</color>
+    
+    <!-- Operator Dashboard Colors -->
+    <color name="operator_primary">#1976D2</color>
+    <color name="operator_primary_dark">#1565C0</color>
+    <color name="operator_accent">#FF9800</color>
+    <color name="operator_accent_light">#FFB74D</color>
+    <color name="operator_background">#F5F5F5</color>
+    <color name="operator_surface">#FFFFFF</color>
+    <color name="operator_surface_variant">#E3F2FD</color>
+    <color name="operator_success">#4CAF50</color>
+    <color name="operator_warning">#FF9800</color>
+    <color name="operator_error">#F44336</color>
+    <color name="operator_info">#2196F3</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_blue_start">#1976D2</color>
+    <color name="gradient_blue_end">#42A5F5</color>
+    <color name="gradient_orange_start">#FF9800</color>
+    <color name="gradient_orange_end">#FFB74D</color>
+    <color name="gradient_green_start">#4CAF50</color>
+    <color name="gradient_green_end">#81C784</color>
+    <color name="gradient_purple_start">#9C27B0</color>
+    <color name="gradient_purple_end">#BA68C8</color>
 </resources>
