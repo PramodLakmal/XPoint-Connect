@@ -166,6 +166,19 @@
             android:visibility="gone"
             android:indeterminateTint="@color/primary" />
 
+        <!-- Operator Login Link -->
+        <TextView
+            android:id="@+id/tvOperatorLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Operator Login"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:padding="8dp" />
+
     </LinearLayout>
 
 </ScrollView>

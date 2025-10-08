@@ -36,6 +36,9 @@
             android:name="com.xpoint.connect.ui.auth.LoginActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
         <activity 
+            android:name="com.xpoint.connect.ui.auth.OperatorLoginActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+        <activity 
             android:name="com.xpoint.connect.ui.auth.RegisterActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
         
@@ -72,6 +75,11 @@
             android:name="com.xpoint.connect.ui.profile.AccountSettingsActivity"
             android:theme="@style/Theme.XPointConnectMobile"
             android:parentActivityName="com.xpoint.connect.ui.main.MainActivity" />
+
+        <!-- Operator Activities -->
+        <activity
+            android:name="com.xpoint.connect.ui.operator.OperatorDashboardActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
         <!-- Map Activity -->
         <activity

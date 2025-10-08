@@ -34,6 +34,21 @@ data class LoginResponse(
         @SerializedName("user") val user: User
 )
 
+// Operator authentication (BackOffice/Station Operator)
+data class OperatorLoginRequest(
+        @SerializedName("username") val username: String,
+        @SerializedName("password") val password: String
+)
+
+data class OperatorLoginResponse(
+        @SerializedName("token") val token: String,
+        @SerializedName("userId") val userId: String,
+        @SerializedName("username") val username: String,
+        // Backend may serialize enums as int or string; accept both via String and parse if needed
+        @SerializedName("role") val role: Any?,
+        @SerializedName("expiresAt") val expiresAt: String
+)
+
 data class EVOwnerLoginRequest(
         @SerializedName("nic") val nic: String,
         @SerializedName("password") val password: String
@@ -44,6 +59,27 @@ data class EVOwnerLoginResponse(
         @SerializedName("nic") val nic: String,
         @SerializedName("fullName") val fullName: String,
         @SerializedName("expiresAt") val expiresAt: String
+)
+
+// Operator assignment DTOs
+data class OperatorWithStations(
+        @SerializedName("id") val id: String,
+        @SerializedName("username") val username: String,
+        @SerializedName("email") val email: String?,
+        @SerializedName("isActive") val isActive: Boolean,
+        @SerializedName("createdAt") val createdAt: String?,
+        @SerializedName("assignedStations") val assignedStations: List<AssignedStation>
+)
+
+data class AssignedStation(
+        @SerializedName("id") val id: String,
+        @SerializedName("name") val name: String,
+        @SerializedName("address") val address: String?,
+        @SerializedName("city") val city: String?,
+        @SerializedName("type") val type: String?,
+        @SerializedName("totalSlots") val totalSlots: Int?,
+        @SerializedName("availableSlots") val availableSlots: Int?,
+        @SerializedName("isActive") val isActive: Boolean?
 )
 
 data class RegisterEVOwnerRequest(
