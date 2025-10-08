@@ -30,6 +30,17 @@
                 android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
                 android:textColor="@color/md_theme_onSurface" />
 
+            <!-- QR Code Indicator for Approved Bookings -->
+            <ImageView
+                android:id="@+id/ivQRCodeIndicator"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_qr_code"
+                android:contentDescription="QR Code Available"
+                android:visibility="gone"
+                app:tint="@color/success" />
+
             <TextView
                 android:id="@+id/tvBookingStatus"
                 android:layout_width="wrap_content"
