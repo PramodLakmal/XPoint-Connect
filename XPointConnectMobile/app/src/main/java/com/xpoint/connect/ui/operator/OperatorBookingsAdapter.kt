@@ -7,25 +7,93 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.xpoint.connect.R
 import com.xpoint.connect.data.model.Booking
+import java.text.SimpleDateFormat
+import java.util.*
 
-class OperatorBookingsAdapter(private var bookings: List<Booking>) : RecyclerView.Adapter<OperatorBookingsAdapter.VH>() {
+class OperatorBookingsAdapter(private var bookings: List<Booking>) : RecyclerView.Adapter<OperatorBookingsAdapter.BookingViewHolder>() {
 
-    class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(R.id.tvTitle)
-        val subtitle: TextView = itemView.findViewById(R.id.tvSubtitle)
+    class BookingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvCustomerInfo: TextView = itemView.findViewById(R.id.tvTitle)
+        val tvBookingDetails: TextView = itemView.findViewById(R.id.tvSubtitle)
+        val tvStatus: TextView = itemView.findViewById(R.id.tvStatus)
+        val tvTime: TextView = itemView.findViewById(R.id.tvTime)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookingViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_operator_booking, parent, false)
-        return VH(view)
+        return BookingViewHolder(view)
     }
 
     override fun getItemCount(): Int = bookings.size
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val b = bookings[position]
-        holder.title.text = "${b.evOwnerNIC} - ${b.status}"
-        holder.subtitle.text = "${b.startTime} → ${b.endTime}"
+    override fun onBindViewHolder(holder: BookingViewHolder, position: Int) {
+        val booking = bookings[position]
+        
+        // Customer information
+        holder.tvCustomerInfo.text = "Customer: ${booking.evOwnerNIC}"
+        
+        // Booking details with duration
+        val durationHours = booking.durationMinutes / 60.0
+        val durationText = if (durationHours == durationHours.toInt().toDouble()) {
+            "${durationHours.toInt()}h"
+        } else {
+            String.format("%.1fh", durationHours)
+        }
+        
+        holder.tvBookingDetails.text = "Duration: $durationText • ID: ${booking.id.take(8)}"
+        
+        // Status with appropriate styling
+        val statusText = getStatusText(booking.status)
+        holder.tvStatus.text = statusText
+        holder.tvStatus.setTextColor(getStatusColor(holder.itemView.context, booking.status))
+        
+        // Time information
+        holder.tvTime.text = formatBookingTime(booking)
+    }
+
+    private fun getStatusText(status: Int): String {
+        return when (status) {
+            0 -> "⏳ Pending"
+            1 -> "✅ Confirmed"
+            2 -> "🔄 In Progress"
+            3 -> "✅ Completed"
+            4 -> "❌ Cancelled"
+            5 -> "⚠️ No Show"
+            else -> "❓ Unknown"
+        }
+    }
+
+    private fun getStatusColor(context: android.content.Context, status: Int): Int {
+        return when (status) {
+            0 -> context.getColor(android.R.color.holo_orange_dark) // Pending
+            1 -> context.getColor(android.R.color.holo_green_dark)  // Confirmed
+            2 -> context.getColor(android.R.color.holo_blue_dark)   // In Progress
+            3 -> context.getColor(android.R.color.holo_green_dark)  // Completed
+            4 -> context.getColor(android.R.color.holo_red_dark)    // Cancelled
+            5 -> context.getColor(android.R.color.holo_orange_dark) // No Show
+            else -> context.getColor(android.R.color.darker_gray)   // Unknown
+        }
+    }
+
+    private fun formatBookingTime(booking: Booking): String {
+        return try {
+            val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault())
+            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+            val startFormatted = dateTimeFormat.format(booking.startTime)
+            val endFormatted = timeFormat.format(booking.endTime)
+
+            "$startFormatted - $endFormatted"
+        } catch (e: Exception) {
+            // Fallback to basic representation
+            try {
+                val dateTimeFormat = SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault())
+                val startFormatted = dateTimeFormat.format(booking.startTime)
+                "$startFormatted"
+            } catch (_: Exception) {
+                ""
+            }
+        }
     }
 
     fun submit(newBookings: List<Booking>) {

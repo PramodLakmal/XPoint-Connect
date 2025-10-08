@@ -92,10 +92,7 @@ interface ApiService {
                 @Path("stationId") stationId: String
         ): Response<List<Booking>>
 
-        // Operator Assignments
-        @GET("api/operatorassignments/operators")
-        suspend fun getOperatorsWithStations(): Response<List<OperatorWithStations>>
-
+        // Operator Management
         @GET("api/operatorassignments/operators/{operatorId}")
         suspend fun getOperatorStations(
                 @Path("operatorId") operatorId: String

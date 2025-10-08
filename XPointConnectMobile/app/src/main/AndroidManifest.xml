@@ -81,6 +81,10 @@
             android:name="com.xpoint.connect.ui.operator.OperatorDashboardActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
+        <activity
+            android:name="com.xpoint.connect.ui.operator.ScannerActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
+
         <!-- Map Activity -->
         <activity
             android:name="com.xpoint.connect.ui.map.NearbyStationsActivity"

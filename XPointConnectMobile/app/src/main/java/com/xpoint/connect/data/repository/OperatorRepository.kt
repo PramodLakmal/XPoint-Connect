@@ -2,7 +2,7 @@ package com.xpoint.connect.data.repository
 
 import com.xpoint.connect.data.api.ApiClient
 import com.xpoint.connect.data.model.AssignedStation
-import com.xpoint.connect.data.model.OperatorWithStations
+import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,17 +12,6 @@ class OperatorRepository {
 
     private val apiService = ApiClient.apiService
 
-    suspend fun getOperatorsWithStations(): Resource<List<OperatorWithStations>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.getOperatorsWithStations()
-                handleApiResponse(response)
-            } catch (e: Exception) {
-                Resource.Error(e.message ?: "Failed to fetch operators")
-            }
-        }
-    }
-
     suspend fun getOperatorStations(operatorId: String): Resource<List<AssignedStation>> {
         return withContext(Dispatchers.IO) {
             try {
@@ -30,6 +19,17 @@ class OperatorRepository {
                 handleApiResponse(response)
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "Failed to fetch operator stations")
+            }
+        }
+    }
+
+    suspend fun getBookingsByStation(stationId: String): Resource<List<Booking>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getBookingsByStation(stationId)
+                handleApiResponse(response)
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to fetch station bookings")
             }
         }
     }

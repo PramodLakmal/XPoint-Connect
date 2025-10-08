@@ -2,14 +2,14 @@ package com.xpoint.connect.ui.operator
 
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.xpoint.connect.R
-import com.xpoint.connect.data.api.ApiClient
-import com.xpoint.connect.data.model.Booking
-import com.xpoint.connect.data.repository.OperatorRepository
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
@@ -20,49 +20,133 @@ class OperatorDashboardActivity : AppCompatActivity() {
         const val EXTRA_OPERATOR_USERNAME = "extra_operator_username"
     }
 
-    private val operatorRepository = OperatorRepository()
-    private val apiService = ApiClient.apiService
+    private lateinit var viewModel: OperatorBookingsViewModel
+    private lateinit var bookingsAdapter: OperatorBookingsAdapter
 
-    private lateinit var bookingsRecycler: RecyclerView
-    private lateinit var progress: View
+    // UI components
+    private lateinit var tvTitle: TextView
+    private lateinit var progressBar: View
+    private lateinit var recyclerBookings: RecyclerView
+    private lateinit var tvEmptyState: TextView
+    private lateinit var btnRefresh: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_operator_dashboard)
 
-        bookingsRecycler = findViewById(R.id.recyclerBookings)
-        progress = findViewById(R.id.progressBar)
+        // Initialize ViewModel
+        viewModel = ViewModelProvider(this)[OperatorBookingsViewModel::class.java]
 
-        bookingsRecycler.layoutManager = LinearLayoutManager(this)
-        bookingsRecycler.adapter = OperatorBookingsAdapter(emptyList())
-
+        // Initialize UI components
+        initializeViews()
+        setupRecyclerView()
+        
+        // Get operator info from intent
         val operatorId = intent.getStringExtra(EXTRA_OPERATOR_ID).orEmpty()
+        val operatorUsername = intent.getStringExtra(EXTRA_OPERATOR_USERNAME).orEmpty()
+
         if (operatorId.isBlank()) {
-            showToast("Missing operator id")
+            showToast("Missing operator information")
             finish()
             return
         }
 
-        loadBookingsForOperator(operatorId)
+        // Update title with operator name
+        tvTitle.text = if (operatorUsername.isNotEmpty()) {
+            "Welcome, $operatorUsername"
+        } else {
+            "Operator Dashboard"
+        }
+
+        // Setup refresh functionality
+        btnRefresh.setOnClickListener {
+            viewModel.refresh(operatorId)
+        }
+
+        // Wire Scan QR card
+        findViewById<View>(R.id.cardScanQR).setOnClickListener {
+            startActivity(android.content.Intent(this, ScannerActivity::class.java))
+        }
+
+        // Observe UI state changes
+        observeUiState()
+
+        // Load initial data
+        viewModel.loadOperatorBookings(operatorId)
     }
 
-    private fun loadBookingsForOperator(operatorId: String) {
-        progress.visibility = View.VISIBLE
+    private fun initializeViews() {
+        tvTitle = findViewById(R.id.tvTitle)
+        progressBar = findViewById(R.id.progressBar)
+        recyclerBookings = findViewById(R.id.recyclerBookings)
+        tvEmptyState = findViewById(R.id.tvEmptyState)
+        btnRefresh = findViewById(R.id.btnRefresh)
+    }
+
+    private fun setupRecyclerView() {
+        bookingsAdapter = OperatorBookingsAdapter(emptyList())
+        recyclerBookings.apply {
+            layoutManager = LinearLayoutManager(this@OperatorDashboardActivity)
+            adapter = bookingsAdapter
+        }
+    }
+
+    private fun observeUiState() {
         lifecycleScope.launch {
-            val stationsRes = operatorRepository.getOperatorStations(operatorId)
-            if (stationsRes is com.xpoint.connect.utils.Resource.Success && (stationsRes.data?.isNotEmpty() == true)) {
-                val firstStationId = stationsRes.data!!.first().id
-                val bookingsRes = try { apiService.getBookingsByStation(firstStationId) } catch (e: Exception) { null }
-                if (bookingsRes != null && bookingsRes.isSuccessful) {
-                    val bookings = bookingsRes.body() ?: emptyList()
-                    (bookingsRecycler.adapter as OperatorBookingsAdapter).submit(bookings)
-                } else {
-                    showToast("Failed to load bookings")
-                }
-            } else {
-                showToast("No stations assigned to this operator")
+            viewModel.uiState.collect { state ->
+                updateUI(state)
             }
-            progress.visibility = View.GONE
+        }
+    }
+
+    private fun updateUI(state: OperatorBookingsUiState) {
+        // Update loading state
+        progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+
+        // Update bookings list
+        if (state.hasBookings) {
+            bookingsAdapter.submit(state.bookings)
+            recyclerBookings.visibility = View.VISIBLE
+            tvEmptyState.visibility = View.GONE
+        } else {
+            recyclerBookings.visibility = View.GONE
+            
+            // Show appropriate empty state message
+            when {
+                state.isLoading -> {
+                    tvEmptyState.visibility = View.GONE
+                }
+                state.error != null -> {
+                    tvEmptyState.visibility = View.VISIBLE
+                    tvEmptyState.text = "❌ ${state.error}\n\nTap refresh to try again."
+                }
+                state.userMessage != null -> {
+                    tvEmptyState.visibility = View.VISIBLE
+                    tvEmptyState.text = state.userMessage
+                }
+                else -> {
+                    tvEmptyState.visibility = View.VISIBLE
+                    tvEmptyState.text = "📋 No bookings available\n\nBookings will appear here when customers make reservations."
+                }
+            }
+        }
+
+        // Show user messages
+        state.userMessage?.let { message ->
+            if (state.hasBookings) {
+                // Show as toast if we have bookings (partial error case)
+                showToast(message)
+                viewModel.clearMessage()
+            }
+        }
+
+        // Show error messages
+        state.error?.let { error ->
+            if (!state.hasBookings) {
+                // Error message is already shown in empty state
+                // Clear the error to prevent repeated display
+                viewModel.clearMessage()
+            }
         }
     }
 }

@@ -1,32 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Operator Dashboard"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp"/>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center"
-        android:visibility="gone"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerBookings"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
-</LinearLayout>
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Operator Dashboard"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refresh"
+            android:textSize="12sp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            app:icon="@drawable/ic_refresh"
+            app:iconSize="16dp"/>
+
+    </LinearLayout>
+
+        <!-- Quick Actions Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="View Bookings"
+                        android:textStyle="bold"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="See today's list"
+                        android:textSize="12sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardScanQR"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scan QR"
+                        android:textStyle="bold"
+                        android:textSize="16sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Check-in customers"
+                        android:textSize="12sp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+        <!-- Bookings List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerBookings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"/>
+
+        <!-- Empty State Message -->
+        <TextView
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="📋 No bookings available\n\nBookings will appear here when customers make reservations."
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:lineSpacingExtra="4dp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</ScrollView>
 
 
