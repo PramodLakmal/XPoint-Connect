@@ -269,74 +269,85 @@ class BookingsFragment : Fragment() {
         val recyclerView = view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)
         val emptyStateLayout = view?.findViewById<View>(R.id.layoutEmptyState)
 
-        // Animate content transition
-        recyclerView?.let { rv ->
-            rv.animate()
-                    .alpha(0.5f)
-                    .setDuration(100)
-                    .withEndAction {
-                        bookingsAdapter.submitList(bookings)
-
-                        // Animate content back in
-                        rv.animate().alpha(1.0f).setDuration(200).start()
-                    }
-                    .start()
-        }
-                ?: run {
-                    // Fallback if no animation
-                    bookingsAdapter.submitList(bookings)
+        // Always update the adapter first to ensure data is set
+        bookingsAdapter.submitList(bookings) {
+            // Callback after list is submitted
+            println("BookingsFragment: List submitted with ${bookings.size} items")
+            
+            // Then handle animations if RecyclerView is available
+            recyclerView?.let { rv ->
+                if (rv.alpha < 1.0f) {
+                    rv.animate()
+                        .alpha(1.0f)
+                        .setDuration(200)
+                        .start()
                 }
+            }
+        }
 
-        // Handle empty state with smooth animations
+        // Handle visibility and empty states more reliably
         if (bookings.isEmpty()) {
-            // Animate out RecyclerView
-            recyclerView
-                    ?.animate()
-                    ?.alpha(0f)
-                    ?.translationY(-50f)
-                    ?.setDuration(200)
-                    ?.withEndAction {
-                        recyclerView.visibility = View.GONE
-
-                        // Animate in empty state
-                        emptyStateLayout?.let { emptyLayout ->
-                            emptyLayout.visibility = View.VISIBLE
-                            emptyLayout.alpha = 0f
-                            emptyLayout.translationY = 100f
-                            emptyLayout
-                                    .animate()
-                                    .alpha(1f)
-                                    .translationY(0f)
-                                    .setDuration(300)
-                                    .start()
+            println("BookingsFragment: No $type found - showing empty state")
+            
+            // Ensure RecyclerView is hidden
+            recyclerView?.let { rv ->
+                if (rv.visibility == View.VISIBLE) {
+                    rv.animate()
+                        .alpha(0f)
+                        .setDuration(200)
+                        .withEndAction {
+                            rv.visibility = View.GONE
                         }
-                    }
-                    ?.start()
-
+                        .start()
+                }
+            }
+            
+            // Show empty state
+            emptyStateLayout?.let { emptyLayout ->
+                if (emptyLayout.visibility != View.VISIBLE) {
+                    emptyLayout.visibility = View.VISIBLE
+                    emptyLayout.alpha = 0f
+                    emptyLayout.animate()
+                        .alpha(1f)
+                        .setDuration(300)
+                        .start()
+                }
+            }
+            
             showError("No $type found")
         } else {
-            // Animate out empty state
-            emptyStateLayout
-                    ?.animate()
-                    ?.alpha(0f)
-                    ?.translationY(100f)
-                    ?.setDuration(200)
-                    ?.withEndAction {
-                        emptyStateLayout.visibility = View.GONE
-
-                        // Animate in RecyclerView
-                        recyclerView?.let { rv ->
-                            rv.visibility = View.VISIBLE
-                            if (rv.alpha == 0f) {
-                                rv.alpha = 0f
-                                rv.translationY = 50f
-                                rv.animate().alpha(1f).translationY(0f).setDuration(300).start()
-                            }
-                        }
-                    }
-                    ?.start()
-
             println("BookingsFragment: Displaying ${bookings.size} $type")
+            
+            // Ensure empty state is hidden
+            emptyStateLayout?.let { emptyLayout ->
+                if (emptyLayout.visibility == View.VISIBLE) {
+                    emptyLayout.animate()
+                        .alpha(0f)
+                        .setDuration(200)
+                        .withEndAction {
+                            emptyLayout.visibility = View.GONE
+                        }
+                        .start()
+                }
+            }
+            
+            // Ensure RecyclerView is visible
+            recyclerView?.let { rv ->
+                if (rv.visibility != View.VISIBLE) {
+                    rv.visibility = View.VISIBLE
+                    rv.alpha = 0f
+                    rv.animate()
+                        .alpha(1f)
+                        .setDuration(300)
+                        .start()
+                } else if (rv.alpha < 1f) {
+                    rv.animate()
+                        .alpha(1f)
+                        .setDuration(200)
+                        .start()
+                }
+            }
+            
             // Log booking details for debugging
             bookings.take(3).forEach { booking ->
                 println(
@@ -441,6 +452,11 @@ class BookingsFragment : Fragment() {
                                     "BookingsFragment: Found ${pendingBookings.size} pending bookings out of ${allBookings.size} total"
                             )
                             updateBookingsList(pendingBookings, "Pending")
+                            
+                            // Ensure data is visible after a short delay
+                            view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.postDelayed({
+                                ensureDataVisibility(pendingBookings, "Pending")
+                            }, 500)
                         }
                     } else {
                         showError("Failed to load pending bookings: ${response.message()}")
@@ -452,6 +468,36 @@ class BookingsFragment : Fragment() {
                 showError("Error loading pending bookings: ${e.message}")
             } finally {
                 showLoading(false)
+            }
+        }
+    }
+
+    private fun forceAdapterRefresh() {
+        try {
+            view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.let { rv ->
+                rv.post {
+                    bookingsAdapter.notifyDataSetChanged()
+                    println("BookingsFragment: Forced adapter refresh")
+                }
+            }
+        } catch (e: Exception) {
+            println("BookingsFragment: Error in forceAdapterRefresh: ${e.message}")
+        }
+    }
+
+    private fun ensureDataVisibility(bookings: List<Booking>, type: String) {
+        println("BookingsFragment: ensureDataVisibility called with ${bookings.size} $type bookings")
+        
+        view?.findViewById<RecyclerView>(R.id.recyclerViewBookings)?.post {
+            // Double-check adapter state
+            val currentList = bookingsAdapter.currentList?.size ?: 0
+            println("BookingsFragment: Adapter currently has $currentList items")
+            
+            if (bookings.isNotEmpty() && currentList == 0) {
+                println("BookingsFragment: Data mismatch detected, forcing refresh")
+                bookingsAdapter.submitList(bookings) {
+                    forceAdapterRefresh()
+                }
             }
         }
     }
