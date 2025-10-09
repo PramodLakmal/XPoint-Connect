@@ -106,6 +106,18 @@ namespace XPoint_Connect_API.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/activate")]
+        [Authorize(Roles = "BackOffice")]
+        public async Task<IActionResult> ActivateStation(string id)
+        {
+            var success = await _chargingStationService.ActivateStationAsync(id);
+
+            if (!success)
+                return NotFound();
+
+            return NoContent();
+        }
+
         [HttpPost("{id}/deactivate")]
         [Authorize(Roles = "BackOffice")]
         public async Task<IActionResult> DeactivateStation(string id)
