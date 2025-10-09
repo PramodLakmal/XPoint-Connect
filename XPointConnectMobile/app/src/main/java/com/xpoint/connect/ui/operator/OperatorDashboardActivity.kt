@@ -45,9 +45,9 @@ class OperatorDashboardActivity : AppCompatActivity() {
 
         // Update title with operator name
         tvTitle.text = if (operatorUsername.isNotEmpty()) {
-            "Welcome, $operatorUsername"
+            "Welcome Back, $operatorUsername!"
         } else {
-            "Operator Dashboard"
+            "Welcome Back!"
         }
 
         // Setup card click listeners
@@ -128,23 +128,10 @@ class OperatorDashboardActivity : AppCompatActivity() {
                         stationId = state.chargingStation.id
                         showToast("Station loaded: ${state.chargingStation.name}")
                         android.util.Log.d("OperatorDashboard", "Charging station loaded: ${state.chargingStation.id}")
-                        updateStationIdDisplay(state.chargingStation.id)
                         viewModel.clearMessage()
                     }
                 }
             }
-        }
-    }
-
-    private fun updateStationIdDisplay(stationId: String) {
-        android.util.Log.d("OperatorDashboard", "updateStationIdDisplay called with stationId: $stationId")
-        val tvStationId = findViewById<TextView>(R.id.tvStationId)
-        if (tvStationId != null) {
-            tvStationId.text = "Station ID: $stationId"
-            tvStationId.visibility = View.VISIBLE
-            android.util.Log.d("OperatorDashboard", "Station ID display updated successfully")
-        } else {
-            android.util.Log.e("OperatorDashboard", "tvStationId TextView not found!")
         }
     }
 }
