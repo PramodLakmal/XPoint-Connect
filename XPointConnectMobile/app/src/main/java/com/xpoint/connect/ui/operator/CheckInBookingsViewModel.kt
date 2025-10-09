@@ -39,7 +39,7 @@ class CheckInBookingsViewModel : ViewModel() {
                     
                     // Filter for check-in eligible bookings (Pending=0, Approved=1)
                     val checkInBookings = allBookings.filter { booking ->
-                        booking.status == 0 || booking.status == 1  // Pending or Approved
+                        booking.status == "Pending" || booking.status == "Approved"  // Pending or Approved
                     }
                     
                     _uiState.value = _uiState.value.copy(

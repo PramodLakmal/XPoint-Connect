@@ -46,21 +46,21 @@ class BookingHistoryAdapter : RecyclerView.Adapter<BookingHistoryAdapter.Booking
             
             // Status with appropriate styling
             val statusText = when (booking.status) {
-                3 -> "Completed"
-                4 -> "Cancelled"
-                5 -> "No Show"
+                "Completed" -> "Completed"
+                "Cancelled" -> "Cancelled"
+                "NoShow" -> "No Show"
                 else -> "Unknown"
             }
             tvStatus.text = statusText
             
             when (booking.status) {
-                3 -> { // Completed
+                "Completed" -> { // Completed
                     tvStatus.setBackgroundResource(R.drawable.bg_status_completed)
                 }
-                4 -> { // Cancelled
+                "Cancelled" -> { // Cancelled
                     tvStatus.setBackgroundResource(R.drawable.bg_status_cancelled)
                 }
-                5 -> { // No Show
+                "NoShow" -> { // No Show
                     tvStatus.setBackgroundResource(R.drawable.bg_status_no_show)
                 }
                 else -> {
@@ -73,7 +73,18 @@ class BookingHistoryAdapter : RecyclerView.Adapter<BookingHistoryAdapter.Booking
             
             // Session date
             val sessionDate = try {
-                dateFormat.format(booking.startTime)
+                if (booking.reservationDateTime.isNotEmpty()) {
+                    // Parse ISO 8601 date format from backend
+                    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    val date = inputFormat.parse(booking.reservationDateTime)
+                    if (date != null) {
+                        dateFormat.format(date)
+                    } else {
+                        "Unknown date"
+                    }
+                } else {
+                    dateFormat.format(booking.startTime)
+                }
             } catch (e: Exception) {
                 "Unknown date"
             }

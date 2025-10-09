@@ -117,7 +117,7 @@ data class CreateBookingRequest(
 data class UpdateBookingRequest(
         @SerializedName("reservationDateTime") val reservationDateTime: String,
         @SerializedName("durationMinutes") val durationMinutes: Int,
-        @SerializedName("status") val status: Int? = null,
+        @SerializedName("status") val status: String? = null,
         @SerializedName("cancellationReason") val cancellationReason: String? = null,
         @SerializedName("operatorNotes") val operatorNotes: String? = null
 )

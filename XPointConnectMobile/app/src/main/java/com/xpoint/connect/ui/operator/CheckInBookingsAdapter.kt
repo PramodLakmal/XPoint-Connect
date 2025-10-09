@@ -49,20 +49,20 @@ class CheckInBookingsAdapter(
             
             // Status with appropriate styling
             tvStatus.text = when (booking.status) {
-                0 -> "Pending"
-                1 -> "Approved"
-                2 -> "Checked In"
-                3 -> "Completed"
-                4 -> "Cancelled"
-                5 -> "No Show"
+                "Pending" -> "Pending"
+                "Approved" -> "Approved"
+                "CheckedIn" -> "Checked In"
+                "Completed" -> "Completed"
+                "Cancelled" -> "Cancelled"
+                "NoShow" -> "No Show"
                 else -> "Unknown"
             }
             
             when (booking.status) {
-                0 -> { // Pending
+                "Pending" -> { // Pending
                     tvStatus.setBackgroundResource(R.drawable.bg_status_pending)
                 }
-                1 -> { // Approved
+                "Approved" -> { // Approved
                     tvStatus.setBackgroundResource(R.drawable.bg_status_approved)
                 }
                 else -> {
@@ -75,7 +75,18 @@ class CheckInBookingsAdapter(
             
             // Date and time
             val formattedDate = try {
-                dateFormat.format(booking.reservationDateTime)
+                if (booking.reservationDateTime.isNotEmpty()) {
+                    // Parse ISO 8601 date format from backend
+                    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    val date = inputFormat.parse(booking.reservationDateTime)
+                    if (date != null) {
+                        dateFormat.format(date)
+                    } else {
+                        "Invalid date"
+                    }
+                } else {
+                    "No date available"
+                }
             } catch (e: Exception) {
                 "Invalid date"
             }

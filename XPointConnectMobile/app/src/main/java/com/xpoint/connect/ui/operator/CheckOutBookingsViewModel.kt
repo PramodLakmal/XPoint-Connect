@@ -39,7 +39,7 @@ class CheckOutBookingsViewModel : ViewModel() {
                     
                     // Filter for check-out eligible bookings (CheckedIn=2)
                     val checkOutBookings = allBookings.filter { booking ->
-                        booking.status == 2  // CheckedIn
+                        booking.status == "CheckedIn"  // CheckedIn
                     }
                     
                     _uiState.value = _uiState.value.copy(

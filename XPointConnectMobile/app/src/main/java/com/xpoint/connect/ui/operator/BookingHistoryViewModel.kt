@@ -39,7 +39,7 @@ class BookingHistoryViewModel : ViewModel() {
                     
                     // Filter for completed bookings (Completed=3, Cancelled=4, NoShow=5)
                     val historyBookings = allBookings.filter { booking ->
-                        booking.status == 3 || booking.status == 4 || booking.status == 5  // Completed, Cancelled, NoShow
+                        booking.status == "Completed" || booking.status == "Cancelled" || booking.status == "NoShow"  // Completed, Cancelled, NoShow
                     }
                     
                     _uiState.value = _uiState.value.copy(
