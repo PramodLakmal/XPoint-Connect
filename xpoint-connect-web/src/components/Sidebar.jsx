@@ -15,47 +15,62 @@ import {
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false)
-  const { user, hasAccess } = useAuth()
+  const { user, hasAccess, isStationOperator, isBackOffice } = useAuth()
   const location = useLocation()
 
-  const navigation = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: LayoutDashboard,
-      requiredRole: null
-    },
-    {
-      name: 'User Management',
-      href: '/users',
-      icon: Users,
-      requiredRole: 'BackOffice'
-    },
-    {
-      name: 'EV Owners',
-      href: '/evowners',
-      icon: UserCog,
-      requiredRole: null
-    },
-    {
-      name: 'Charging Stations',
-      href: '/stations',
-      icon: Battery,
-      requiredRole: null
-    },
-    {
-      name: 'Station Operators',
-      href: '/operators',
-      icon: UserCheck,
-      requiredRole: 'BackOffice'
-    },
-    {
-      name: 'Bookings',
-      href: '/bookings',
-      icon: Calendar,
-      requiredRole: null
-    },
-  ]
+  const navigation = isStationOperator() && !isBackOffice()
+    ? [
+        {
+          name: 'Dashboard',
+          href: '/operator/dashboard',
+          icon: LayoutDashboard,
+          requiredRole: null
+        },
+        {
+          name: 'Bookings',
+          href: '/operator/bookings',
+          icon: Calendar,
+          requiredRole: null
+        },
+      ]
+    : [
+        {
+          name: 'Dashboard',
+          href: '/dashboard',
+          icon: LayoutDashboard,
+          requiredRole: null
+        },
+        {
+          name: 'User Management',
+          href: '/users',
+          icon: Users,
+          requiredRole: 'BackOffice'
+        },
+        {
+          name: 'EV Owners',
+          href: '/evowners',
+          icon: UserCog,
+          requiredRole: null
+        },
+        {
+          name: 'Charging Stations',
+          href: '/stations',
+          icon: Battery,
+          requiredRole: null
+        },
+        {
+          name: 'Station Operators',
+          href: '/operators',
+          icon: UserCheck,
+          requiredRole: 'BackOffice'
+        },
+        {
+          name: 'Bookings',
+          href: '/bookings',
+          icon: Calendar,
+          requiredRole: null
+        },
+      ]
 
   const filteredNavigation = navigation.filter(item => 
     !item.requiredRole || hasAccess(item.requiredRole)
