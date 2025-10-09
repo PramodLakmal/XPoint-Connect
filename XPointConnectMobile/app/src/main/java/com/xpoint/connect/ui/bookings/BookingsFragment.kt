@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
 import com.xpoint.connect.R
 import com.xpoint.connect.XPointConnectApplication
@@ -30,6 +31,7 @@ class BookingsFragment : Fragment() {
     private lateinit var preferencesManager: UserPreferencesManager
     private lateinit var bookingsAdapter: BookingsAdapter
     private var progressBar: ProgressBar? = null
+    private var swipeRefresh: SwipeRefreshLayout? = null
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -72,8 +74,12 @@ class BookingsFragment : Fragment() {
             adapter = bookingsAdapter
         }
 
-        // Initialize progress bar
+        // Initialize progress bar and swipe refresh
         progressBar = view.findViewById(R.id.progressBar)
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
+
+        // Setup SwipeRefreshLayout
+        swipeRefresh?.setOnRefreshListener { refreshCurrentTab() }
 
         // Setup enhanced tab functionality with pending bookings focus
         val btnPending = view.findViewById<View>(R.id.btnPending)
@@ -189,6 +195,9 @@ class BookingsFragment : Fragment() {
                         .start()
             }
         }
+
+        // Also handle SwipeRefreshLayout
+        swipeRefresh?.isRefreshing = isLoading
     }
 
     private fun showError(message: String) {

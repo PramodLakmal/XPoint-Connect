@@ -12,6 +12,19 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/primary"
+        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+        app:title="Operator Dashboard"
+        app:titleTextColor="@color/white"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/white"
+        android:layout_marginBottom="16dp" />
+
     <!-- Header Section with Gradient Background -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"

@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.button.MaterialButton
 import com.xpoint.connect.R
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
@@ -35,13 +35,16 @@ class OperatorDashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_operator_dashboard)
 
+        // Setup toolbar with back button
+        setupToolbar()
+
         // Initialize ViewModel
         viewModel = ViewModelProvider(this)[OperatorBookingsViewModel::class.java]
 
         // Initialize UI components
         initializeViews()
         setupRecyclerView()
-        
+
         // Get operator info from intent
         val operatorId = intent.getStringExtra(EXTRA_OPERATOR_ID).orEmpty()
         val operatorUsername = intent.getStringExtra(EXTRA_OPERATOR_USERNAME).orEmpty()
@@ -53,11 +56,12 @@ class OperatorDashboardActivity : AppCompatActivity() {
         }
 
         // Update title with operator name
-        tvTitle.text = if (operatorUsername.isNotEmpty()) {
-            "Welcome, $operatorUsername"
-        } else {
-            "Operator Dashboard"
-        }
+        tvTitle.text =
+                if (operatorUsername.isNotEmpty()) {
+                    "Welcome, $operatorUsername"
+                } else {
+                    "Operator Dashboard"
+                }
 
         // View bookings on demand
         findViewById<View>(R.id.cardViewBookings).setOnClickListener {
@@ -93,11 +97,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
     }
 
     private fun observeUiState() {
-        lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                updateUI(state)
-            }
-        }
+        lifecycleScope.launch { viewModel.uiState.collect { state -> updateUI(state) } }
     }
 
     private fun updateUI(state: OperatorBookingsUiState) {
@@ -111,7 +111,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
             emptyStateContainer.visibility = View.GONE
         } else {
             recyclerBookings.visibility = View.GONE
-            
+
             // Show appropriate empty state message
             when {
                 state.isLoading -> {
@@ -127,7 +127,8 @@ class OperatorDashboardActivity : AppCompatActivity() {
                 }
                 else -> {
                     emptyStateContainer.visibility = View.VISIBLE
-                    tvEmptyState.text = "📋 No bookings available\n\nBookings will appear here when customers make reservations."
+                    tvEmptyState.text =
+                            "📋 No bookings available\n\nBookings will appear here when customers make reservations."
                 }
             }
         }
@@ -150,6 +151,23 @@ class OperatorDashboardActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun setupToolbar() {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = "Operator Dashboard"
+        }
+    }
+
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 }
-
-

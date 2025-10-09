@@ -89,7 +89,7 @@ class EditBookingActivity : AppCompatActivity() {
         initializeViews()
         setupClickListeners()
 
-        val bookingId = intent.getStringExtra(EXTRA_BOOKING_ID)
+        val bookingId = intent.getStringExtra("booking_id")
         if (bookingId != null) {
             loadBooking(bookingId)
         } else {
@@ -179,12 +179,20 @@ class EditBookingActivity : AppCompatActivity() {
                         }
                         populateBookingData(booking)
                     }
+                            ?: run {
+                                showToast("Booking data is empty")
+                                finish()
+                            }
                 } else {
-                    showToast("Failed to load booking: ${response.message()}")
+                    val errorBody = response.errorBody()?.string()
+                    showToast(
+                            "Failed to load booking: ${response.code()} - ${errorBody ?: response.message()}"
+                    )
                     finish()
                 }
             } catch (e: Exception) {
                 showToast("Error loading booking: ${e.message}")
+                e.printStackTrace()
                 finish()
             } finally {
                 showLoading(false)
@@ -328,12 +336,17 @@ class EditBookingActivity : AppCompatActivity() {
                 val response = apiService.updateBooking(booking.id, updateRequest)
                 if (response.isSuccessful) {
                     showToast("Booking updated successfully")
+                    setResult(RESULT_OK)
                     finish()
                 } else {
-                    showToast("Failed to update booking: ${response.message()}")
+                    val errorBody = response.errorBody()?.string()
+                    showToast(
+                            "Failed to update booking: ${response.code()} - ${errorBody ?: response.message()}"
+                    )
                 }
             } catch (e: Exception) {
                 showToast("Error updating booking: ${e.message}")
+                e.printStackTrace()
             } finally {
                 showLoading(false)
             }
@@ -364,12 +377,17 @@ class EditBookingActivity : AppCompatActivity() {
                 val response = apiService.cancelBooking(booking.id, cancelRequest)
                 if (response.isSuccessful) {
                     showToast("Booking cancelled successfully")
+                    setResult(RESULT_OK)
                     finish()
                 } else {
-                    showToast("Failed to cancel booking: ${response.message()}")
+                    val errorBody = response.errorBody()?.string()
+                    showToast(
+                            "Failed to cancel booking: ${response.code()} - ${errorBody ?: response.message()}"
+                    )
                 }
             } catch (e: Exception) {
                 showToast("Error cancelling booking: ${e.message}")
+                e.printStackTrace()
             } finally {
                 showLoading(false)
             }
