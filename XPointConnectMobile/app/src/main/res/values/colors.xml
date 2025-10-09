@@ -90,6 +90,7 @@
     <color name="operator_surface">#FFFFFF</color>
     <color name="operator_surface_variant">#E3F2FD</color>
     <color name="operator_success">#4CAF50</color>
+    <color name="success_green">#4CAF50</color>
     <color name="operator_warning">#FF9800</color>
     <color name="operator_error">#F44336</color>
     <color name="operator_info">#2196F3</color>

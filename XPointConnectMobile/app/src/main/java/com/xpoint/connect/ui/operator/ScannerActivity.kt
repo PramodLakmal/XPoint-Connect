@@ -1,6 +1,7 @@
 package com.xpoint.connect.ui.operator
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,8 +14,14 @@ import com.xpoint.connect.utils.showToast
 
 class ScannerActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_EXPECTED_BOOKING_ID = "EXPECTED_BOOKING_ID"
+        const val RESULT_SCANNED_BOOKING_ID = "SCANNED_BOOKING_ID"
+    }
+
     private lateinit var barcodeView: DecoratedBarcodeView
     private var capture: CaptureManager? = null
+    private var expectedBookingId: String? = null
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -29,6 +36,10 @@ class ScannerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_scanner_zxing)
 
         barcodeView = findViewById(R.id.zxing_barcode_scanner)
+        
+        // Get expected booking ID if provided
+        expectedBookingId = intent.getStringExtra(EXTRA_EXPECTED_BOOKING_ID)
+        
         checkPermissionAndStart(savedInstanceState)
     }
 
@@ -49,10 +60,43 @@ class ScannerActivity : AppCompatActivity() {
         capture?.decode()
         barcodeView.decodeContinuous { result ->
             // Handle decoded text here
-            val text = result.text ?: return@decodeContinuous
-            showToast("Scanned: $text")
-            setResult(RESULT_OK, android.content.Intent().putExtra("qr_result", text))
+            val scannedText = result.text ?: return@decodeContinuous
+            
+            // Extract booking ID from QR code (assuming QR contains booking ID)
+            val scannedBookingId = extractBookingIdFromQR(scannedText)
+            
+            if (scannedBookingId != null) {
+                // Return the scanned booking ID
+                val resultIntent = Intent().apply {
+                    putExtra(RESULT_SCANNED_BOOKING_ID, scannedBookingId)
+                }
+                setResult(RESULT_OK, resultIntent)
+                showToast("QR code scanned successfully!")
+            } else {
+                showToast("Invalid QR code format")
+                setResult(RESULT_CANCELED)
+            }
+            
             finish()
+        }
+    }
+
+    private fun extractBookingIdFromQR(qrText: String): String? {
+        // Implement QR code parsing logic here
+        // For now, assume the QR code contains the booking ID directly
+        // You might need to parse JSON or extract from a specific format
+        
+        return try {
+            // If QR contains JSON, parse it
+            // If QR contains just the booking ID, return it directly
+            // For this implementation, assume QR contains booking ID directly
+            if (qrText.isNotBlank() && qrText.length >= 8) {
+                qrText.trim()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 

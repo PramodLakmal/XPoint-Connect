@@ -82,6 +82,21 @@
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
         <activity
+            android:name="com.xpoint.connect.ui.operator.CheckInBookingsActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar"
+            android:parentActivityName="com.xpoint.connect.ui.operator.OperatorDashboardActivity" />
+
+        <activity
+            android:name="com.xpoint.connect.ui.operator.CheckOutBookingsActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar"
+            android:parentActivityName="com.xpoint.connect.ui.operator.OperatorDashboardActivity" />
+
+        <activity
+            android:name="com.xpoint.connect.ui.operator.BookingHistoryActivity"
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar"
+            android:parentActivityName="com.xpoint.connect.ui.operator.OperatorDashboardActivity" />
+
+        <activity
             android:name="com.xpoint.connect.ui.operator.ScannerActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
