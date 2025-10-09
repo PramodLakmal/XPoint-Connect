@@ -75,10 +75,17 @@ class DashboardFragment : Fragment() {
             startActivity(intent)
         }
 
-        view.findViewById<View>(R.id.cardNearbyStations)?.setOnClickListener {
-            // Navigate to nearby stations map activity
-            val intent = Intent(requireContext(), NearbyStationsActivity::class.java)
-            startActivity(intent)
+        // Add refresh functionality - long press on stats to refresh
+        view.findViewById<View>(R.id.tvPendingCount)?.setOnLongClickListener {
+            refreshDashboardData()
+            showToast("Refreshing dashboard data...")
+            true
+        }
+
+        view.findViewById<View>(R.id.tvApprovedCount)?.setOnLongClickListener {
+            refreshDashboardData()
+            showToast("Refreshing dashboard data...")
+            true
         }
     }
 
@@ -99,6 +106,12 @@ class DashboardFragment : Fragment() {
     }
 
     private fun updateStatsViews(stats: com.xpoint.connect.data.model.DashboardStats) {
+        println("DashboardFragment: Updating dashboard stats:")
+        println("  - Pending: ${stats.pendingReservations}")
+        println("  - Approved Future: ${stats.approvedFutureReservations}")
+        println("  - Completed This Month: ${stats.completedBookingsThisMonth}")
+        println("  - Total Spent: ${stats.totalSpentThisMonth}")
+
         view?.let { v ->
             v.findViewById<android.widget.TextView>(R.id.tvPendingCount)?.text =
                     stats.pendingReservations.toString()
@@ -114,9 +127,21 @@ class DashboardFragment : Fragment() {
     private fun loadDashboardData() {
         lifecycleScope.launch {
             val userNIC = userPreferencesManager.getUserNIC()
+            println("DashboardFragment: Loading dashboard data for user: $userNIC")
             if (userNIC != null) {
                 viewModel.loadDashboardStats(userNIC)
             }
         }
+    }
+
+    private fun refreshDashboardData() {
+        println("DashboardFragment: Manual refresh triggered")
+        loadDashboardData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        println("DashboardFragment: onResume - refreshing dashboard data")
+        loadDashboardData()
     }
 }
