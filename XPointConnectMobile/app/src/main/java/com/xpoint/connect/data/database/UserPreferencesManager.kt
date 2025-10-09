@@ -21,7 +21,9 @@ package com.xpoint.connect.data.database
 
 import android.content.Context
 import com.xpoint.connect.data.database.entity.UserEntity
+import com.xpoint.connect.data.database.entity.OperatorSessionEntity
 import com.xpoint.connect.data.model.EVOwner
+import com.xpoint.connect.utils.SessionEncryption
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -39,6 +41,7 @@ class UserPreferencesManager(context: Context) {
 
     private val database = XPointDatabase.getDatabase(context)
     private val userDao = database.userDao()
+    private val operatorSessionDao = database.operatorSessionDao()
 
     /**
      * Initializes the user preferences database with default values Creates a default user entity
@@ -181,5 +184,101 @@ class UserPreferencesManager(context: Context) {
     // Get complete user entity
     suspend fun getUser(): UserEntity? {
         return userDao.getUser()
+    }
+
+    // Operator Session Management Methods
+    
+    /**
+     * Saves operator session for persistent login
+     * @param username Operator username
+     * @param password Operator password (will be encrypted)
+     * @param rememberMe Whether to remember the session
+     * @param userId Operator user ID from login response
+     * @param authToken Authentication token from login response
+     */
+    suspend fun saveOperatorSession(
+        username: String,
+        password: String,
+        rememberMe: Boolean,
+        userId: String = "",
+        authToken: String = ""
+    ) {
+        val encryptedUsername = SessionEncryption.encrypt(username)
+        val encryptedPassword = SessionEncryption.encrypt(password)
+        val currentTime = System.currentTimeMillis()
+        val sessionExpiry = currentTime + (30 * 24 * 60 * 60 * 1000L) // 30 days
+        
+        val session = OperatorSessionEntity(
+            sessionId = "operator_session",
+            encryptedUsername = encryptedUsername,
+            encryptedPassword = encryptedPassword,
+            sessionTimestamp = currentTime,
+            rememberMe = rememberMe,
+            isActive = true,
+            userId = userId,
+            username = username,
+            authToken = authToken,
+            sessionExpiry = sessionExpiry
+        )
+        
+        operatorSessionDao.insertOrUpdateSession(session)
+    }
+    
+    /**
+     * Checks if there's a valid operator session for auto-login
+     */
+    suspend fun hasValidOperatorSession(): Boolean {
+        val session = operatorSessionDao.getValidSession()
+        return session != null && session.rememberMe && session.isActive
+    }
+    
+    /**
+     * Gets stored operator credentials for auto-login
+     * Returns Pair of (username, password) or null if no valid session
+     */
+    suspend fun getStoredOperatorCredentials(): Pair<String, String>? {
+        val session = operatorSessionDao.getValidSession()
+        return if (session != null && session.rememberMe && session.isActive) {
+            val username = SessionEncryption.decrypt(session.encryptedUsername)
+            val password = SessionEncryption.decrypt(session.encryptedPassword)
+            Pair(username, password)
+        } else null
+    }
+    
+    /**
+     * Gets the stored operator session data
+     */
+    suspend fun getOperatorSession(): OperatorSessionEntity? {
+        return operatorSessionDao.getOperatorSession()
+    }
+    
+    /**
+     * Updates the session with new auth token and user ID after successful login
+     */
+    suspend fun updateOperatorSessionToken(userId: String, authToken: String) {
+        val session = operatorSessionDao.getOperatorSession()
+        if (session != null) {
+            val updatedSession = session.copy(
+                userId = userId,
+                authToken = authToken,
+                sessionTimestamp = System.currentTimeMillis(),
+                isActive = true
+            )
+            operatorSessionDao.insertOrUpdateSession(updatedSession)
+        }
+    }
+    
+    /**
+     * Clears the operator session (for logout)
+     */
+    suspend fun clearOperatorSession() {
+        operatorSessionDao.clearOperatorSession()
+    }
+    
+    /**
+     * Updates session activity status
+     */
+    suspend fun updateSessionStatus(isActive: Boolean) {
+        operatorSessionDao.updateSessionStatus(isActive)
     }
 }

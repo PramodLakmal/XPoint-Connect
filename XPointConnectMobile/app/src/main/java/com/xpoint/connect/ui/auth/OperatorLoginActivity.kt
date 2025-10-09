@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +46,7 @@ class OperatorLoginActivity : AppCompatActivity() {
     private lateinit var etUsername: TextInputEditText
     private lateinit var etPassword: TextInputEditText
     private lateinit var btnLogin: MaterialButton
+    private lateinit var cbRememberMe: MaterialCheckBox
     private lateinit var progressBar: View
     private lateinit var tvContactSupport: TextView
 
@@ -58,6 +60,9 @@ class OperatorLoginActivity : AppCompatActivity() {
         setupValidation()
         setupClickListeners()
         observeViewModel()
+        
+        // Check for existing session and auto-login
+        checkForAutoLogin()
     }
 
     private fun initializeViews() {
@@ -66,7 +71,9 @@ class OperatorLoginActivity : AppCompatActivity() {
         etUsername = findViewById(R.id.etOperatorUsername)
         etPassword = findViewById(R.id.etOperatorPassword)
         btnLogin = findViewById(R.id.btnOperatorLogin)
+        cbRememberMe = findViewById(R.id.cbRememberMe)
         progressBar = findViewById(R.id.progressBarOperator)
+        tvContactSupport = findViewById(R.id.tvContactSupport)
         tvContactSupport = findViewById(R.id.tvContactSupport)
     }
 
@@ -228,6 +235,19 @@ class OperatorLoginActivity : AppCompatActivity() {
                         saveUserId(response.userId)
                         saveUserType("StationOperator")
                     }
+                    
+                    // Save session if remember me is checked
+                    if (cbRememberMe.isChecked) {
+                        val username = etUsername.text?.toString()?.trim() ?: ""
+                        val password = etPassword.text?.toString() ?: ""
+                        userPreferencesManager.saveOperatorSession(
+                            username = username,
+                            password = password,
+                            rememberMe = true,
+                            userId = response.userId,
+                            authToken = response.token
+                        )
+                    }
                 }
 
                 showToast("✅ Welcome back, ${response.username}!")
@@ -295,6 +315,37 @@ class OperatorLoginActivity : AppCompatActivity() {
         super.onBackPressed()
         // Clear any sensitive data when leaving
         etPassword.text?.clear()
+    }
+    
+    /**
+     * Checks for existing operator session and performs auto-login if valid
+     */
+    private fun checkForAutoLogin() {
+        lifecycleScope.launch {
+            try {
+                if (userPreferencesManager.hasValidOperatorSession()) {
+                    val credentials = userPreferencesManager.getStoredOperatorCredentials()
+                    
+                    if (credentials != null) {
+                        val (username, password) = credentials
+                        
+                        // Auto-fill the form
+                        etUsername.setText(username)
+                        etPassword.setText(password)
+                        cbRememberMe.isChecked = true
+                        
+                        // Show auto-login message
+                        showToast("🔄 Logging in automatically...")
+                        
+                        // Perform auto-login
+                        performLogin()
+                    }
+                }
+            } catch (e: Exception) {
+                // If auto-login fails, just continue with normal login
+                showToast("Please enter your credentials")
+            }
+        }
     }
 }
 

@@ -2,12 +2,17 @@ package com.xpoint.connect.ui.operator
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
+import com.xpoint.connect.ui.auth.OperatorLoginActivity
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
@@ -19,6 +24,7 @@ class OperatorDashboardActivity : AppCompatActivity() {
     }
 
     private lateinit var viewModel: OperatorDashboardViewModel
+    private lateinit var userPreferencesManager: UserPreferencesManager
     private lateinit var tvTitle: TextView
     private var operatorId: String = ""
     private var stationId: String = ""
@@ -29,6 +35,9 @@ class OperatorDashboardActivity : AppCompatActivity() {
 
         // Initialize ViewModel
         viewModel = ViewModelProvider(this)[OperatorDashboardViewModel::class.java]
+        
+        // Initialize UserPreferencesManager
+        userPreferencesManager = (application as XPointConnectApplication).userPreferencesManager
 
         // Initialize UI components
         initializeViews()
@@ -131,6 +140,46 @@ class OperatorDashboardActivity : AppCompatActivity() {
                         viewModel.clearMessage()
                     }
                 }
+            }
+        }
+    }
+    
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.operator_dashboard_menu, menu)
+        return true
+    }
+    
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_logout -> {
+                performLogout()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    /**
+     * Performs logout by clearing session data and returning to login screen
+     */
+    private fun performLogout() {
+        lifecycleScope.launch {
+            try {
+                // Clear session data
+                userPreferencesManager.clearOperatorSession()
+                userPreferencesManager.logout()
+                
+                showToast("👋 Logged out successfully")
+                
+                // Navigate back to login
+                val intent = Intent(this@OperatorDashboardActivity, OperatorLoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+                finish()
+                
+            } catch (e: Exception) {
+                showToast("❌ Error during logout: ${e.message}")
             }
         }
     }

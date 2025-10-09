@@ -19,12 +19,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.xpoint.connect.data.database.dao.UserDao
+import com.xpoint.connect.data.database.dao.OperatorSessionDao
 import com.xpoint.connect.data.database.entity.UserEntity
+import com.xpoint.connect.data.database.entity.OperatorSessionEntity
 
-@Database(entities = [UserEntity::class], version = 2, exportSchema = false)
+@Database(entities = [UserEntity::class, OperatorSessionEntity::class], version = 3, exportSchema = false)
 abstract class XPointDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
+    abstract fun operatorSessionDao(): OperatorSessionDao
 
     companion object {
         @Volatile private var INSTANCE: XPointDatabase? = null
