@@ -23,7 +23,7 @@ import android.content.Context
 import com.xpoint.connect.data.model.*
 import com.xpoint.connect.data.repository.BookingRepository
 import com.xpoint.connect.data.repository.StationRepository
-import com.xpoint.connect.utils.QRCodeGenerator
+import com.xpoint.connect.utils.QRCodeGeneratorUtil
 import com.xpoint.connect.utils.Resource
 import com.xpoint.connect.utils.SharedPreferencesManager
 import java.text.SimpleDateFormat
@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.flow
 class ReservationManager(
         private val bookingRepository: BookingRepository,
         private val stationRepository: StationRepository,
-        private val qrCodeGenerator: QRCodeGenerator,
+        private val qrCodeGenerator: QRCodeGeneratorUtil,
         private val preferencesManager: SharedPreferencesManager,
         private val context: Context
 ) {
@@ -50,9 +50,8 @@ class ReservationManager(
     /**
      * Creates a new charging station reservation
      *
-     * Note: Coroutine Flow and Resource handling pattern adapted from
-     * Android official architecture sample on Kotlin Coroutines and Flow:
-     * https://developer.android.com/kotlin/flow
+     * Note: Coroutine Flow and Resource handling pattern adapted from Android official architecture
+     * sample on Kotlin Coroutines and Flow: https://developer.android.com/kotlin/flow
      */
     suspend fun createReservation(
             evOwnerNIC: String,
@@ -117,11 +116,11 @@ class ReservationManager(
         }
     }
 
-    /** 
-     * Modifies an existing reservation 
+    /**
+     * Modifies an existing reservation
      *
-     * Reference: Update booking logic adapted from Android clean architecture sample
-     * to demonstrate repository-based state updates using Kotlin Flow.
+     * Reference: Update booking logic adapted from Android clean architecture sample to demonstrate
+     * repository-based state updates using Kotlin Flow.
      * https://developer.android.com/topic/architecture
      */
     suspend fun modifyReservation(
@@ -197,8 +196,8 @@ class ReservationManager(
     /**
      * Cancels a booking with reason
      *
-     * Reference: Cancellation logic pattern inspired by Android Jetpack sample for
-     * coroutine-based data repository operations.
+     * Reference: Cancellation logic pattern inspired by Android Jetpack sample for coroutine-based
+     * data repository operations.
      */
     suspend fun cancelReservation(
             bookingId: String,
@@ -248,8 +247,8 @@ class ReservationManager(
     /**
      * Generates QR code for approved booking
      *
-     * Code reference: QR code generation logic adapted from Android QR code tutorial
-     * Source: https://www.geeksforgeeks.org/how-to-generate-qr-code-in-android/
+     * Code reference: QR code generation logic adapted from Android QR code tutorial Source:
+     * https://www.geeksforgeeks.org/how-to-generate-qr-code-in-android/
      */
     suspend fun generateBookingQRCode(booking: Booking): Flow<Resource<String>> = flow {
         emit(Resource.Loading())
