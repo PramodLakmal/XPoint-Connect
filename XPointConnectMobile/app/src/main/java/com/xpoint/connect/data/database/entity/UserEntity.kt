@@ -24,6 +24,7 @@ data class UserEntity(
         val authToken: String? = null,
         val refreshToken: String? = null,
         val userType: String? = null,
+        val userId: String? = null,
         val userNIC: String? = null,
         val userName: String? = null,
         val userEmail: String? = null,

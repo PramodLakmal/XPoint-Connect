@@ -28,6 +28,9 @@ interface UserDao {
     @Query("UPDATE user_preferences SET userType = :userType, updatedAt = :timestamp WHERE id = 1")
     suspend fun updateUserType(userType: String?, timestamp: Long = System.currentTimeMillis())
     
+    @Query("UPDATE user_preferences SET userId = :userId, updatedAt = :timestamp WHERE id = 1")
+    suspend fun updateUserId(userId: String?, timestamp: Long = System.currentTimeMillis())
+    
     @Query("UPDATE user_preferences SET isLoggedIn = :isLoggedIn, updatedAt = :timestamp WHERE id = 1")
     suspend fun updateLoginStatus(isLoggedIn: Boolean, timestamp: Long = System.currentTimeMillis())
     

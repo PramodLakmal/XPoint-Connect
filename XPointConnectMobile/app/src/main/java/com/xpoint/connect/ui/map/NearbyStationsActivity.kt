@@ -344,7 +344,7 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             
             // Create station type indicator
-            val stationType = if (station.type == 1) "DC Fast" else "AC Standard"
+            val stationType = if (station.type == "DC") "DC Fast" else "AC Standard"
             val availabilityText = if (station.isActive) {
                 "Available: ${station.availableSlots}/${station.totalSlots}"
             } else {
@@ -413,7 +413,7 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         
         // Set charging type
-        val chargingType = if (station.type == 1) "DC Fast" else "AC Standard"
+        val chargingType = if (station.type == "DC") "DC Fast" else "AC Standard"
         view.findViewById<TextView>(R.id.tvChargingType).text = chargingType
         
         // Set availability

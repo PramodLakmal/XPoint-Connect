@@ -58,6 +58,9 @@ class OperatorDashboardActivity : AppCompatActivity() {
 
         // Load operator stations
         viewModel.loadOperatorStations(operatorId)
+        
+        // Debug logging
+        android.util.Log.d("OperatorDashboard", "Loading stations for operatorId: $operatorId")
     }
 
     private fun initializeViews() {
@@ -108,18 +111,40 @@ class OperatorDashboardActivity : AppCompatActivity() {
     private fun observeUiState() {
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
+                android.util.Log.d("OperatorDashboard", "UI State updated - error: ${state.error}, assignedStation: ${state.assignedStation?.id}, chargingStation: ${state.chargingStation?.id}")
                 when {
                     state.error != null -> {
                         showToast("Error: ${state.error}")
+                        android.util.Log.e("OperatorDashboard", "Error: ${state.error}")
                         viewModel.clearMessage()
                     }
                     state.assignedStation != null -> {
                         stationId = state.assignedStation.id
                         showToast("Station loaded: ${state.assignedStation.name}")
+                        android.util.Log.d("OperatorDashboard", "Assigned station loaded: ${state.assignedStation.id}")
+                        viewModel.clearMessage()
+                    }
+                    state.chargingStation != null -> {
+                        stationId = state.chargingStation.id
+                        showToast("Station loaded: ${state.chargingStation.name}")
+                        android.util.Log.d("OperatorDashboard", "Charging station loaded: ${state.chargingStation.id}")
+                        updateStationIdDisplay(state.chargingStation.id)
                         viewModel.clearMessage()
                     }
                 }
             }
+        }
+    }
+
+    private fun updateStationIdDisplay(stationId: String) {
+        android.util.Log.d("OperatorDashboard", "updateStationIdDisplay called with stationId: $stationId")
+        val tvStationId = findViewById<TextView>(R.id.tvStationId)
+        if (tvStationId != null) {
+            tvStationId.text = "Station ID: $stationId"
+            tvStationId.visibility = View.VISIBLE
+            android.util.Log.d("OperatorDashboard", "Station ID display updated successfully")
+        } else {
+            android.util.Log.e("OperatorDashboard", "tvStationId TextView not found!")
         }
     }
 }

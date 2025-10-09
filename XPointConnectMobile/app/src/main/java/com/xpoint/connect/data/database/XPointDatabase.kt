@@ -21,7 +21,7 @@ import androidx.room.RoomDatabase
 import com.xpoint.connect.data.database.dao.UserDao
 import com.xpoint.connect.data.database.entity.UserEntity
 
-@Database(entities = [UserEntity::class], version = 1, exportSchema = false)
+@Database(entities = [UserEntity::class], version = 2, exportSchema = false)
 abstract class XPointDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao

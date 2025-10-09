@@ -225,6 +225,7 @@ class OperatorLoginActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     userPreferencesManager.apply {
                         saveAuthToken(response.token)
+                        saveUserId(response.userId)
                         saveUserType("StationOperator")
                     }
                 }

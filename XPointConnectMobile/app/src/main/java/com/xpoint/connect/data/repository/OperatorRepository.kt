@@ -3,6 +3,7 @@ package com.xpoint.connect.data.repository
 import com.xpoint.connect.data.api.ApiClient
 import com.xpoint.connect.data.model.AssignedStation
 import com.xpoint.connect.data.model.Booking
+import com.xpoint.connect.data.model.ChargingStation
 import com.xpoint.connect.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +20,38 @@ class OperatorRepository {
                 handleApiResponse(response)
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "Failed to fetch operator stations")
+            }
+        }
+    }
+
+    suspend fun getChargingStationsByOperator(operatorId: String): Resource<List<ChargingStation>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Get all charging stations
+                val response = apiService.getAllStations(activeOnly = true)
+                if (response.isSuccessful) {
+                    val allStations = response.body() ?: emptyList()
+                    
+                    // Debug logging
+                    android.util.Log.d("OperatorRepository", "Total stations: ${allStations.size}")
+                    android.util.Log.d("OperatorRepository", "Looking for operatorId: $operatorId")
+                    
+                    // Filter stations by operator ID
+                    val operatorStations = allStations.filter { it.operatorId == operatorId }
+                    android.util.Log.d("OperatorRepository", "Filtered stations: ${operatorStations.size}")
+                    
+                    if (operatorStations.isNotEmpty()) {
+                        operatorStations.forEach { station ->
+                            android.util.Log.d("OperatorRepository", "Found matching station: ${station.name} (ID: ${station.id})")
+                        }
+                    }
+                    
+                    Resource.Success(operatorStations)
+                } else {
+                    Resource.Error(response.message() ?: "Failed to fetch charging stations")
+                }
+            } catch (e: Exception) {
+                Resource.Error(e.message ?: "Failed to fetch charging stations")
             }
         }
     }

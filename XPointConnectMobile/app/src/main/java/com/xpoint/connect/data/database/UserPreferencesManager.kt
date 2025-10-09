@@ -77,6 +77,15 @@ class UserPreferencesManager(context: Context) {
         return userDao.getUser()?.userType
     }
 
+    // User ID Methods
+    suspend fun saveUserId(userId: String) {
+        userDao.updateUserId(userId)
+    }
+
+    suspend fun getUserId(): String? {
+        return userDao.getUser()?.userId
+    }
+
     // User Data Methods
     suspend fun saveUserData(evOwner: EVOwner) {
         userDao.updateUserData(
