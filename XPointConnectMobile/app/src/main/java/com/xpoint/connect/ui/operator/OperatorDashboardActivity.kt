@@ -68,20 +68,6 @@ class OperatorDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupCardClickListeners() {
-        // Booking Status Overview Card
-        findViewById<View>(R.id.cardBookingStatusOverview).setOnClickListener {
-            if (stationId.isNotBlank()) {
-                val stationName = tvTitle.text.toString().replace("Welcome, ", "").replace("Operator Dashboard", "Station")
-                val intent = Intent(this, BookingStatusOverviewActivity::class.java).apply {
-                    putExtra(BookingStatusOverviewActivity.EXTRA_STATION_ID, stationId)
-                    putExtra(BookingStatusOverviewActivity.EXTRA_STATION_NAME, stationName)
-                }
-                startActivity(intent)
-            } else {
-                showToast("Station information not available")
-            }
-        }
-        
         // Check In Bookings Card
         findViewById<View>(R.id.cardCheckInBookings).setOnClickListener {
             if (stationId.isNotBlank()) {

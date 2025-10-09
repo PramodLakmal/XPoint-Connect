@@ -24,7 +24,7 @@ class OperatorBookingsAdapter : RecyclerView.Adapter<OperatorBookingsAdapter.Boo
     override fun onBindViewHolder(holder: BookingViewHolder, position: Int) {
         val booking = bookings[position]
         
-        // Set basic booking information - using customer name or NIC
+        // Customer Information (evOwnerName or evOwnerNIC)
         val customerInfo = if (booking.evOwnerName.isNotEmpty()) {
             "Customer: ${booking.evOwnerName}"
         } else {
@@ -40,8 +40,31 @@ class OperatorBookingsAdapter : RecyclerView.Adapter<OperatorBookingsAdapter.Boo
             String.format("%.1fh", durationHours)
         }
         
-        // Booking details with duration and station info
-        holder.tvSubtitle.text = "Duration: $durationText • Station: ${booking.chargingStationName} • ID: ${booking.id.take(8)}"
+        // Booking details with duration, station info and full booking ID
+        holder.tvSubtitle.text = "Duration: $durationText • Station: ${booking.chargingStationName}\nBooking ID: ${booking.id}"
+        
+        // Total Amount
+        holder.tvAmount.text = "Amount: Rs. ${String.format("%.2f", booking.totalAmount)}"
+        
+        // Booking Date (from bookingDate field)
+        val bookingDateText = try {
+            if (booking.bookingDate.isNotEmpty()) {
+                // Parse ISO 8601 date format from backend
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                val date = inputFormat.parse(booking.bookingDate)
+                if (date != null) {
+                    outputFormat.format(date)
+                } else {
+                    "No date"
+                }
+            } else {
+                "No date"
+            }
+        } catch (e: Exception) {
+            "Invalid date"
+        }
+        holder.tvBookingDate.text = bookingDateText
         
         // Status with appropriate styling
         val statusText = getStatusText(booking.status)
@@ -56,7 +79,7 @@ class OperatorBookingsAdapter : RecyclerView.Adapter<OperatorBookingsAdapter.Boo
         }
         holder.tvStatus.setTextColor(textColor)
         
-        // Time information
+        // Reservation Date/Time (from reservationDateTime field)
         holder.tvTime.text = formatBookingTime(booking)
     }
 
@@ -147,6 +170,8 @@ class OperatorBookingsAdapter : RecyclerView.Adapter<OperatorBookingsAdapter.Boo
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         val tvSubtitle: TextView = itemView.findViewById(R.id.tvSubtitle)
         val tvStatus: TextView = itemView.findViewById(R.id.tvStatus)
+        val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
+        val tvBookingDate: TextView = itemView.findViewById(R.id.tvBookingDate)
         val tvTime: TextView = itemView.findViewById(R.id.tvTime)
     }
 }

@@ -37,12 +37,14 @@ class BookingHistoryAdapter : RecyclerView.Adapter<BookingHistoryAdapter.Booking
         private val tvStatus: TextView = itemView.findViewById(R.id.tvStatus)
         private val tvCustomerNIC: TextView = itemView.findViewById(R.id.tvCustomerNIC)
         private val tvSessionDate: TextView = itemView.findViewById(R.id.tvSessionDate)
+        private val tvStationName: TextView = itemView.findViewById(R.id.tvStationName)
+        private val tvBookingDate: TextView = itemView.findViewById(R.id.tvBookingDate)
         private val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
         private val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
 
         fun bind(booking: Booking) {
-            // Display shortened booking ID
-            tvBookingId.text = "Booking #${booking.id.takeLast(8)}"
+            // Display full booking ID
+            tvBookingId.text = "Booking ID: ${booking.id}"
             
             // Status with appropriate styling
             val statusText = when (booking.status) {
@@ -68,10 +70,37 @@ class BookingHistoryAdapter : RecyclerView.Adapter<BookingHistoryAdapter.Booking
                 }
             }
             
-            // Customer info
-            tvCustomerNIC.text = "Customer: ${booking.evOwnerNIC}"
+            // Customer info (evOwnerName or evOwnerNIC)
+            val customerText = if (booking.evOwnerName.isNotEmpty()) {
+                "Customer: ${booking.evOwnerName} (${booking.evOwnerNIC})"
+            } else {
+                "Customer: ${booking.evOwnerNIC}"
+            }
+            tvCustomerNIC.text = customerText
             
-            // Session date
+            // Charging Station Name
+            tvStationName.text = "Station: ${booking.chargingStationName}"
+            
+            // Booking Date
+            val bookingDateText = try {
+                if (booking.bookingDate.isNotEmpty()) {
+                    val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    val outputFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                    val date = inputFormat.parse(booking.bookingDate)
+                    if (date != null) {
+                        outputFormat.format(date)
+                    } else {
+                        "No date"
+                    }
+                } else {
+                    "No date"
+                }
+            } catch (e: Exception) {
+                "Invalid date"
+            }
+            tvBookingDate.text = bookingDateText
+            
+            // Session date (reservation date)
             val sessionDate = try {
                 if (booking.reservationDateTime.isNotEmpty()) {
                     // Parse ISO 8601 date format from backend
@@ -90,10 +119,10 @@ class BookingHistoryAdapter : RecyclerView.Adapter<BookingHistoryAdapter.Booking
             }
             tvSessionDate.text = "Session: $sessionDate"
             
-            // Duration
+            // Duration in minutes
             tvDuration.text = "Duration: ${booking.durationMinutes} minutes"
             
-            // Amount
+            // Total Amount
             tvAmount.text = "Amount: Rs. ${String.format("%.2f", booking.totalAmount)}"
         }
     }
