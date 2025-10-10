@@ -1,284 +1,223 @@
 /**
- * UserPreferencesManager.kt
+ * UserPreferencesManagerTemp.kt
  *
- * Purpose: Manages user preferences and session data using SQLite database storage Author: XPoint
- * Connect Development Team Date: September 27, 2025
- *
- * Description: This manager class provides a high-level interface for user data persistence using
- * Room database. It replaces SharedPreferences with more robust SQLite storage for better
- * performance and data integrity. Handles authentication tokens, user profile data, and application
- * preferences with coroutine support.
- *
- * Key Features:
- * - SQLite-based user data storage with Room ORM
- * - Authentication token management for API requests
- * - User profile data persistence and retrieval
- * - Session state management (login/logout)
- * - Reactive data observation through Flow
- * - Backward compatibility with existing preference methods
+ * Temporary fallback implementation using SharedPreferences while Room database issues are resolved
  */
 package com.xpoint.connect.data.database
 
 import android.content.Context
-import com.xpoint.connect.data.database.entity.UserEntity
-import com.xpoint.connect.data.database.entity.OperatorSessionEntity
+import android.content.SharedPreferences
 import com.xpoint.connect.data.model.EVOwner
-import com.xpoint.connect.utils.SessionEncryption
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
-/**
- * Reference:
- * General implementation approach adapted from Android Room documentation and
- * Kotlin coroutines best practices for data persistence:
- * https://developer.android.com/training/data-storage/room
- * https://developer.android.com/kotlin/flow
- *
- * The structural idea of replacing SharedPreferences with Room for token storage
- * follows guidance from official Android Developers documentation on Room and
- * offline data persistence.
- */
-class UserPreferencesManager(context: Context) {
+class UserPreferencesManager(private val context: Context) {
 
-    private val database = XPointDatabase.getDatabase(context)
-    private val userDao = database.userDao()
-    private val operatorSessionDao = database.operatorSessionDao()
+    private val prefs: SharedPreferences =
+            context.getSharedPreferences("xpoint_prefs", Context.MODE_PRIVATE)
 
-    /**
-     * Initializes the user preferences database with default values Creates a default user entity
-     * if no user data exists in the database
-     */
     suspend fun initialize() {
-        if (userDao.userExists() == 0) {
-            userDao.insertOrUpdateUser(UserEntity())
-        }
+        // No initialization needed for SharedPreferences
     }
 
-    // Auth Token Methods
     suspend fun saveAuthToken(token: String) {
-        userDao.updateAuthToken(token)
+        prefs.edit().putString("auth_token", token).apply()
     }
 
     suspend fun getAuthToken(): String? {
-        return userDao.getUser()?.authToken
+        return prefs.getString("auth_token", null)
     }
 
-    // Refresh Token Methods
-    suspend fun saveRefreshToken(token: String) {
-        userDao.updateRefreshToken(token)
-    }
-
-    suspend fun getRefreshToken(): String? {
-        return userDao.getUser()?.refreshToken
-    }
-
-    // User Type Methods
-    suspend fun saveUserType(userType: String) {
-        userDao.updateUserType(userType)
-    }
-
-    suspend fun getUserType(): String? {
-        return userDao.getUser()?.userType
-    }
-
-    // User ID Methods
     suspend fun saveUserId(userId: String) {
-        userDao.updateUserId(userId)
+        prefs.edit().putString("user_id", userId).apply()
     }
 
     suspend fun getUserId(): String? {
-        return userDao.getUser()?.userId
+        return prefs.getString("user_id", null)
     }
 
-    // User Data Methods
-    suspend fun saveUserData(evOwner: EVOwner) {
-        userDao.updateUserData(
-                nic = evOwner.nic,
-                name = "${evOwner.firstName} ${evOwner.lastName}",
-                email = evOwner.email,
-                phone = evOwner.phoneNumber,
-                license = evOwner.licenseNumber,
-                vehicle = evOwner.vehicleModel,
-                battery = evOwner.batteryCapacity,
-                isLoggedIn = true
-        )
+    suspend fun saveUserType(userType: String) {
+        prefs.edit().putString("user_type", userType).apply()
     }
 
-    /**
-     * Saves essential login data from the new simplified API response Stores authentication token
-     * and basic user information from login endpoint
-     * @param nic User's National Identity Card number
-     * @param fullName User's complete name from API response
-     * @param token JWT authentication token for API requests
-     */
-    suspend fun saveLoginData(nic: String, fullName: String, token: String) {
-        userDao.updateAuthToken(token)
-        userDao.updateUserData(
-                nic = nic,
-                name = fullName,
-                email = "", // Will be filled later when we get full profile
-                phone = "",
-                license = "",
-                vehicle = "",
-                battery = 0.0,
-                isLoggedIn = true
-        )
+    suspend fun getUserType(): String? {
+        return prefs.getString("user_type", null)
     }
 
-    suspend fun getUserNIC(): String? {
-        return userDao.getUser()?.userNIC
-    }
-
-    suspend fun getUserName(): String? {
-        return userDao.getUser()?.userName
+    suspend fun saveUserEmail(email: String) {
+        prefs.edit().putString("user_email", email).apply()
     }
 
     suspend fun getUserEmail(): String? {
-        return userDao.getUser()?.userEmail
+        return prefs.getString("user_email", null)
     }
 
-    suspend fun getPhoneNumber(): String? {
-        return userDao.getUser()?.phoneNumber
+    suspend fun saveUserName(userName: String) {
+        prefs.edit().putString("user_name", userName).apply()
     }
 
-    suspend fun getLicenseNumber(): String? {
-        return userDao.getUser()?.licenseNumber
+    suspend fun getUserName(): String? {
+        return prefs.getString("user_name", null)
+    }
+
+    suspend fun saveEVOwnerProfile(profile: EVOwner) {
+        prefs.edit().apply {
+            putString("ev_owner_id", profile.id)
+            putString("ev_owner_name", profile.firstName)
+            putString("ev_owner_email", profile.email)
+            putString("ev_owner_phone", profile.phoneNumber)
+            putString("ev_owner_address", profile.address)
+            apply()
+        }
+    }
+
+    suspend fun getEVOwnerProfile(): EVOwner? {
+        val id = prefs.getString("ev_owner_id", null) ?: return null
+        val name = prefs.getString("ev_owner_name", "") ?: ""
+        val email = prefs.getString("ev_owner_email", "") ?: ""
+        val phone = prefs.getString("ev_owner_phone", "") ?: ""
+        val address = prefs.getString("ev_owner_address", "") ?: ""
+
+        return EVOwner(
+                id = id,
+                firstName = name,
+                email = email,
+                phoneNumber = phone,
+                address = address
+        )
+    }
+
+    suspend fun isLoggedIn(): Boolean {
+        return getAuthToken() != null
+    }
+
+    suspend fun clearUserData() {
+        prefs.edit().clear().apply()
+    }
+
+    fun getUserFlow(): Flow<EVOwner?> = flow { emit(getEVOwnerProfile()) }
+
+    suspend fun saveRememberMe(remember: Boolean) {
+        prefs.edit().putBoolean("remember_me", remember).apply()
+    }
+
+    suspend fun getRememberMe(): Boolean {
+        return prefs.getBoolean("remember_me", false)
+    }
+
+    suspend fun saveAutoLogin(autoLogin: Boolean) {
+        prefs.edit().putBoolean("auto_login", autoLogin).apply()
+    }
+
+    suspend fun getAutoLogin(): Boolean {
+        return prefs.getBoolean("auto_login", false)
+    }
+
+    // Additional methods needed by the app
+    suspend fun saveLoginData(token: String, userId: String, userType: String) {
+        prefs.edit().apply {
+            putString("auth_token", token)
+            putString("user_id", userId)
+            putString("user_type", userType)
+            apply()
+        }
+    }
+
+    suspend fun getUserNIC(): String? {
+        return prefs.getString("user_nic", null)
+    }
+
+    suspend fun saveUserNIC(nic: String) {
+        prefs.edit().putString("user_nic", nic).apply()
     }
 
     suspend fun getVehicleModel(): String? {
-        return userDao.getUser()?.vehicleModel
+        return prefs.getString("vehicle_model", null)
     }
 
     suspend fun getBatteryCapacity(): Double {
-        return userDao.getUser()?.batteryCapacity ?: 0.0
+        return prefs.getString("battery_capacity", "0")?.toDoubleOrNull() ?: 0.0
     }
 
-    // Login Status Methods
-    suspend fun isLoggedIn(): Boolean {
-        return userDao.getUser()?.isLoggedIn ?: false
-    }
-
-    // First Time Methods
-    suspend fun setFirstTime(isFirstTime: Boolean) {
-        userDao.updateFirstTimeStatus(isFirstTime)
-    }
-
-    suspend fun isFirstTime(): Boolean {
-        return userDao.getUser()?.isFirstTime ?: true
-    }
-
-    // Clear Data Methods
-    suspend fun clearUserData() {
-        userDao.clearAllData()
-        initialize() // Re-initialize with default user
+    suspend fun saveUserData(profile: EVOwner) {
+        saveEVOwnerProfile(profile)
+        saveUserNIC(profile.nic)
+        prefs.edit().apply {
+            putString("vehicle_model", profile.vehicleModel)
+            putString("battery_capacity", profile.batteryCapacity.toString())
+            putString("license_number", profile.licenseNumber)
+            putInt("vehicle_year", profile.vehicleYear)
+            apply()
+        }
     }
 
     suspend fun logout() {
-        userDao.logout()
+        clearUserData()
     }
 
-    // Flow Methods for Reactive Programming
-    fun getUserFlow(): Flow<UserEntity?> {
-        return userDao.getUserFlow()
-    }
-
-    // Get complete user entity
-    suspend fun getUser(): UserEntity? {
-        return userDao.getUser()
-    }
-
-    // Operator Session Management Methods
-    
-    /**
-     * Saves operator session for persistent login
-     * @param username Operator username
-     * @param password Operator password (will be encrypted)
-     * @param rememberMe Whether to remember the session
-     * @param userId Operator user ID from login response
-     * @param authToken Authentication token from login response
-     */
+    // Operator session management methods
     suspend fun saveOperatorSession(
         username: String,
         password: String,
         rememberMe: Boolean,
-        userId: String = "",
-        authToken: String = ""
+        userId: String? = null,
+        authToken: String? = null
     ) {
-        val encryptedUsername = SessionEncryption.encrypt(username)
-        val encryptedPassword = SessionEncryption.encrypt(password)
-        val currentTime = System.currentTimeMillis()
-        val sessionExpiry = currentTime + (30 * 24 * 60 * 60 * 1000L) // 30 days
-        
-        val session = OperatorSessionEntity(
-            sessionId = "operator_session",
-            encryptedUsername = encryptedUsername,
-            encryptedPassword = encryptedPassword,
-            sessionTimestamp = currentTime,
-            rememberMe = rememberMe,
-            isActive = true,
-            userId = userId,
-            username = username,
-            authToken = authToken,
-            sessionExpiry = sessionExpiry
-        )
-        
-        operatorSessionDao.insertOrUpdateSession(session)
-    }
-    
-    /**
-     * Checks if there's a valid operator session for auto-login
-     */
-    suspend fun hasValidOperatorSession(): Boolean {
-        val session = operatorSessionDao.getValidSession()
-        return session != null && session.rememberMe && session.isActive
-    }
-    
-    /**
-     * Gets stored operator credentials for auto-login
-     * Returns Pair of (username, password) or null if no valid session
-     */
-    suspend fun getStoredOperatorCredentials(): Pair<String, String>? {
-        val session = operatorSessionDao.getValidSession()
-        return if (session != null && session.rememberMe && session.isActive) {
-            val username = SessionEncryption.decrypt(session.encryptedUsername)
-            val password = SessionEncryption.decrypt(session.encryptedPassword)
-            Pair(username, password)
-        } else null
-    }
-    
-    /**
-     * Gets the stored operator session data
-     */
-    suspend fun getOperatorSession(): OperatorSessionEntity? {
-        return operatorSessionDao.getOperatorSession()
-    }
-    
-    /**
-     * Updates the session with new auth token and user ID after successful login
-     */
-    suspend fun updateOperatorSessionToken(userId: String, authToken: String) {
-        val session = operatorSessionDao.getOperatorSession()
-        if (session != null) {
-            val updatedSession = session.copy(
-                userId = userId,
-                authToken = authToken,
-                sessionTimestamp = System.currentTimeMillis(),
-                isActive = true
-            )
-            operatorSessionDao.insertOrUpdateSession(updatedSession)
+        if (rememberMe) {
+            prefs.edit().apply {
+                putString("operator_username", username)
+                putString("operator_password", password) // Note: In production, this should be encrypted
+                putString("operator_user_id", userId)
+                putString("operator_auth_token", authToken)
+                putBoolean("operator_remember_me", true)
+                putLong("operator_session_created", System.currentTimeMillis())
+                apply()
+            }
+        } else {
+            clearOperatorSession()
         }
     }
-    
-    /**
-     * Clears the operator session (for logout)
-     */
-    suspend fun clearOperatorSession() {
-        operatorSessionDao.clearOperatorSession()
+
+    suspend fun getOperatorSession(): Pair<String, String>? {
+        val rememberMe = prefs.getBoolean("operator_remember_me", false)
+        if (!rememberMe) return null
+
+        val username = prefs.getString("operator_username", null) ?: return null
+        val password = prefs.getString("operator_password", null) ?: return null
+
+        // Check if session is still valid (30 days)
+        val sessionCreated = prefs.getLong("operator_session_created", 0)
+        val thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000
+        if (System.currentTimeMillis() - sessionCreated > thirtyDaysInMillis) {
+            clearOperatorSession()
+            return null
+        }
+
+        return Pair(username, password)
     }
-    
-    /**
-     * Updates session activity status
-     */
-    suspend fun updateSessionStatus(isActive: Boolean) {
-        operatorSessionDao.updateSessionStatus(isActive)
+
+    suspend fun clearOperatorSession() {
+        prefs.edit().apply {
+            remove("operator_username")
+            remove("operator_password")
+            remove("operator_user_id")
+            remove("operator_auth_token")
+            remove("operator_remember_me")
+            remove("operator_session_created")
+            apply()
+        }
+    }
+
+    suspend fun isAutoLoginEnabled(): Boolean {
+        return prefs.getBoolean("operator_remember_me", false)
+    }
+
+    suspend fun hasValidOperatorSession(): Boolean {
+        val session = getOperatorSession()
+        return session != null
+    }
+
+    suspend fun getStoredOperatorCredentials(): Pair<String, String>? {
+        return getOperatorSession()
     }
 }
