@@ -1,3 +1,7 @@
+﻿/*
+ * EVOwnerDTOs.cs
+ * Data transfer objects for EV owner operations
+ */
 using System.ComponentModel.DataAnnotations;
 
 namespace XPoint_Connect_API.DTOs

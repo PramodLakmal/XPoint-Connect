@@ -1,3 +1,7 @@
+﻿/*
+ * UsersController.cs
+ * Manages system user operations including CRUD and role management
+ */
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using XPoint_Connect_API.DTOs;

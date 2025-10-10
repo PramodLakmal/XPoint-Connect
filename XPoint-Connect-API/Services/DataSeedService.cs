@@ -1,3 +1,7 @@
+﻿/*
+ * DataSeedService.cs
+ * Service for seeding initial data
+ */
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;
 using XPoint_Connect_API.Services;

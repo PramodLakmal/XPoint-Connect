@@ -1,3 +1,7 @@
+﻿/*
+ * QRCodeService.cs
+ * Service for QR code generation and validation
+ */
 using System.Text;
 using System.Text.Json;
 

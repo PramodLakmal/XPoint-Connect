@@ -1,3 +1,7 @@
+﻿/*
+ * OperatorAssignmentDTOs.cs
+ * Data transfer objects for operator assignments
+ */
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
 

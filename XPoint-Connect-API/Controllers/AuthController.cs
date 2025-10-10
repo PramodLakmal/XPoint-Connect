@@ -1,3 +1,8 @@
+/*
+ * AuthController.cs
+ * Handles authentication and authorization for users and EV owners
+ */
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using XPoint_Connect_API.DTOs;
@@ -23,6 +28,7 @@ namespace XPoint_Connect_API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto loginRequest)
         {
+            // Authenticate system users (BackOffice, StationOperator)
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -37,6 +43,7 @@ namespace XPoint_Connect_API.Controllers
         [HttpPost("evowner/login")]
         public async Task<ActionResult<EVOwnerLoginResponseDto>> EVOwnerLogin([FromBody] EVOwnerLoginDto loginRequest)
         {
+            // Authenticate EV owners using NIC and password
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -51,6 +58,7 @@ namespace XPoint_Connect_API.Controllers
         [HttpPost("evowner/register")]
         public async Task<ActionResult<EVOwnerResponseDto>> RegisterEVOwner([FromBody] CreateEVOwnerDto createEVOwnerDto)
         {
+            // Register new EV owner account
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

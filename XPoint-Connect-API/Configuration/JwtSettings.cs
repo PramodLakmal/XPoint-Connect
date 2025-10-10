@@ -1,3 +1,8 @@
+/*
+ * JwtSettings.cs
+ * Configuration class for JWT authentication settings
+ */
+
 namespace XPoint_Connect_API.Configuration
 {
     public class JwtSettings

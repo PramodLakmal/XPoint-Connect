@@ -1,3 +1,7 @@
+﻿/*
+ * User.cs
+ * User model for system users (BackOffice, StationOperator)
+ */
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;

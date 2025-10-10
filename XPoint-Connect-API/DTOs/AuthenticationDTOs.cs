@@ -1,3 +1,7 @@
+﻿/*
+ * AuthenticationDTOs.cs
+ * Data transfer objects for authentication
+ */
 using System.ComponentModel.DataAnnotations;
 using XPoint_Connect_API.Models;
 

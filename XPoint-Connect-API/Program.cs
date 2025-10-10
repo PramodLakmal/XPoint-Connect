@@ -1,3 +1,8 @@
+/*
+ * Program.cs
+ * Main entry point for the XPoint-Connect API application
+ */
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -7,7 +12,7 @@ using XPoint_Connect_API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add configuration
+// Configure application settings and dependency injection
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 

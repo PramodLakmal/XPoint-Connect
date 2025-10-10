@@ -1,3 +1,8 @@
+/*
+ * MongoDbSettings.cs
+ * Configuration class for MongoDB database settings
+ */
+
 namespace XPoint_Connect_API.Configuration
 {
     public class MongoDbSettings

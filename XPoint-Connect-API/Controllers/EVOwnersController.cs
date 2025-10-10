@@ -1,3 +1,8 @@
+/*
+ * EVOwnersController.cs
+ * Manages EV owner operations including profile management and activation
+ */
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
