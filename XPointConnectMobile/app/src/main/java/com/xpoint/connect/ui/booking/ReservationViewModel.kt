@@ -197,17 +197,17 @@ class ReservationViewModel(
 
     /** Utility methods for UI */
     fun canModifyBooking(booking: Booking): Boolean {
-        return booking.bookingStatus.value in arrayOf(0, 1) && // Pending or Approved
+        return booking.status in arrayOf("Pending", "Approved") && // Pending or Approved
         isMoreThanHoursAway(booking.reservationDateTime, 2)
     }
 
     fun canCancelBooking(booking: Booking): Boolean {
-        return booking.bookingStatus.value in arrayOf(0, 1) && // Pending or Approved
+        return booking.status in arrayOf("Pending", "Approved") && // Pending or Approved
         isMoreThanHoursAway(booking.reservationDateTime, 1)
     }
 
     fun canGenerateQRCode(booking: Booking): Boolean {
-        return booking.bookingStatus.value == 1 && // Approved
+        return booking.status == "Approved" && // Approved
         !isMoreThanHoursAway(booking.reservationDateTime, 1)
     }
 

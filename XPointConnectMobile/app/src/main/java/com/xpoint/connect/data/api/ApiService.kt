@@ -110,6 +110,16 @@ interface ApiService {
         @GET("api/Bookings/dashboard/{nic}")
         suspend fun getDashboardStats(@Path("nic") nic: String): Response<DashboardStats>
 
+        // Booking check-in and check-out
+        @POST("api/Bookings/{id}/checkin")
+        suspend fun checkInBooking(@Path("id") bookingId: String): Response<Booking>
+
+        @POST("api/Bookings/{id}/checkout")
+        suspend fun checkOutBooking(
+            @Path("id") bookingId: String, 
+            @Body request: CheckOutBookingRequest
+        ): Response<Booking>
+
         // EV Owner Profile Management
         @GET("api/EVOwners/{nic}")
         suspend fun getEVOwnerProfile(@Path("nic") nic: String): Response<EVOwner>

@@ -44,7 +44,7 @@ data class Booking(
         @SerializedName("startTime") val startTime: Date = Date(),
         @SerializedName("endTime") val endTime: Date = Date(),
         @SerializedName("durationMinutes") val durationMinutes: Int = 480,
-        @SerializedName("status") val status: Int = 0, // Changed to Int to match API
+        @SerializedName("status") val status: String = "Pending", // Changed to String to match API
         @SerializedName("totalAmount") val totalAmount: Double = 0.0,
         @SerializedName("qrCode") val qrCode: String = "",
         @SerializedName("checkInTime") val checkInTime: String? = null,
@@ -55,9 +55,9 @@ data class Booking(
         @SerializedName("updatedAt") val updatedAt: String? = null,
         @SerializedName("operatorNotes") val operatorNotes: String? = null
 ) {
-        // Helper property to convert status int to enum
+        // Helper property to convert status string to enum
         val bookingStatus: BookingStatus
-                get() = BookingStatus.fromInt(status)
+                get() = BookingStatus.fromString(status)
 }
 
 /**
@@ -67,17 +67,30 @@ data class Booking(
  * Kotlin enum implementation style based on JetBrains official documentation:
  * https://kotlinlang.org/docs/enum-classes.html
  */
-enum class BookingStatus(val value: Int) {
-        Pending(0),
-        Approved(1),
-        CheckedIn(2),
-        Completed(3),
-        Cancelled(4),
-        NoShow(5);
+enum class BookingStatus(val value: String) {
+        Pending("Pending"),
+        Approved("Approved"),
+        CheckedIn("CheckedIn"),
+        Completed("Completed"),
+        Cancelled("Cancelled"),
+        NoShow("NoShow");
 
         companion object {
+                fun fromString(value: String): BookingStatus {
+                        return values().find { it.value.equals(value, ignoreCase = true) } ?: Pending
+                }
+                
                 fun fromInt(value: Int): BookingStatus {
-                        return values().find { it.value == value } ?: Pending
+                        // Backward compatibility mapping
+                        return when(value) {
+                                0 -> Pending
+                                1 -> Approved
+                                2 -> CheckedIn
+                                3 -> Completed
+                                4 -> Cancelled
+                                5 -> NoShow
+                                else -> Pending
+                        }
                 }
         }
 }

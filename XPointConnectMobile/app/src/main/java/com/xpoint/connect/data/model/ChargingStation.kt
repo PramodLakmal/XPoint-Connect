@@ -27,7 +27,7 @@ data class ChargingStation(
         @SerializedName("id") val id: String = "",
         @SerializedName("name") val name: String = "",
         @SerializedName("location") val location: Location = Location(),
-        @SerializedName("type") val type: Int = 0,
+        @SerializedName("type") val type: String = "AC",
         @SerializedName("totalSlots") val totalSlots: Int = 0,
         @SerializedName("availableSlots") val availableSlots: Int = 0,
         @SerializedName("schedule") val schedule: List<TimeSlot> = emptyList(),
