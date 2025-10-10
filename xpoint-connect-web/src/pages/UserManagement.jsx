@@ -269,28 +269,6 @@ const UserManagement = () => {
         </button>
       </div>
 
-      {/* Role Information Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-          <h3 className="font-semibold text-primary-800 mb-2">BackOffice Administrator</h3>
-          <ul className="text-sm text-primary-700 space-y-1">
-            <li>✓ Complete system administration access</li>
-            <li>✓ User management capabilities</li>
-            <li>✓ Full access to all features</li>
-            <li>✓ System configuration and monitoring</li>
-          </ul>
-        </div>
-        <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
-          <h3 className="font-semibold text-secondary-800 mb-2">Station Operator</h3>
-          <ul className="text-sm text-secondary-700 space-y-1">
-            <li>✓ EV owner account management</li>
-            <li>✓ Charging station operations</li>
-            <li>✓ Booking management and approval</li>
-            <li>✓ Limited to operational tasks</li>
-          </ul>
-        </div>
-      </div>
-
       <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
         <div className="p-6 border-b border-secondary-200">
           <div className="relative">

@@ -38,7 +38,6 @@ const ChargingStationManagement = () => {
     try {
       setLoading(true);
       const response = await api.get('/chargingstations?activeOnly=false');
-      console.log('Fetched stations:', response.data);
       setStations(response.data);
     } catch (error) {
       toast.error('Failed to fetch charging stations');
@@ -312,7 +311,6 @@ const ChargingStationManagement = () => {
           operatorId: station.operatorId || '',
         });
 
-        console.log('Station data for edit:', station);
       } else {
         setFormData({
           name: '',

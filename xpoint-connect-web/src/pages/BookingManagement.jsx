@@ -190,8 +190,6 @@ const BookingManagement = () => {
     return matchesSearch && matchesStatus;
   });
 
-  console.log('Filtered Bookings:', filteredBookings);
-
   const BookingModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, booking = null, evOwners, chargingStations }) => {
     const [formData, setFormData] = useState({
       evOwnerNic: '',

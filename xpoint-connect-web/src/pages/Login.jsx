@@ -144,33 +144,10 @@ const Login = () => {
               )}
             </button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-secondary-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-secondary-500">Demo Credentials</span>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="bg-secondary-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-secondary-700 mb-1">BackOffice Admin</p>
-                <p className="text-xs text-secondary-600">Username: admin</p>
-                <p className="text-xs text-secondary-600">Password: Admin123!</p>
-              </div>
-              <div className="bg-secondary-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-secondary-700 mb-1">Station Operator</p>
-                <p className="text-xs text-secondary-600">Username: operator1</p>
-                <p className="text-xs text-secondary-600">Password: Operator123!</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-primary-100 text-sm">
-          © 2024 XPoint Connect. All rights reserved.
+          ï¿½ 2024 XPoint Connect. All rights reserved.
         </p>
       </div>
     </div>

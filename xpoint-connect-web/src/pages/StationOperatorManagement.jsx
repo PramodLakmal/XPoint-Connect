@@ -23,7 +23,6 @@ const StationOperatorManagement = () => {
     try {
       setLoading(true);
       const response = await api.get('/users');
-      console.log('All users from API:', response.data);
       
       // Filter only operators (role "StationOperator") and handle both field name formats
       const operatorUsers = response.data.filter(user => 
@@ -31,7 +30,6 @@ const StationOperatorManagement = () => {
         (user.IsActive !== false && user.isActive !== false)
       );
       
-      console.log('Filtered operators:', operatorUsers);
       setOperators(operatorUsers);
     } catch (error) {
       console.error('Error fetching operators:', error);
