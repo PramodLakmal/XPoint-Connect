@@ -75,6 +75,12 @@ class DashboardFragment : Fragment() {
             startActivity(intent)
         }
 
+        view.findViewById<View>(R.id.cardNearbyStations)?.setOnClickListener {
+            // Navigate to nearby stations map activity
+            val intent = Intent(requireContext(), NearbyStationsActivity::class.java)
+            startActivity(intent)
+        }
+
         // Add refresh functionality - long press on stats to refresh
         view.findViewById<View>(R.id.tvPendingCount)?.setOnLongClickListener {
             refreshDashboardData()

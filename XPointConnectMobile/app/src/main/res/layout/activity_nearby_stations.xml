@@ -20,19 +20,6 @@
         android:indeterminateTint="@color/primary"
         android:visibility="gone" />
 
-    <!-- Floating Action Button for Station List View -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabStationList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="16dp"
-        android:src="@drawable/ic_menu"
-        app:tint="@color/white"
-        app:backgroundTint="@color/primary"
-        android:contentDescription="View station list" />
-
     <!-- Search Card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/searchCard"
