@@ -29,6 +29,7 @@ const Dashboard = () => {
     fetchDashboardData()
   }, [])
 
+  // Fetch dashboard data including system stats and recent bookings
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
@@ -57,6 +58,7 @@ const Dashboard = () => {
     }
   }
 
+  // Generate system alerts based on current system statistics and bookings
   const generateSystemAlerts = (systemStats, bookings) => {
     const alerts = []
     
@@ -97,6 +99,7 @@ const Dashboard = () => {
     setSystemAlerts(alerts)
   }
 
+  // Component to display a statistic card with optional trend and link
   const StatCard = ({ title, value, icon: Icon, trend, trendValue, color = 'primary', link = null }) => {
     const colorClasses = {
       primary: 'bg-primary-50 text-primary-600 border-primary-200',
@@ -140,7 +143,9 @@ const Dashboard = () => {
     )
   }
 
+  // Component to display a system alert card with appropriate styling
   const AlertCard = ({ alert }) => {
+    // Get appropriate icon based on alert type
     const getAlertIcon = (type) => {
       switch (type) {
         case 'warning':
@@ -154,6 +159,7 @@ const Dashboard = () => {
       }
     }
 
+    // Get appropriate color classes based on alert type
     const getAlertColor = (type) => {
       switch (type) {
         case 'warning':
@@ -391,7 +397,7 @@ const Dashboard = () => {
                         <span className="text-secondary-900 font-medium">
                           {booking.evOwner?.fullName || 'Unknown Owner'}
                         </span>
-                        <span className="text-secondary-600 mx-2">•</span>
+                        <span className="text-secondary-600 mx-2">ï¿½</span>
                         <span className="text-secondary-600">
                           {booking.station?.name || 'Unknown Station'}
                         </span>

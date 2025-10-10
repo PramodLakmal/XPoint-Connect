@@ -34,6 +34,7 @@ const ChargingStationManagement = () => {
     fetchOperators();
   }, []);
 
+  // Fetch all charging stations from the API
   const fetchStations = async () => {
     try {
       setLoading(true);
@@ -46,6 +47,7 @@ const ChargingStationManagement = () => {
     }
   };
 
+  // Fetch station operators from the API
   const fetchOperators = async () => {
     try {
       const response = await api.get('/users');
@@ -57,6 +59,7 @@ const ChargingStationManagement = () => {
     }
   };
 
+  // Create a new charging station with operator assignment
   const handleCreateStation = async (formData) => {
     try {
       const stationData = {
@@ -96,6 +99,7 @@ const ChargingStationManagement = () => {
     }
   };
 
+  // Update an existing charging station
   const handleUpdateStation = async (formData) => {
     try {
       const stationData = {

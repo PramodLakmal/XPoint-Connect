@@ -1,3 +1,4 @@
+// Format date to readable string format (e.g., "Jan 15, 2024")
 export const formatDate = (date) => {
   if (!date) return ''
   return new Date(date).toLocaleDateString('en-US', {
@@ -7,6 +8,7 @@ export const formatDate = (date) => {
   })
 }
 
+// Format date and time to readable string format (e.g., "Jan 15, 2024, 2:30 PM")
 export const formatDateTime = (date) => {
   if (!date) return ''
   return new Date(date).toLocaleString('en-US', {
@@ -18,6 +20,7 @@ export const formatDateTime = (date) => {
   })
 }
 
+// Format time to readable string format (e.g., "2:30 PM")
 export const formatTime = (date) => {
   if (!date) return ''
   return new Date(date).toLocaleTimeString('en-US', {
@@ -26,6 +29,7 @@ export const formatTime = (date) => {
   })
 }
 
+// Check if the given datetime is at least 12 hours in the future
 export const isWithin12Hours = (dateTime) => {
   if (!dateTime) return false
   const now = new Date()
@@ -34,6 +38,7 @@ export const isWithin12Hours = (dateTime) => {
   return diffInHours >= 12
 }
 
+// Check if the given datetime is within the next 7 days
 export const isWithin7Days = (dateTime) => {
   if (!dateTime) return false
   const now = new Date()
@@ -42,6 +47,7 @@ export const isWithin7Days = (dateTime) => {
   return diffInDays <= 7 && diffInDays >= 0
 }
 
+// Validate if the given datetime is valid for making a reservation (future date within 7 days)
 export const isValidReservationDate = (dateTime) => {
   if (!dateTime) return false
   const now = new Date()
@@ -51,6 +57,7 @@ export const isValidReservationDate = (dateTime) => {
   return diffInHours > 0 && diffInHours <= (7 * 24)
 }
 
+// Check if a booking can be updated based on status and time constraints
 export const canUpdateBooking = (reservationDateTime, currentStatus) => {
   if (!reservationDateTime) return false
   
@@ -64,6 +71,7 @@ export const canUpdateBooking = (reservationDateTime, currentStatus) => {
   return isWithin12Hours(reservationDateTime)
 }
 
+// Check if a booking can be cancelled based on status and time constraints
 export const canCancelBooking = (reservationDateTime, currentStatus) => {
   if (!reservationDateTime) return false
   
@@ -77,11 +85,13 @@ export const canCancelBooking = (reservationDateTime, currentStatus) => {
   return isWithin12Hours(reservationDateTime)
 }
 
+// Capitalize the first letter of a string and make the rest lowercase
 export const capitalize = (str) => {
   if (!str) return ''
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
+// Validate Sri Lankan National Identity Card (NIC) format
 export const validateNIC = (nic) => {
   // Sri Lankan NIC validation
   const oldNICPattern = /^[0-9]{9}[vVxX]$/
@@ -89,23 +99,27 @@ export const validateNIC = (nic) => {
   return oldNICPattern.test(nic) || newNICPattern.test(nic)
 }
 
+// Validate email address format using regex pattern
 export const validateEmail = (email) => {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailPattern.test(email)
 }
 
+// Validate Sri Lankan phone number format
 export const validatePhoneNumber = (phone) => {
   // Sri Lankan phone number validation
   const phonePattern = /^(\+94|0)?[1-9][0-9]{8}$/
   return phonePattern.test(phone)
 }
 
+// Validate password strength (minimum 6 characters with letters and numbers)
 export const validatePassword = (password) => {
   // At least 6 characters, contain at least one letter and one number
   const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/
   return passwordPattern.test(password)
 }
 
+// Validate reservation time and return validation result with message
 export const getReservationTimeValidation = (dateTime) => {
   if (!dateTime) {
     return { isValid: false, message: 'Date and time are required' }
@@ -127,6 +141,7 @@ export const getReservationTimeValidation = (dateTime) => {
   return { isValid: true, message: 'Valid reservation time' }
 }
 
+// Get color class name based on booking status for UI styling
 export const getBookingStatusColor = (status) => {
   switch (status?.toLowerCase()) {
     case 'pending':
@@ -144,6 +159,7 @@ export const getBookingStatusColor = (status) => {
   }
 }
 
+// Create a debounced version of a function to limit execution frequency
 export const debounce = (func, delay) => {
   let timeoutId
   return (...args) => {
@@ -152,6 +168,7 @@ export const debounce = (func, delay) => {
   }
 }
 
+// Generate a random alphanumeric string of specified length
 export const generateRandomString = (length = 8) => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let result = ''

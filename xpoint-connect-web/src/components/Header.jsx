@@ -6,6 +6,7 @@ const Header = () => {
   const { user, logout } = useAuth()
   const [showDropdown, setShowDropdown] = useState(false)
 
+  // Handle user logout action
   const handleLogout = () => {
     logout()
   }

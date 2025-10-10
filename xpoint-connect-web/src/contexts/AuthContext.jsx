@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 
 const AuthContext = createContext({})
 
+// Custom hook to access authentication context with error handling
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
@@ -16,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Initialize authentication state from localStorage on component mount
   useEffect(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
+  // Authenticate user with username and password, store token and user data
   const login = async (username, password) => {
     try {
       const response = await api.post('/auth/login', {
@@ -59,6 +62,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Clear authentication data and log out user
   const logout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -66,14 +70,17 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully')
   }
 
+  // Check if current user has BackOffice role
   const isBackOffice = () => {
     return user?.role === 'BackOffice'
   }
 
+  // Check if current user has StationOperator role
   const isStationOperator = () => {
     return user?.role === 'StationOperator'
   }
 
+  // Check if current user has access to a specific role-based feature
   const hasAccess = (requiredRole) => {
     if (!user) return false
     if (requiredRole === 'BackOffice') return isBackOffice()

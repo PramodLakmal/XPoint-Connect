@@ -18,6 +18,7 @@ const Login = () => {
     return <Navigate to="/dashboard" replace />
   }
 
+  // Handle form submission for user login
   const handleSubmit = async (e) => {
     e.preventDefault()
     
@@ -40,6 +41,7 @@ const Login = () => {
     }
   }
 
+  // Handle input field changes and update form state
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({

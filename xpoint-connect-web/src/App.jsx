@@ -15,6 +15,7 @@ import OperatorDashboard from './pages/OperatorDashboard'
 import OperatorBookingManagement from './pages/OperatorBookingManagement'
 import './App.css'
 
+// Main application component that sets up routing and authentication context
 function App() {
   return (
     <AuthProvider>

@@ -19,6 +19,7 @@ const EVOwnerManagement = () => {
     fetchReactivationRequests()
   }, [])
 
+  // Fetch all EV owners from the API
   const fetchEVOwners = async () => {
     try {
       setLoading(true)
@@ -31,6 +32,7 @@ const EVOwnerManagement = () => {
     }
   }
 
+  // Fetch EV owners requesting reactivation
   const fetchReactivationRequests = async () => {
     try {
       const response = await api.get('/evowners/reactivation-requests')
@@ -40,7 +42,7 @@ const EVOwnerManagement = () => {
     }
   }
 
-  // Note: now receives data object from modal
+  // Create a new EV owner with validation
   const handleCreateEVOwner = async (data) => {
     // Validation
     if (!validateNIC(data.nic)) {
@@ -70,7 +72,7 @@ const EVOwnerManagement = () => {
     }
   }
 
-  // Note: now receives data object from modal
+  // Update an existing EV owner with validation
   const handleUpdateEVOwner = async (data) => {
     try {
       const updateData = { ...data }
@@ -92,6 +94,7 @@ const EVOwnerManagement = () => {
     }
   }
 
+  // Activate an EV owner account
   const handleActivateOwner = async (nic) => {
     try {
       await api.post(`/evowners/${nic}/activate`)
@@ -104,6 +107,7 @@ const EVOwnerManagement = () => {
     }
   }
 
+  // Deactivate an EV owner account with confirmation
   const handleDeactivateOwner = async (nic) => {
     if (window.confirm('Are you sure you want to deactivate this EV owner?')) {
       try {
@@ -118,22 +122,26 @@ const EVOwnerManagement = () => {
     }
   }
 
+  // Show EV owner details in a modal
   const viewOwnerDetails = (owner) => {
     setSelectedOwner(owner)
     setShowDetailsModal(true)
   }
 
+  // Open modal for creating a new EV owner
   const openCreateModal = () => {
     setSelectedOwner(null) // ensure no owner is selected for create
     setShowCreateModal(true)
   }
 
+  // Open modal for editing an existing EV owner
   const openEditModal = (owner) => {
     // DO NOT set parent form state here — modal will initialize its own local state from owner
     setSelectedOwner(owner)
     setShowEditModal(true)
   }
 
+  // Filter EV owners based on search term
   const filteredOwners = evOwners.filter(owner =>
     owner.nic.toLowerCase().includes(searchTerm.toLowerCase()) ||
     owner.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -72,6 +72,7 @@ const Sidebar = () => {
         },
       ]
 
+  // Filter navigation items based on user role permissions
   const filteredNavigation = navigation.filter(item => 
     !item.requiredRole || hasAccess(item.requiredRole)
   )
