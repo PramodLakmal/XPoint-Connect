@@ -126,6 +126,11 @@ data class CancelBookingRequest(
         @SerializedName("cancellationReason") val cancellationReason: String
 )
 
+data class CheckOutBookingRequest(
+        @SerializedName("bookingId") val bookingId: String,
+        @SerializedName("operatorNotes") val operatorNotes: String
+)
+
 data class BookingPreview(
         @SerializedName("chargingStationName") val chargingStationName: String,
         @SerializedName("reservationDateTime") val reservationDateTime: String,

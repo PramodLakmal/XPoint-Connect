@@ -115,7 +115,10 @@ interface ApiService {
         suspend fun checkInBooking(@Path("id") bookingId: String): Response<Booking>
 
         @POST("api/Bookings/{id}/checkout")
-        suspend fun checkOutBooking(@Path("id") bookingId: String): Response<Booking>
+        suspend fun checkOutBooking(
+            @Path("id") bookingId: String, 
+            @Body request: CheckOutBookingRequest
+        ): Response<Booking>
 
         // EV Owner Profile Management
         @GET("api/EVOwners/{nic}")

@@ -72,9 +72,9 @@ class CheckOutBookingsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        bookingsAdapter = CheckOutBookingsAdapter { booking ->
-            // Handle Done button click
-            viewModel.checkOutBooking(booking.id)
+        bookingsAdapter = CheckOutBookingsAdapter { booking, operatorNotes ->
+            // Handle Done button click with operator notes
+            viewModel.checkOutBooking(booking.id, operatorNotes)
         }
         
         recyclerBookings.apply {

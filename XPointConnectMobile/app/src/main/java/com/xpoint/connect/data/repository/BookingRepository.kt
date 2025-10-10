@@ -132,10 +132,14 @@ class BookingRepository {
         }
     }
 
-    suspend fun checkOutBooking(bookingId: String): Resource<Booking> {
+    suspend fun checkOutBooking(bookingId: String, operatorNotes: String = ""): Resource<Booking> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = apiService.checkOutBooking(bookingId)
+                val request = CheckOutBookingRequest(
+                    bookingId = bookingId,
+                    operatorNotes = operatorNotes
+                )
+                val response = apiService.checkOutBooking(bookingId, request)
                 handleApiResponse(response)
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "Failed to check out booking")

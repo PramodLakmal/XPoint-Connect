@@ -59,9 +59,9 @@ class CheckOutBookingsViewModel : ViewModel() {
         }
     }
 
-    fun checkOutBooking(bookingId: String) {
+    fun checkOutBooking(bookingId: String, operatorNotes: String = "") {
         viewModelScope.launch {
-            when (val result = bookingRepository.checkOutBooking(bookingId)) {
+            when (val result = bookingRepository.checkOutBooking(bookingId, operatorNotes)) {
                 is Resource.Loading -> {
                     // Can show loading indicator if needed
                 }

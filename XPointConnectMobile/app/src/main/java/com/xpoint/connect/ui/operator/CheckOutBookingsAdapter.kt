@@ -6,13 +6,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import com.xpoint.connect.R
 import com.xpoint.connect.data.model.Booking
 import java.text.SimpleDateFormat
 import java.util.*
 
 class CheckOutBookingsAdapter(
-    private val onDoneClick: (Booking) -> Unit
+    private val onDoneClick: (Booking, String) -> Unit
 ) : RecyclerView.Adapter<CheckOutBookingsAdapter.CheckOutBookingViewHolder>() {
 
     private var bookings: List<Booking> = emptyList()
@@ -41,6 +42,7 @@ class CheckOutBookingsAdapter(
         private val tvCustomerNIC: TextView = itemView.findViewById(R.id.tvCustomerNIC)
         private val tvCheckInTime: TextView = itemView.findViewById(R.id.tvCheckInTime)
         private val tvDuration: TextView = itemView.findViewById(R.id.tvDuration)
+        private val etOperatorNotes: TextInputEditText = itemView.findViewById(R.id.etOperatorNotes)
         private val btnDone: MaterialButton = itemView.findViewById(R.id.btnDone)
 
         fun bind(booking: Booking) {
@@ -61,9 +63,13 @@ class CheckOutBookingsAdapter(
             // Duration
             tvDuration.text = "Session duration: ${booking.durationMinutes} minutes"
             
-            // Done button click
+            // Clear previous operator notes
+            etOperatorNotes.setText("")
+            
+            // Done button click - pass the operator notes
             btnDone.setOnClickListener {
-                onDoneClick(booking)
+                val operatorNotes = etOperatorNotes.text?.toString()?.trim() ?: ""
+                onDoneClick(booking, operatorNotes)
             }
         }
     }
