@@ -1,3 +1,7 @@
+﻿/*
+ * UserService.cs
+ * Service for user management and authentication
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;
@@ -34,6 +38,7 @@ namespace XPoint_Connect_API.Services
 
         public async Task<UserResponseDto?> CreateUserAsync(CreateUserDto createUserDto)
         {
+            // Create a new system user with hashed password
             // Check if username already exists
             var existingUser = await _context.Users
                 .Find(u => u.Username == createUserDto.Username)
@@ -59,6 +64,7 @@ namespace XPoint_Connect_API.Services
 
         public async Task<UserResponseDto?> GetUserByIdAsync(string id)
         {
+            // Retrieve user by their unique ID
             var user = await _context.Users
                 .Find(u => u.Id == id)
                 .FirstOrDefaultAsync();
@@ -68,6 +74,7 @@ namespace XPoint_Connect_API.Services
 
         public async Task<UserResponseDto?> GetUserByUsernameAsync(string username)
         {
+            // Retrieve user by their username
             var user = await _context.Users
                 .Find(u => u.Username == username)
                 .FirstOrDefaultAsync();
@@ -125,6 +132,7 @@ namespace XPoint_Connect_API.Services
 
         public async Task<LoginResponseDto?> AuthenticateAsync(LoginRequestDto loginRequest)
         {
+            // Authenticate user credentials and generate JWT token
             var user = await _context.Users
                 .Find(u => u.Username == loginRequest.Username && u.IsActive)
                 .FirstOrDefaultAsync();

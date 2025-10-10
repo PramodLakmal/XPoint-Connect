@@ -1,3 +1,8 @@
+/*
+ * ChargingStationsController.cs
+ * Manages charging station operations including CRUD and slot management
+ */
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

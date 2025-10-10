@@ -1,3 +1,7 @@
+﻿/*
+ * MongoDbContext.cs
+ * MongoDB database context and connection management
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.Configuration;
 using XPoint_Connect_API.Models;

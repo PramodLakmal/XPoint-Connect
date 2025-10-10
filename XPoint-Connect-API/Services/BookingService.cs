@@ -1,3 +1,7 @@
+﻿/*
+ * BookingService.cs
+ * Service for booking management and validation
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;

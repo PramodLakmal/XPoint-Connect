@@ -1,3 +1,7 @@
+﻿/*
+ * ChargingStation.cs
+ * Charging station model with slot management
+ */
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;

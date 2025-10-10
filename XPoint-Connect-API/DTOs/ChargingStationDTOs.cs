@@ -1,3 +1,7 @@
+﻿/*
+ * ChargingStationDTOs.cs
+ * Data transfer objects for charging station operations
+ */
 using System.ComponentModel.DataAnnotations;
 using XPoint_Connect_API.Models;
 

@@ -1,3 +1,7 @@
+﻿/*
+ * ChargingStationService.cs
+ * Service for charging station operations
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;

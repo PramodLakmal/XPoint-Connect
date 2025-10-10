@@ -1,3 +1,7 @@
+﻿/*
+ * EVOwner.cs
+ * EV Owner model for electric vehicle owners
+ */
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;

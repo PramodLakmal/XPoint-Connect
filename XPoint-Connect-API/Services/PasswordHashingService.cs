@@ -1,3 +1,7 @@
+﻿/*
+ * PasswordHashingService.cs
+ * Service for password hashing and verification
+ */
 using System.Security.Cryptography;
 using System.Text;
 

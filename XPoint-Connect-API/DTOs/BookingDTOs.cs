@@ -1,3 +1,7 @@
+﻿/*
+ * BookingDTOs.cs
+ * Data transfer objects for booking operations
+ */
 using System.ComponentModel.DataAnnotations;
 using XPoint_Connect_API.Models;
 
