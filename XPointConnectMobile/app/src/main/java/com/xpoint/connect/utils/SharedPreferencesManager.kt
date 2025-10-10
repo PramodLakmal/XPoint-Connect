@@ -11,6 +11,7 @@ class SharedPreferencesManager(context: Context) {
         private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_USER_TYPE = "user_type"
+        private const val KEY_USER_ID = "user_id"
         private const val KEY_USER_NIC = "user_nic"
         private const val KEY_USER_NAME = "user_name"
         private const val KEY_USER_EMAIL = "user_email"
@@ -47,6 +48,14 @@ class SharedPreferencesManager(context: Context) {
 
     fun getUserType(): String? {
         return sharedPreferences.getString(KEY_USER_TYPE, null)
+    }
+
+    fun saveUserId(userId: String) {
+        sharedPreferences.edit().putString(KEY_USER_ID, userId).apply()
+    }
+
+    fun getUserId(): String? {
+        return sharedPreferences.getString(KEY_USER_ID, null)
     }
 
     fun saveUserData(evOwner: EVOwner) {
@@ -122,6 +131,7 @@ class SharedPreferencesManager(context: Context) {
             remove(KEY_AUTH_TOKEN)
             remove(KEY_REFRESH_TOKEN)
             remove(KEY_IS_LOGGED_IN)
+            remove(KEY_USER_ID)
             remove(KEY_USER_NIC)
             remove(KEY_USER_NAME)
             remove(KEY_USER_EMAIL)

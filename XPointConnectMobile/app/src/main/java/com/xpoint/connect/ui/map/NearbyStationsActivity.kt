@@ -52,7 +52,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.xpoint.connect.R
 import com.xpoint.connect.data.model.ChargingStation
 import com.xpoint.connect.data.repository.StationRepository
@@ -66,14 +65,13 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var stationRepository: StationRepository
     private lateinit var progressBar: ProgressBar
-    private lateinit var fabStationList: FloatingActionButton
     private lateinit var searchEditText: EditText
     private lateinit var clearSearchButton: ImageView
     private var userLocation: LatLng? = null
     private val nearbyStations = mutableListOf<ChargingStation>()
     private var allStations = mutableListOf<ChargingStation>()
     // Sri Lanka center coordinates and bounds
-    private val sriLankaCenter = LatLng(7.8731, 80.7718) // Center of Sri Lanka
+    private val sriLankaCenter = LatLng(6.9271, 79.8612) // Colombo, Sri Lanka
     private val defaultLocation = LatLng(6.9271, 79.8612) // Colombo, Sri Lanka
 
     private val locationPermissionRequest = registerForActivityResult(
@@ -116,17 +114,11 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         stationRepository = StationRepository()
         progressBar = findViewById(R.id.progressBar)
-        fabStationList = findViewById(R.id.fabStationList)
         searchEditText = findViewById(R.id.etSearch)
         clearSearchButton = findViewById(R.id.ivClearSearch)
         
         // Setup search functionality
         setupSearchFunctionality()
-        
-        // Setup FAB click listener for future station list view
-        fabStationList.setOnClickListener {
-            showStationsInList()
-        }
     }
     
     private fun setupSearchFunctionality() {
@@ -194,9 +186,9 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Set map style
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
 
-        // Set initial camera position to Sri Lanka
+        // Set initial camera position to Colombo, Sri Lanka
         googleMap.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 7f) // Zoom level 7 shows most of Sri Lanka
+            CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 12f) // Zoom level 12 shows Colombo city properly
         )
 
         // Enable location if permission is granted
@@ -252,9 +244,9 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
                 location?.let {
                     userLocation = LatLng(it.latitude, it.longitude)
                     
-                    // Move camera to user location
+                    // Move camera to show both user location and Sri Lanka region
                     googleMap.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(userLocation!!, 15f)
+                        CameraUpdateFactory.newLatLngZoom(userLocation!!, 12f)
                     )
                     
                     // Load nearby stations relative to user location
@@ -275,7 +267,7 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val result = stationRepository.getNearbyStations(
                     latitude = location.latitude,
                     longitude = location.longitude,
-                    radiusKm = 15.0 // 15km radius
+                    radiusKm = 100.0 // 100km radius to cover more of Sri Lanka
                 )
                 
                 when (result) {
@@ -319,11 +311,6 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
     
-    private fun showStationsInList() {
-        // TODO: Implement bottom sheet or dialog with station list
-        Toast.makeText(this, "Station list view - Coming soon!", Toast.LENGTH_SHORT).show()
-    }
-    
     private fun displayStationsOnMap() {
         googleMap.clear() // Clear existing markers
         
@@ -332,7 +319,21 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
         
+        var validStationsCount = 0
+        var invalidStationsCount = 0
+        
         nearbyStations.forEach { station ->
+            // Debug logging
+            android.util.Log.d("NearbyStations", "Processing station: ${station.name}")
+            android.util.Log.d("NearbyStations", "Coordinates: ${station.location.latitude}, ${station.location.longitude}")
+            
+            // Validate coordinates
+            if (!isValidCoordinate(station.location.latitude, station.location.longitude)) {
+                android.util.Log.w("NearbyStations", "Invalid coordinates for station ${station.name}: lat=${station.location.latitude}, lng=${station.location.longitude}")
+                invalidStationsCount++
+                return@forEach
+            }
+            
             val position = LatLng(station.location.latitude, station.location.longitude)
             
             // Choose marker color based on availability and status
@@ -344,7 +345,7 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             
             // Create station type indicator
-            val stationType = if (station.type == 1) "DC Fast" else "AC Standard"
+            val stationType = if (station.type == "DC") "DC Fast" else "AC Standard"
             val availabilityText = if (station.isActive) {
                 "Available: ${station.availableSlots}/${station.totalSlots}"
             } else {
@@ -360,7 +361,38 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
             )
             
             marker?.tag = station
+            validStationsCount++
+            android.util.Log.d("NearbyStations", "Added marker for station: ${station.name}")
         }
+        
+        // Show summary to user
+        android.util.Log.i("NearbyStations", "Markers added: $validStationsCount, Invalid coordinates: $invalidStationsCount")
+        
+        if (validStationsCount == 0 && invalidStationsCount > 0) {
+            Toast.makeText(this, "Unable to display stations: Invalid location data", Toast.LENGTH_LONG).show()
+        } else if (validStationsCount > 0) {
+            Toast.makeText(this, "Showing $validStationsCount charging stations", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun isValidCoordinate(latitude: Double, longitude: Double): Boolean {
+        // Check if coordinates are within valid ranges
+        if (latitude < -90 || latitude > 90) return false
+        if (longitude < -180 || longitude > 180) return false
+        
+        // Check if coordinates are not the invalid default values
+        if (latitude == 90.0 && longitude == 180.0) return false
+        
+        // Additional check for Sri Lankan region (optional but recommended)
+        // Sri Lanka is approximately between 5.9° - 9.9°N and 79.7° - 81.9°E
+        // Allow some buffer for stations just outside borders
+        val sriLankaMinLat = 5.0
+        val sriLankaMaxLat = 10.5
+        val sriLankaMinLng = 79.0
+        val sriLankaMaxLng = 82.5
+        
+        return latitude >= sriLankaMinLat && latitude <= sriLankaMaxLat &&
+               longitude >= sriLankaMinLng && longitude <= sriLankaMaxLng
 
         // Set info window click listener for station details
         googleMap.setOnInfoWindowClickListener { marker ->
@@ -371,20 +403,36 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         
         // If we have user location, adjust camera to show all stations
-        userLocation?.let { userPos ->
-            if (nearbyStations.isNotEmpty()) {
-                val bounds = com.google.android.gms.maps.model.LatLngBounds.Builder()
+        if (nearbyStations.isNotEmpty()) {
+            val bounds = com.google.android.gms.maps.model.LatLngBounds.Builder()
+            
+            // Include user location if available
+            userLocation?.let { userPos ->
                 bounds.include(userPos)
-                nearbyStations.forEach { station ->
-                    bounds.include(LatLng(station.location.latitude, station.location.longitude))
-                }
-                
+            }
+            
+            // Include all station locations
+            nearbyStations.forEach { station ->
+                bounds.include(LatLng(station.location.latitude, station.location.longitude))
+            }
+            
+            try {
                 val boundsToShow = bounds.build()
-                val padding = 100 // padding in pixels
+                val padding = 150 // padding in pixels
                 googleMap.animateCamera(
                     CameraUpdateFactory.newLatLngBounds(boundsToShow, padding)
                 )
+            } catch (e: Exception) {
+                // Fallback to Colombo center if bounds calculation fails
+                googleMap.animateCamera(
+                    CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 12f)
+                )
             }
+        } else {
+            // No stations found, focus on Colombo
+            googleMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 12f)
+            )
         }
     }
 
@@ -413,7 +461,7 @@ class NearbyStationsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         
         // Set charging type
-        val chargingType = if (station.type == 1) "DC Fast" else "AC Standard"
+        val chargingType = if (station.type == "DC") "DC Fast" else "AC Standard"
         view.findViewById<TextView>(R.id.tvChargingType).text = chargingType
         
         // Set availability

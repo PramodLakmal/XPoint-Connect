@@ -154,4 +154,70 @@ class UserPreferencesManager(private val context: Context) {
     suspend fun logout() {
         clearUserData()
     }
+
+    // Operator session management methods
+    suspend fun saveOperatorSession(
+        username: String,
+        password: String,
+        rememberMe: Boolean,
+        userId: String? = null,
+        authToken: String? = null
+    ) {
+        if (rememberMe) {
+            prefs.edit().apply {
+                putString("operator_username", username)
+                putString("operator_password", password) // Note: In production, this should be encrypted
+                putString("operator_user_id", userId)
+                putString("operator_auth_token", authToken)
+                putBoolean("operator_remember_me", true)
+                putLong("operator_session_created", System.currentTimeMillis())
+                apply()
+            }
+        } else {
+            clearOperatorSession()
+        }
+    }
+
+    suspend fun getOperatorSession(): Pair<String, String>? {
+        val rememberMe = prefs.getBoolean("operator_remember_me", false)
+        if (!rememberMe) return null
+
+        val username = prefs.getString("operator_username", null) ?: return null
+        val password = prefs.getString("operator_password", null) ?: return null
+
+        // Check if session is still valid (30 days)
+        val sessionCreated = prefs.getLong("operator_session_created", 0)
+        val thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000
+        if (System.currentTimeMillis() - sessionCreated > thirtyDaysInMillis) {
+            clearOperatorSession()
+            return null
+        }
+
+        return Pair(username, password)
+    }
+
+    suspend fun clearOperatorSession() {
+        prefs.edit().apply {
+            remove("operator_username")
+            remove("operator_password")
+            remove("operator_user_id")
+            remove("operator_auth_token")
+            remove("operator_remember_me")
+            remove("operator_session_created")
+            apply()
+        }
+    }
+
+    suspend fun isAutoLoginEnabled(): Boolean {
+        return prefs.getBoolean("operator_remember_me", false)
+    }
+
+    suspend fun hasValidOperatorSession(): Boolean {
+        val session = getOperatorSession()
+        return session != null
+    }
+
+    suspend fun getStoredOperatorCredentials(): Pair<String, String>? {
+        return getOperatorSession()
+    }
 }

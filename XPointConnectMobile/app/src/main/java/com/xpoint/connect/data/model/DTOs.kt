@@ -117,13 +117,18 @@ data class CreateBookingRequest(
 data class UpdateBookingRequest(
         @SerializedName("reservationDateTime") val reservationDateTime: String,
         @SerializedName("durationMinutes") val durationMinutes: Int,
-        @SerializedName("status") val status: Int? = null,
+        @SerializedName("status") val status: String? = null,
         @SerializedName("cancellationReason") val cancellationReason: String? = null,
         @SerializedName("operatorNotes") val operatorNotes: String? = null
 )
 
 data class CancelBookingRequest(
         @SerializedName("cancellationReason") val cancellationReason: String
+)
+
+data class CheckOutBookingRequest(
+        @SerializedName("bookingId") val bookingId: String,
+        @SerializedName("operatorNotes") val operatorNotes: String
 )
 
 data class BookingPreview(

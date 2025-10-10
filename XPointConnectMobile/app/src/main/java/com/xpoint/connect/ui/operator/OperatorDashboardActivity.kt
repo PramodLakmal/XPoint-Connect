@@ -1,15 +1,18 @@
 package com.xpoint.connect.ui.operator
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.xpoint.connect.R
+import com.xpoint.connect.XPointConnectApplication
+import com.xpoint.connect.data.database.UserPreferencesManager
+import com.xpoint.connect.ui.auth.OperatorLoginActivity
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
@@ -20,154 +23,196 @@ class OperatorDashboardActivity : AppCompatActivity() {
         const val EXTRA_OPERATOR_USERNAME = "extra_operator_username"
     }
 
-    private lateinit var viewModel: OperatorBookingsViewModel
-    private lateinit var bookingsAdapter: OperatorBookingsAdapter
-
-    // UI components
+    private lateinit var viewModel: OperatorDashboardViewModel
+    private lateinit var userPreferencesManager: UserPreferencesManager
     private lateinit var tvTitle: TextView
-    private lateinit var progressBar: View
-    private lateinit var progressContainer: View
-    private lateinit var recyclerBookings: RecyclerView
-    private lateinit var tvEmptyState: TextView
-    private lateinit var emptyStateContainer: View
+    private var operatorId: String = ""
+    private var stationId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_operator_dashboard)
 
-        // Setup toolbar with back button
-        setupToolbar()
-
         // Initialize ViewModel
-        viewModel = ViewModelProvider(this)[OperatorBookingsViewModel::class.java]
+        viewModel = ViewModelProvider(this)[OperatorDashboardViewModel::class.java]
+        
+        // Initialize UserPreferencesManager
+        userPreferencesManager = (application as XPointConnectApplication).userPreferencesManager
 
         // Initialize UI components
         initializeViews()
-        setupRecyclerView()
-
+        
         // Get operator info from intent
-        val operatorId = intent.getStringExtra(EXTRA_OPERATOR_ID).orEmpty()
+        operatorId = intent.getStringExtra(EXTRA_OPERATOR_ID).orEmpty()
         val operatorUsername = intent.getStringExtra(EXTRA_OPERATOR_USERNAME).orEmpty()
 
+        // If operator details are missing from intent, try to get them from preferences
         if (operatorId.isBlank()) {
-            showToast("Missing operator information")
-            finish()
-            return
-        }
-
-        // Update title with operator name
-        tvTitle.text =
-                if (operatorUsername.isNotEmpty()) {
-                    "Welcome, $operatorUsername"
+            android.util.Log.d("OperatorDashboard", "Operator ID missing from intent, checking saved preferences...")
+            lifecycleScope.launch {
+                val savedUserId = userPreferencesManager.getUserId()
+                val savedUserName = userPreferencesManager.getUserName()
+                android.util.Log.d("OperatorDashboard", "Saved user ID: $savedUserId")
+                android.util.Log.d("OperatorDashboard", "Saved user name: $savedUserName")
+                
+                if (!savedUserId.isNullOrBlank()) {
+                    operatorId = savedUserId
+                    android.util.Log.d("OperatorDashboard", "Using saved operator ID: $operatorId")
+                    
+                    // Update title with saved user data
+                    tvTitle.text = if (!savedUserName.isNullOrBlank()) {
+                        "Welcome Back, $savedUserName!"
+                    } else {
+                        "Welcome Back!"
+                    }
+                    
+                    // Setup card click listeners and continue with initialization
+                    setupCardClickListeners()
+                    observeUiState()
                 } else {
-                    "Operator Dashboard"
+                    // No operator information available, redirect to login
+                    android.util.Log.w("OperatorDashboard", "No operator information found, redirecting to login")
+                    showToast("Session expired. Please login again.")
+                    redirectToLogin()
                 }
-
-        // View bookings on demand
-        findViewById<View>(R.id.cardViewBookings).setOnClickListener {
-            viewModel.loadOperatorBookings(operatorId)
+            }
+        } else {
+            // Update title with operator name from intent
+            tvTitle.text = if (operatorUsername.isNotEmpty()) {
+                "Welcome Back, $operatorUsername!"
+            } else {
+                "Welcome Back!"
+            }
+            
+            // Setup card click listeners and continue with normal flow
+            setupCardClickListeners()
+            observeUiState()
         }
 
-        // Wire Scan QR card
-        findViewById<View>(R.id.cardScanQR).setOnClickListener {
-            startActivity(android.content.Intent(this, ScannerActivity::class.java))
-        }
-
-        // Observe UI state changes
-        observeUiState()
-
-        // Don't load initial data automatically - wait for user to tap "View Bookings"
+        // Load operator stations
+        viewModel.loadOperatorStations(operatorId)
+        
+        // Debug logging
+        android.util.Log.d("OperatorDashboard", "Loading stations for operatorId: $operatorId")
     }
 
     private fun initializeViews() {
         tvTitle = findViewById(R.id.tvTitle)
-        progressBar = findViewById(R.id.progressBar)
-        progressContainer = findViewById(R.id.progressContainer)
-        recyclerBookings = findViewById(R.id.recyclerBookings)
-        tvEmptyState = findViewById(R.id.tvEmptyState)
-        emptyStateContainer = findViewById(R.id.emptyStateContainer)
     }
 
-    private fun setupRecyclerView() {
-        bookingsAdapter = OperatorBookingsAdapter(emptyList())
-        recyclerBookings.apply {
-            layoutManager = LinearLayoutManager(this@OperatorDashboardActivity)
-            adapter = bookingsAdapter
+    private fun setupCardClickListeners() {
+        // Check In Bookings Card
+        findViewById<View>(R.id.cardCheckInBookings).setOnClickListener {
+            if (stationId.isNotBlank()) {
+                val intent = Intent(this, CheckInBookingsActivity::class.java).apply {
+                    putExtra(CheckInBookingsActivity.EXTRA_OPERATOR_ID, operatorId)
+                    putExtra(CheckInBookingsActivity.EXTRA_STATION_ID, stationId)
+                }
+                startActivity(intent)
+            } else {
+                showToast("Station information not available")
+            }
+        }
+
+        // Check Out Bookings Card
+        findViewById<View>(R.id.cardCheckOutBookings).setOnClickListener {
+            if (stationId.isNotBlank()) {
+                val intent = Intent(this, CheckOutBookingsActivity::class.java).apply {
+                    putExtra(CheckOutBookingsActivity.EXTRA_OPERATOR_ID, operatorId)
+                    putExtra(CheckOutBookingsActivity.EXTRA_STATION_ID, stationId)
+                }
+                startActivity(intent)
+            } else {
+                showToast("Station information not available")
+            }
+        }
+
+        // History Card
+        findViewById<View>(R.id.cardHistory).setOnClickListener {
+            if (stationId.isNotBlank()) {
+                val intent = Intent(this, BookingHistoryActivity::class.java).apply {
+                    putExtra(BookingHistoryActivity.EXTRA_OPERATOR_ID, operatorId)
+                    putExtra(BookingHistoryActivity.EXTRA_STATION_ID, stationId)
+                }
+                startActivity(intent)
+            } else {
+                showToast("Station information not available")
+            }
         }
     }
 
     private fun observeUiState() {
-        lifecycleScope.launch { viewModel.uiState.collect { state -> updateUI(state) } }
-    }
-
-    private fun updateUI(state: OperatorBookingsUiState) {
-        // Update loading state
-        progressContainer.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-
-        // Update bookings list
-        if (state.hasBookings) {
-            bookingsAdapter.submit(state.bookings)
-            recyclerBookings.visibility = View.VISIBLE
-            emptyStateContainer.visibility = View.GONE
-        } else {
-            recyclerBookings.visibility = View.GONE
-
-            // Show appropriate empty state message
-            when {
-                state.isLoading -> {
-                    emptyStateContainer.visibility = View.GONE
-                }
-                state.error != null -> {
-                    emptyStateContainer.visibility = View.VISIBLE
-                    tvEmptyState.text = "❌ ${state.error}\n\nTap View Bookings to try again."
-                }
-                state.userMessage != null -> {
-                    emptyStateContainer.visibility = View.VISIBLE
-                    tvEmptyState.text = state.userMessage
-                }
-                else -> {
-                    emptyStateContainer.visibility = View.VISIBLE
-                    tvEmptyState.text =
-                            "📋 No bookings available\n\nBookings will appear here when customers make reservations."
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                android.util.Log.d("OperatorDashboard", "UI State updated - error: ${state.error}, assignedStation: ${state.assignedStation?.id}, chargingStation: ${state.chargingStation?.id}")
+                when {
+                    state.error != null -> {
+                        showToast("Error: ${state.error}")
+                        android.util.Log.e("OperatorDashboard", "Error: ${state.error}")
+                        viewModel.clearMessage()
+                    }
+                    state.assignedStation != null -> {
+                        stationId = state.assignedStation.id
+                        showToast("Station loaded: ${state.assignedStation.name}")
+                        android.util.Log.d("OperatorDashboard", "Assigned station loaded: ${state.assignedStation.id}")
+                        viewModel.clearMessage()
+                    }
+                    state.chargingStation != null -> {
+                        stationId = state.chargingStation.id
+                        showToast("Station loaded: ${state.chargingStation.name}")
+                        android.util.Log.d("OperatorDashboard", "Charging station loaded: ${state.chargingStation.id}")
+                        viewModel.clearMessage()
+                    }
                 }
             }
         }
-
-        // Show user messages
-        state.userMessage?.let { message ->
-            if (state.hasBookings) {
-                // Show as toast if we have bookings (partial error case)
-                showToast(message)
-                viewModel.clearMessage()
-            }
-        }
-
-        // Show error messages
-        state.error?.let { error ->
-            if (!state.hasBookings) {
-                // Error message is already shown in empty state
-                // Clear the error to prevent repeated display
-                viewModel.clearMessage()
-            }
-        }
     }
-
-    private fun setupToolbar() {
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            title = "Operator Dashboard"
-        }
+    
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.operator_dashboard_menu, menu)
+        return true
     }
-
-    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+    
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressedDispatcher.onBackPressed()
+            R.id.action_logout -> {
+                performLogout()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    
+    /**
+     * Performs logout by clearing session data and returning to login screen
+     */
+    private fun performLogout() {
+        lifecycleScope.launch {
+            try {
+                // Clear session data
+                userPreferencesManager.clearOperatorSession()
+                userPreferencesManager.logout()
+                
+                showToast("👋 Logged out successfully")
+                
+                // Navigate back to login
+                val intent = Intent(this@OperatorDashboardActivity, OperatorLoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+                finish()
+                
+            } catch (e: Exception) {
+                showToast("❌ Error during logout: ${e.message}")
+            }
+        }
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, OperatorLoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

@@ -29,6 +29,7 @@ import com.xpoint.connect.R
 import com.xpoint.connect.XPointConnectApplication
 import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.main.MainActivity
+import com.xpoint.connect.ui.operator.OperatorDashboardActivity
 import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
@@ -57,12 +58,26 @@ class SplashActivity : AppCompatActivity() {
      */
     private fun navigateToNextScreen() {
         lifecycleScope.launch {
-            val intent =
-                    if (userPreferencesManager.isLoggedIn()) {
+            val intent = if (userPreferencesManager.isLoggedIn()) {
+                // Check user type to determine which dashboard to show
+                val userType = userPreferencesManager.getUserType()
+                when (userType) {
+                    "StationOperator" -> {
+                        // Redirect operators to their dashboard
+                        Intent(this@SplashActivity, com.xpoint.connect.ui.operator.OperatorDashboardActivity::class.java)
+                    }
+                    "EVOwner" -> {
+                        // Redirect EV owners to main dashboard
                         Intent(this@SplashActivity, MainActivity::class.java)
-                    } else {
+                    }
+                    else -> {
+                        // If user type is unknown or null, go to login
                         Intent(this@SplashActivity, LoginActivity::class.java)
                     }
+                }
+            } else {
+                Intent(this@SplashActivity, LoginActivity::class.java)
+            }
 
             startActivity(intent)
             finish()
