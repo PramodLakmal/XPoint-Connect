@@ -234,6 +234,7 @@ class OperatorLoginActivity : AppCompatActivity() {
                         saveAuthToken(response.token)
                         saveUserId(response.userId)
                         saveUserType("StationOperator")
+                        saveUserName(response.username) // Save operator username
                     }
                     
                     // Save session if remember me is checked

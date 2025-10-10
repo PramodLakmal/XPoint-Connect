@@ -46,24 +46,48 @@ class OperatorDashboardActivity : AppCompatActivity() {
         operatorId = intent.getStringExtra(EXTRA_OPERATOR_ID).orEmpty()
         val operatorUsername = intent.getStringExtra(EXTRA_OPERATOR_USERNAME).orEmpty()
 
+        // If operator details are missing from intent, try to get them from preferences
         if (operatorId.isBlank()) {
-            showToast("Missing operator information")
-            finish()
-            return
-        }
-
-        // Update title with operator name
-        tvTitle.text = if (operatorUsername.isNotEmpty()) {
-            "Welcome Back, $operatorUsername!"
+            android.util.Log.d("OperatorDashboard", "Operator ID missing from intent, checking saved preferences...")
+            lifecycleScope.launch {
+                val savedUserId = userPreferencesManager.getUserId()
+                val savedUserName = userPreferencesManager.getUserName()
+                android.util.Log.d("OperatorDashboard", "Saved user ID: $savedUserId")
+                android.util.Log.d("OperatorDashboard", "Saved user name: $savedUserName")
+                
+                if (!savedUserId.isNullOrBlank()) {
+                    operatorId = savedUserId
+                    android.util.Log.d("OperatorDashboard", "Using saved operator ID: $operatorId")
+                    
+                    // Update title with saved user data
+                    tvTitle.text = if (!savedUserName.isNullOrBlank()) {
+                        "Welcome Back, $savedUserName!"
+                    } else {
+                        "Welcome Back!"
+                    }
+                    
+                    // Setup card click listeners and continue with initialization
+                    setupCardClickListeners()
+                    observeUiState()
+                } else {
+                    // No operator information available, redirect to login
+                    android.util.Log.w("OperatorDashboard", "No operator information found, redirecting to login")
+                    showToast("Session expired. Please login again.")
+                    redirectToLogin()
+                }
+            }
         } else {
-            "Welcome Back!"
+            // Update title with operator name from intent
+            tvTitle.text = if (operatorUsername.isNotEmpty()) {
+                "Welcome Back, $operatorUsername!"
+            } else {
+                "Welcome Back!"
+            }
+            
+            // Setup card click listeners and continue with normal flow
+            setupCardClickListeners()
+            observeUiState()
         }
-
-        // Setup card click listeners
-        setupCardClickListeners()
-        
-        // Observe UI state
-        observeUiState()
 
         // Load operator stations
         viewModel.loadOperatorStations(operatorId)
@@ -182,5 +206,13 @@ class OperatorDashboardActivity : AppCompatActivity() {
                 showToast("❌ Error during logout: ${e.message}")
             }
         }
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, OperatorLoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }
