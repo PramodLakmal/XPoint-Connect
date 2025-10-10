@@ -13,7 +13,8 @@ import com.xpoint.connect.data.api.ApiClient
 import com.xpoint.connect.data.api.ApiService
 import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.auth.LoginActivity
-import com.xpoint.connect.utils.showToast
+import com.xpoint.connect.utils.EVOwnerToast
+import com.xpoint.connect.utils.showEVOwnerToast
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
@@ -67,15 +68,15 @@ class ProfileFragment : Fragment() {
 
         // Settings items
         view.findViewById<View>(R.id.layoutNotifications)?.setOnClickListener {
-            showToast("Notifications settings coming soon!")
+            showEVOwnerToast("Notifications settings coming soon!", EVOwnerToast.ToastType.INFO)
         }
 
         view.findViewById<View>(R.id.layoutPrivacyPolicy)?.setOnClickListener {
-            showToast("Privacy policy coming soon!")
+            showEVOwnerToast("Privacy policy coming soon!", EVOwnerToast.ToastType.INFO)
         }
 
         view.findViewById<View>(R.id.layoutTermsOfService)?.setOnClickListener {
-            showToast("Terms of service coming soon!")
+            showEVOwnerToast("Terms of service coming soon!", EVOwnerToast.ToastType.INFO)
         }
     }
 

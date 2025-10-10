@@ -14,7 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.xpoint.connect.R
-import com.xpoint.connect.utils.showToast
+import com.xpoint.connect.utils.EVOwnerToast
+import com.xpoint.connect.utils.showEVOwnerToast
 
 class StationsFragment : Fragment() {
 
@@ -59,7 +60,7 @@ class StationsFragment : Fragment() {
     private fun setupRecyclerView() {
         stationsAdapter = StationsAdapter { station ->
             // Handle station click - navigate to station details
-            showToast("Station selected: ${station.name}")
+            showEVOwnerToast("Station selected: ${station.name}", EVOwnerToast.ToastType.SUCCESS)
         }
 
         recyclerViewStations.apply {
@@ -110,7 +111,7 @@ class StationsFragment : Fragment() {
     private fun setupMapButton() {
         view?.findViewById<ImageView>(R.id.ivMapView)?.setOnClickListener {
             // TODO: Navigate to map view
-            showToast("Map view coming soon!")
+            showEVOwnerToast("Map view coming soon!", EVOwnerToast.ToastType.INFO)
         }
 
         // Setup refresh button in empty state
