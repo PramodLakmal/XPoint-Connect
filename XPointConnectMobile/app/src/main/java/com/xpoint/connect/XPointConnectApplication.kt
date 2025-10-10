@@ -5,13 +5,15 @@
  * XPoint Connect Development Team Date: September 27, 2025
  *
  * Description: This application class serves as the entry point for the XPoint Connect mobile
- * application. It initializes core application components including database management, user
- * preferences, API client configuration, and application-wide services. The class manages the
- * application lifecycle and provides global access to essential services throughout the app.
+ * application. It initializes core application components including Room SQLite database
+ * management, user preferences, API client configuration, and application-wide services. The class
+ * manages the application lifecycle and provides global access to essential services throughout the
+ * app.
  *
  * Key Features:
- * - SQLite database initialization and management
- * - User preferences manager setup and configuration
+ * - Room SQLite database initialization and management (replaces SharedPreferences)
+ * - User preferences manager with structured database storage
+ * - Automatic data migration from SharedPreferences to SQLite
  * - API client initialization with authentication context
  * - Application-wide coroutine scope management
  * - Global service provider for dependency injection
@@ -34,17 +36,24 @@ class XPointConnectApplication : Application() {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     /**
-     * Initializes the application and its core components Sets up database, user preferences, API
-     * client, and application services
+     * Initializes the application and its core components Sets up Room SQLite database, user
+     * preferences manager, API client, and application services
      */
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize SQLite-based UserPreferencesManager
+        // Initialize Room SQLite-based UserPreferencesManager
         userPreferencesManager = UserPreferencesManager(this)
 
-        // Initialize database
-        applicationScope.launch { userPreferencesManager.initialize() }
+        // Initialize database and migrate data from SharedPreferences if needed
+        applicationScope.launch {
+            try {
+                userPreferencesManager.initialize()
+            } catch (e: Exception) {
+                // Log initialization error but don't crash the app
+                e.printStackTrace()
+            }
+        }
 
         // Initialize API Client with preferences
         ApiClient.init(userPreferencesManager)
