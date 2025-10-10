@@ -14,6 +14,7 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
@@ -322,6 +323,21 @@ class EditBookingActivity : AppCompatActivity() {
         if (!validateForm()) return
 
         val booking = currentBooking ?: return
+
+        // Check if booking can be modified based on status and time restrictions
+        if (!canModifyBooking(booking)) {
+            val statusMsg =
+                    when (booking.bookingStatus) {
+                        BookingStatus.Pending ->
+                                "Booking is too close to reservation time (less than 30 minutes away)"
+                        BookingStatus.Approved ->
+                                "Approved booking is too close to reservation time (less than 2 hours away)"
+                        else -> "Booking cannot be modified due to its current status"
+                    }
+            showToast("Cannot modify booking: $statusMsg")
+            return
+        }
+
         showLoading(true)
 
         lifecycleScope.launch {
@@ -454,6 +470,134 @@ class EditBookingActivity : AppCompatActivity() {
                 currentStationText.text = stationName ?: "Selected Station"
                 showToast("Error loading station: ${e.message}")
             }
+        }
+    }
+
+    /** Validation methods adapted from ReservationManager */
+    private fun canModifyBooking(booking: Booking): Boolean {
+        Log.d("EditBookingActivity", "Checking if booking can be modified:")
+        Log.d("EditBookingActivity", "  - Booking ID: ${booking.id}")
+        Log.d("EditBookingActivity", "  - Booking Status: ${booking.bookingStatus}")
+        Log.d("EditBookingActivity", "  - Reservation DateTime: ${booking.reservationDateTime}")
+
+        val canModify =
+                when (booking.bookingStatus) {
+                    BookingStatus.Pending -> {
+                        // Pending bookings can be modified if more than 30 minutes away
+                        val moreThan30Min = isMoreThanMinutesAway(booking.reservationDateTime, 30)
+                        Log.d(
+                                "EditBookingActivity",
+                                "  - Pending booking, more than 30 min away: $moreThan30Min"
+                        )
+                        moreThan30Min
+                    }
+                    BookingStatus.Approved -> {
+                        // Approved bookings can be modified if more than 2 hours away
+                        val moreThan2Hours = isMoreThanHoursAway(booking.reservationDateTime, 2)
+                        Log.d(
+                                "EditBookingActivity",
+                                "  - Approved booking, more than 2 hours away: $moreThan2Hours"
+                        )
+                        moreThan2Hours
+                    }
+                    else -> {
+                        Log.d(
+                                "EditBookingActivity",
+                                "  - Booking status does not allow modification"
+                        )
+                        false
+                    }
+                }
+
+        Log.d("EditBookingActivity", "  - Can modify: $canModify")
+        return canModify
+    }
+
+    private fun isMoreThanMinutesAway(dateTimeString: String, minutes: Int): Boolean {
+        try {
+            // Try multiple date formats to handle different API responses
+            val dateFormats =
+                    listOf(
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    )
+
+            var reservationDate: Date? = null
+
+            // Try each format until one works
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    reservationDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            if (reservationDate == null) {
+                Log.d("EditBookingActivity", "Unable to parse reservation date: $dateTimeString")
+                return false // Unable to parse date
+            }
+
+            val currentTime = Date()
+            val timeDifference = reservationDate.time - currentTime.time
+            val minutesInMillis = minutes * 60L * 1000L
+
+            Log.d(
+                    "EditBookingActivity",
+                    "Time difference: ${timeDifference / 60000} minutes (required: $minutes)"
+            )
+            return timeDifference > minutesInMillis
+        } catch (e: Exception) {
+            Log.e("EditBookingActivity", "Error parsing date: ${e.message}")
+            return false
+        }
+    }
+
+    private fun isMoreThanHoursAway(dateTimeString: String, hours: Int): Boolean {
+        try {
+            // Try multiple date formats to handle different API responses
+            val dateFormats =
+                    listOf(
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    )
+
+            var reservationDate: Date? = null
+
+            // Try each format until one works
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    reservationDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            if (reservationDate == null) {
+                Log.d("EditBookingActivity", "Unable to parse reservation date: $dateTimeString")
+                return false // Unable to parse date
+            }
+
+            val currentTime = Date()
+            val timeDifference = reservationDate.time - currentTime.time
+            val hoursInMillis = hours * 60L * 60L * 1000L
+
+            Log.d(
+                    "EditBookingActivity",
+                    "Time difference: ${timeDifference / 3600000} hours (required: $hours)"
+            )
+            return timeDifference > hoursInMillis
+        } catch (e: Exception) {
+            Log.e("EditBookingActivity", "Error parsing date: ${e.message}")
+            return false
         }
     }
 }
