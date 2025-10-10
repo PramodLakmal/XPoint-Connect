@@ -97,7 +97,7 @@ class CreateBookingActivity : AppCompatActivity() {
         handleIntentData()
 
         // Set default values
-        selectedDateTime.add(Calendar.HOUR_OF_DAY, 1) // Default to 1 hour from now
+        selectedDateTime.add(Calendar.HOUR_OF_DAY, 12) // Default to 1 hour from now
         selectedDurationMinutes = DEFAULT_DURATION_MINUTES
         updateDuration()
         updateDateTime()
