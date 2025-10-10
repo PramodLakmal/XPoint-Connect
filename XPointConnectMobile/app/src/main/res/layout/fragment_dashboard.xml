@@ -66,13 +66,13 @@
                         android:layout_marginEnd="16dp"
                         app:cardCornerRadius="30dp"
                         app:cardElevation="4dp"
-                        app:cardBackgroundColor="@android:color/white">
+                        app:cardBackgroundColor="@color/md_theme_onPrimaryContainer">
 
                         <ImageView
                             android:id="@+id/ivUserAvatar"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@drawable/default_profile"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:src="@mipmap/xpoint_logo_foreground"
                             android:layout_gravity="center"
                             android:scaleType="centerCrop" />
 
