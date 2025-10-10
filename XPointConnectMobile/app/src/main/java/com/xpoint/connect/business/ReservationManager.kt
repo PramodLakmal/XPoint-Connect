@@ -20,10 +20,11 @@
 package com.xpoint.connect.business
 
 import android.content.Context
+import android.util.Log
 import com.xpoint.connect.data.model.*
 import com.xpoint.connect.data.repository.BookingRepository
 import com.xpoint.connect.data.repository.StationRepository
-import com.xpoint.connect.utils.QRCodeGenerator
+import com.xpoint.connect.utils.QRCodeGeneratorUtil
 import com.xpoint.connect.utils.Resource
 import com.xpoint.connect.utils.SharedPreferencesManager
 import java.text.SimpleDateFormat
@@ -34,7 +35,7 @@ import kotlinx.coroutines.flow.flow
 class ReservationManager(
         private val bookingRepository: BookingRepository,
         private val stationRepository: StationRepository,
-        private val qrCodeGenerator: QRCodeGenerator,
+        private val qrCodeGenerator: QRCodeGeneratorUtil,
         private val preferencesManager: SharedPreferencesManager,
         private val context: Context
 ) {
@@ -50,9 +51,8 @@ class ReservationManager(
     /**
      * Creates a new charging station reservation
      *
-     * Note: Coroutine Flow and Resource handling pattern adapted from
-     * Android official architecture sample on Kotlin Coroutines and Flow:
-     * https://developer.android.com/kotlin/flow
+     * Note: Coroutine Flow and Resource handling pattern adapted from Android official architecture
+     * sample on Kotlin Coroutines and Flow: https://developer.android.com/kotlin/flow
      */
     suspend fun createReservation(
             evOwnerNIC: String,
@@ -117,11 +117,11 @@ class ReservationManager(
         }
     }
 
-    /** 
-     * Modifies an existing reservation 
+    /**
+     * Modifies an existing reservation
      *
-     * Reference: Update booking logic adapted from Android clean architecture sample
-     * to demonstrate repository-based state updates using Kotlin Flow.
+     * Reference: Update booking logic adapted from Android clean architecture sample to demonstrate
+     * repository-based state updates using Kotlin Flow.
      * https://developer.android.com/topic/architecture
      */
     suspend fun modifyReservation(
@@ -197,8 +197,8 @@ class ReservationManager(
     /**
      * Cancels a booking with reason
      *
-     * Reference: Cancellation logic pattern inspired by Android Jetpack sample for
-     * coroutine-based data repository operations.
+     * Reference: Cancellation logic pattern inspired by Android Jetpack sample for coroutine-based
+     * data repository operations.
      */
     suspend fun cancelReservation(
             bookingId: String,
@@ -248,8 +248,8 @@ class ReservationManager(
     /**
      * Generates QR code for approved booking
      *
-     * Code reference: QR code generation logic adapted from Android QR code tutorial
-     * Source: https://www.geeksforgeeks.org/how-to-generate-qr-code-in-android/
+     * Code reference: QR code generation logic adapted from Android QR code tutorial Source:
+     * https://www.geeksforgeeks.org/how-to-generate-qr-code-in-android/
      */
     suspend fun generateBookingQRCode(booking: Booking): Flow<Resource<String>> = flow {
         emit(Resource.Loading())
@@ -414,13 +414,33 @@ class ReservationManager(
 
     /** Checks if a booking can be modified */
     private fun canModifyBooking(booking: Booking): Boolean {
-        return when (booking.bookingStatus) {
-            BookingStatus.Pending, BookingStatus.Approved -> {
-                // Can modify if reservation is more than 2 hours away
-                isMoreThanHoursAway(booking.reservationDateTime, 2)
-            }
-            else -> false
-        }
+        Log.d(TAG, "Checking if booking can be modified:")
+        Log.d(TAG, "  - Booking ID: ${booking.id}")
+        Log.d(TAG, "  - Booking Status: ${booking.bookingStatus}")
+        Log.d(TAG, "  - Reservation DateTime: ${booking.reservationDateTime}")
+
+        val canModify =
+                when (booking.bookingStatus) {
+                    BookingStatus.Pending -> {
+                        // Pending bookings can be modified if more than 30 minutes away
+                        val moreThan30Min = isMoreThanMinutesAway(booking.reservationDateTime, 30)
+                        Log.d(TAG, "  - Pending booking, more than 30 min away: $moreThan30Min")
+                        moreThan30Min
+                    }
+                    BookingStatus.Approved -> {
+                        // Approved bookings can be modified if more than 2 hours away
+                        val moreThan2Hours = isMoreThanHoursAway(booking.reservationDateTime, 2)
+                        Log.d(TAG, "  - Approved booking, more than 2 hours away: $moreThan2Hours")
+                        moreThan2Hours
+                    }
+                    else -> {
+                        Log.d(TAG, "  - Booking status does not allow modification")
+                        false
+                    }
+                }
+
+        Log.d(TAG, "  - Can modify: $canModify")
+        return canModify
     }
 
     /** Checks if a booking can be cancelled */
@@ -453,26 +473,135 @@ class ReservationManager(
     /** Helper functions for time calculations and validations */
     private fun isMoreThanHoursAway(dateTimeString: String, hours: Int): Boolean {
         try {
-            val reservationDate =
-                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                            .parse(dateTimeString)
+            // Try multiple date formats to handle different API responses
+            val dateFormats =
+                    listOf(
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    )
+
+            var reservationDate: Date? = null
+
+            // Try each format until one works
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    reservationDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            if (reservationDate == null) {
+                return false // Unable to parse date
+            }
+
             val currentTime = Date()
-            val timeDifference = reservationDate!!.time - currentTime.time
-            val hoursInMillis = hours * 60 * 60 * 1000
+            val timeDifference = reservationDate.time - currentTime.time
+            val hoursInMillis = hours * 60L * 60L * 1000L
+
             return timeDifference > hoursInMillis
         } catch (e: Exception) {
             return false
         }
     }
 
+    private fun isMoreThanMinutesAway(dateTimeString: String, minutes: Int): Boolean {
+        try {
+            // Try multiple date formats to handle different API responses
+            val dateFormats =
+                    listOf(
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    )
+
+            var reservationDate: Date? = null
+
+            // Try each format until one works
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    reservationDate = format.parse(dateTimeString)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            if (reservationDate == null) {
+                return false // Unable to parse date
+            }
+
+            val currentTime = Date()
+            val timeDifference = reservationDate.time - currentTime.time
+            val minutesInMillis = minutes * 60L * 1000L
+
+            return timeDifference > minutesInMillis
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
     private fun hasTimeConflict(
-            @Suppress("UNUSED_PARAMETER") existingBooking: Booking,
-            @Suppress("UNUSED_PARAMETER") newReservationDateTime: String,
-            @Suppress("UNUSED_PARAMETER") newDurationMinutes: Int
+            existingBooking: Booking,
+            newReservationDateTime: String,
+            newDurationMinutes: Int
     ): Boolean {
-        // Implementation for checking time overlap between bookings
-        // This would compare the time ranges to detect conflicts
-        return false // Simplified for now
+        try {
+            // Parse existing booking time
+            val dateFormats =
+                    listOf(
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
+                            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                    )
+
+            var existingStartTime: Date? = null
+            var newStartTime: Date? = null
+
+            // Parse existing booking time
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    existingStartTime = format.parse(existingBooking.reservationDateTime)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            // Parse new booking time
+            for (format in dateFormats) {
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                try {
+                    newStartTime = format.parse(newReservationDateTime)
+                    break
+                } catch (e: Exception) {
+                    // Continue to next format
+                }
+            }
+
+            if (existingStartTime == null || newStartTime == null) {
+                return false // Unable to parse dates, assume no conflict
+            }
+
+            // Calculate end times
+            val existingEndTime =
+                    Date(existingStartTime.time + (existingBooking.durationMinutes * 60 * 1000))
+            val newEndTime = Date(newStartTime.time + (newDurationMinutes * 60 * 1000))
+
+            // Check for overlap: booking A conflicts with booking B if:
+            // A.start < B.end AND A.end > B.start
+            return newStartTime.before(existingEndTime) && newEndTime.after(existingStartTime)
+        } catch (e: Exception) {
+            return false // In case of any parsing error, assume no conflict
+        }
     }
 
     private fun countConcurrentBookings(

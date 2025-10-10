@@ -1,3 +1,8 @@
+/*
+ * ChargingStationsController.cs
+ * Manages charging station operations including CRUD and slot management
+ */
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -100,6 +105,18 @@ namespace XPoint_Connect_API.Controllers
         {
             var success = await _chargingStationService.DeleteStationAsync(id);
             
+            if (!success)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/activate")]
+        [Authorize(Roles = "BackOffice")]
+        public async Task<IActionResult> ActivateStation(string id)
+        {
+            var success = await _chargingStationService.ActivateStationAsync(id);
+
             if (!success)
                 return NotFound();
 

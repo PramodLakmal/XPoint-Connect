@@ -1,3 +1,7 @@
+﻿/*
+ * ChargingStationService.cs
+ * Service for charging station operations
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;
@@ -13,6 +17,7 @@ namespace XPoint_Connect_API.Services
         Task<ChargingStationResponseDto?> UpdateStationAsync(string id, UpdateChargingStationDto updateStationDto);
         Task<bool> DeleteStationAsync(string id);
         Task<bool> DeactivateStationAsync(string id);
+        Task<bool> ActivateStationAsync(string id);
         Task<List<ChargingStationResponseDto>> GetNearbyStationsAsync(double latitude, double longitude, double radiusKm);
         Task<List<ChargingStationResponseDto>> GetStationsByOperatorAsync(string operatorId);
         Task<bool> UpdateStationScheduleAsync(string id, List<TimeSlotDto> schedule);
@@ -129,6 +134,16 @@ namespace XPoint_Connect_API.Services
         {
             var result = await _context.ChargingStations.DeleteOneAsync(s => s.Id == id);
             return result.DeletedCount > 0;
+        }
+        public async Task<bool> ActivateStationAsync(string id)
+        {
+            var filter = Builders<ChargingStation>.Filter.Eq(s => s.Id, id);
+            var update = Builders<ChargingStation>.Update
+                .Set(s => s.IsActive, true)
+                .Set(s => s.UpdatedAt, DateTime.UtcNow);
+
+            var result = await _context.ChargingStations.UpdateOneAsync(filter, update);
+            return result.ModifiedCount > 0;
         }
 
         public async Task<bool> DeactivateStationAsync(string id)

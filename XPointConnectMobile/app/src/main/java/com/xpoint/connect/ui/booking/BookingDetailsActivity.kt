@@ -29,7 +29,7 @@ import com.xpoint.connect.data.api.ApiService
 import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.data.model.BookingStatus
 import com.xpoint.connect.data.model.CancelBookingRequest
-import com.xpoint.connect.utils.QRCodeGenerator
+import com.xpoint.connect.utils.QRCodeGeneratorUtil
 import com.xpoint.connect.utils.showToast
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +39,7 @@ class BookingDetailsActivity : AppCompatActivity() {
 
     // API Service for direct calls
     private lateinit var apiService: ApiService
-    private lateinit var qrCodeGenerator: QRCodeGenerator
+    private lateinit var qrCodeGenerator: QRCodeGeneratorUtil
 
     // UI Components
     private lateinit var bookingIdText: TextView
@@ -73,7 +73,7 @@ class BookingDetailsActivity : AppCompatActivity() {
 
         // Initialize API service for direct calls
         apiService = ApiClient.apiService
-        qrCodeGenerator = QRCodeGenerator()
+        qrCodeGenerator = QRCodeGeneratorUtil()
 
         setupActionBar()
         initializeViews()
@@ -556,7 +556,7 @@ class BookingDetailsActivity : AppCompatActivity() {
             if (booking.bookingStatus == BookingStatus.Pending) {
                 val intent = Intent(this, EditBookingActivity::class.java)
                 intent.putExtra("booking_id", booking.id)
-                startActivity(intent)
+                startActivityForResult(intent, REQUEST_EDIT_BOOKING)
             } else {
                 showToast("Only pending bookings can be edited")
             }
@@ -564,6 +564,17 @@ class BookingDetailsActivity : AppCompatActivity() {
     }
 
     private fun showCancelBookingDialog() {
+        AlertDialog.Builder(this)
+                .setTitle("Cancel Booking")
+                .setMessage(
+                        "Are you sure you want to cancel this booking?\n\nThis action cannot be undone."
+                )
+                .setPositiveButton("Yes, Cancel") { _, _ -> showCancellationReasonDialog() }
+                .setNegativeButton("Back", null)
+                .show()
+    }
+
+    private fun showCancellationReasonDialog() {
         val reasons =
                 arrayOf(
                         "Change of plans",
@@ -574,8 +585,7 @@ class BookingDetailsActivity : AppCompatActivity() {
                 )
 
         AlertDialog.Builder(this)
-                .setTitle("Cancel Booking")
-                .setMessage("Are you sure you want to cancel this booking?")
+                .setTitle("Select Cancellation Reason")
                 .setItems(reasons) { _, which ->
                     val selectedReason = reasons[which]
                     if (selectedReason == "Other") {
@@ -584,7 +594,10 @@ class BookingDetailsActivity : AppCompatActivity() {
                         cancelBooking(selectedReason)
                     }
                 }
-                .setNegativeButton("Back", null)
+                .setNegativeButton("Back") { _, _ ->
+                    // Go back to the main cancel dialog if needed
+                    showCancelBookingDialog()
+                }
                 .show()
     }
 
@@ -624,11 +637,26 @@ class BookingDetailsActivity : AppCompatActivity() {
                         // Reload booking details to show updated status
                         loadBookingDetails(booking.id)
                     } else {
-                        showToast("Failed to cancel booking: ${response.message()}")
+                        val errorBody = response.errorBody()?.string()
+                        val errorMessage =
+                                when {
+                                    response.code() == 400 &&
+                                            errorBody?.contains("time restrictions") == true -> {
+                                        "Cannot cancel booking: Reservations can only be cancelled at least 1 hour before the scheduled time."
+                                    }
+                                    response.code() == 400 &&
+                                            errorBody?.contains("booking status") == true -> {
+                                        "Cannot cancel booking: This booking cannot be cancelled in its current status."
+                                    }
+                                    else ->
+                                            "Failed to cancel booking: ${response.code()} - ${errorBody ?: response.message()}"
+                                }
+                        showToast(errorMessage)
                     }
                 } catch (e: Exception) {
                     showLoading(false)
                     showToast("Error cancelling booking: ${e.message}")
+                    e.printStackTrace()
                 }
             }
         }
@@ -716,5 +744,26 @@ class BookingDetailsActivity : AppCompatActivity() {
                         "⚡ Start charging when you arrive"
 
         showToast(message)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh booking data when returning to this activity
+        if (bookingId.isNotEmpty()) {
+            loadBookingDetails(bookingId)
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_EDIT_BOOKING && resultCode == RESULT_OK) {
+            // Refresh booking details after edit
+            loadBookingDetails(bookingId)
+        }
+    }
+
+    companion object {
+        private const val REQUEST_EDIT_BOOKING = 1001
     }
 }

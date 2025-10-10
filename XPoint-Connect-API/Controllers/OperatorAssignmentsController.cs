@@ -1,3 +1,7 @@
+﻿/*
+ * OperatorAssignmentsController.cs
+ * Manages operator assignments to charging stations
+ */
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

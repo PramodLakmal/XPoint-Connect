@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.DecoratedBarcodeView
@@ -24,16 +25,21 @@ class ScannerActivity : AppCompatActivity() {
     private var expectedBookingId: String? = null
 
     private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) startScanning() else {
-                showToast("Camera permission is required to scan QR codes")
-                finish()
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                    isGranted: Boolean ->
+                if (isGranted) startScanning()
+                else {
+                    showToast("Camera permission is required to scan QR codes")
+                    finish()
+                }
             }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scanner_zxing)
+
+        // Setup toolbar with back button
+        setupToolbar()
 
         barcodeView = findViewById(R.id.zxing_barcode_scanner)
         
@@ -45,12 +51,11 @@ class ScannerActivity : AppCompatActivity() {
 
     private fun checkPermissionAndStart(savedInstanceState: Bundle?) {
         when {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED ->
-                startScanning(savedInstanceState)
+            ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_GRANTED -> startScanning(savedInstanceState)
             shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) ->
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-            else ->
-                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+            else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -114,6 +119,23 @@ class ScannerActivity : AppCompatActivity() {
         capture?.onDestroy()
         super.onDestroy()
     }
+
+    private fun setupToolbar() {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            title = "QR Code Scanner"
+        }
+    }
+
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 }
-
-

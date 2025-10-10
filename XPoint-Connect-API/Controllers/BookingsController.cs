@@ -1,3 +1,8 @@
+/*
+ * BookingsController.cs
+ * Manages booking operations including creation, approval, and status updates
+ */
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -67,6 +72,7 @@ namespace XPoint_Connect_API.Controllers
         [HttpPost]
         public async Task<ActionResult<BookingResponseDto>> CreateBooking([FromBody] CreateBookingDto createBookingDto)
         {
+            // Create new charging station booking with validation
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

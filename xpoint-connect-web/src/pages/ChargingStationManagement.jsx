@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
-import { Plus, Edit, Trash2, Search, PowerOff, UserPlus, UserMinus } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, PowerOff, Power, UserPlus, UserMinus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -37,7 +37,8 @@ const ChargingStationManagement = () => {
   const fetchStations = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/chargingstations');
+      const response = await api.get('/chargingstations?activeOnly=false');
+      console.log('Fetched stations:', response.data);
       setStations(response.data);
     } catch (error) {
       toast.error('Failed to fetch charging stations');
@@ -150,6 +151,12 @@ const ChargingStationManagement = () => {
   const handleDeactivateStation = async (stationId) => {
     if (window.confirm('Are you sure you want to deactivate this charging station?')) {
       try {
+        // Unassign operator if assigned
+        const station = stations.find(s => s.id === stationId);
+        if (station && station.operatorId) {
+          await handleUnassignOperator(stationId);
+        }
+
         await api.post(`/chargingstations/${stationId}/deactivate`);
         toast.success('Charging station deactivated successfully');
         fetchStations();
@@ -160,9 +167,28 @@ const ChargingStationManagement = () => {
     }
   };
 
+  const handleActivateStation = async (stationId) => {
+    if (window.confirm('Are you sure you want to activate this charging station?')) {
+      try {
+        await api.post(`/chargingstations/${stationId}/activate`);
+        toast.success('Charging station activated successfully');
+        fetchStations();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Failed to activate charging station';
+        toast.error(message);
+      }
+    }
+  };
+
   const handleDeleteStation = async (stationId) => {
     if (window.confirm('Are you sure you want to delete this charging station? This action cannot be undone.')) {
       try {
+        // Unassign operator if assigned
+        const station = stations.find(s => s.id === stationId);
+        if (station && station.operatorId) {
+          await handleUnassignOperator(stationId);
+        }
+
         await api.delete(`/chargingstations/${stationId}`);
         toast.success('Charging station deleted successfully');
         fetchStations();
@@ -239,7 +265,7 @@ const ChargingStationManagement = () => {
       station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       station.location?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       station.location?.province?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      station.type.toLowerCase().includes(searchTerm.toLowerCase()),
+      (typeof station.type === 'string' ? station.type.toLowerCase() : '').includes(searchTerm.toLowerCase()),
   );
 
   // Map location picker
@@ -684,7 +710,6 @@ const ChargingStationManagement = () => {
           <Plus className="w-4 h-4" />
           <span>Add Station</span>
         </button>
-
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-secondary-200">
@@ -777,35 +802,41 @@ const ChargingStationManagement = () => {
                               <UserMinus className="w-4 h-4" />
                             </button>
                           ) : (
+                            station.isActive && (
+                              <button
+                                onClick={() => openAssignModal(station)}
+                                className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                                title="Assign operator"
+                              >
+                                <UserPlus className="w-4 h-4" />
+                              </button>
+                            )
+                          )}
+                          {station.isActive ? (
                             <button
-                              onClick={() => openAssignModal(station)}
-                              className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
-                              title="Assign operator"
+                              onClick={() => handleDeactivateStation(station.id)}
+                              className="p-2 text-warning-600 hover:bg-warning-50 rounded-lg transition-colors"
+                              title="Deactivate station"
                             >
-                              <UserPlus className="w-4 h-4" />
+                              <PowerOff className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleActivateStation(station.id)}
+                              className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                              title="Activate station"
+                            >
+                              <Power className="w-4 h-4" />
                             </button>
                           )}
+                          <button
+                            onClick={() => handleDeleteStation(station.id)}
+                            className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
+                            title="Delete station"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </>
-                      )}
-
-                      {hasAccess('BackOffice') && station.isActive && (
-                        <button
-                          onClick={() => handleDeactivateStation(station.id)}
-                          className="p-2 text-warning-600 hover:bg-warning-50 rounded-lg transition-colors"
-                          title="Deactivate station"
-                        >
-                          <PowerOff className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      {hasAccess('BackOffice') && (
-                        <button
-                          onClick={() => handleDeleteStation(station.id)}
-                          className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
-                          title="Delete station"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       )}
                     </div>
                   </td>

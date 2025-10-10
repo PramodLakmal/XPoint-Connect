@@ -5,11 +5,14 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import HomeRedirect from './pages/HomeRedirect'
 import UserManagement from './pages/UserManagement'
 import EVOwnerManagement from './pages/EVOwnerManagement'
 import ChargingStationManagement from './pages/ChargingStationManagement'
 import StationOperatorManagement from './pages/StationOperatorManagement'
 import BookingManagement from './pages/BookingManagement'
+import OperatorDashboard from './pages/OperatorDashboard'
+import OperatorBookingManagement from './pages/OperatorBookingManagement'
 import './App.css'
 
 function App() {
@@ -45,7 +48,7 @@ function App() {
           
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<HomeRedirect />} />
             
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -54,6 +57,9 @@ function App() {
               <Route path="/stations" element={<ChargingStationManagement />} />
               <Route path="/operators" element={<StationOperatorManagement />} />
               <Route path="/bookings" element={<BookingManagement />} />
+              {/* Operator-only simplified routes (guarded by sidebar filtering) */}
+              <Route path="/operator/dashboard" element={<OperatorDashboard />} />
+              <Route path="/operator/bookings" element={<OperatorBookingManagement />} />
             </Route>
           </Routes>
         </div>

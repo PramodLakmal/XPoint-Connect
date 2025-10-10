@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
 import com.xpoint.connect.R
 import com.xpoint.connect.XPointConnectApplication
@@ -20,7 +21,8 @@ import com.xpoint.connect.data.model.Booking
 import com.xpoint.connect.ui.booking.BookingDetailsActivity
 import com.xpoint.connect.ui.booking.CreateBookingActivity
 import com.xpoint.connect.ui.main.BookingsAdapter
-import com.xpoint.connect.utils.showToast
+import com.xpoint.connect.utils.EVOwnerToast
+import com.xpoint.connect.utils.showEVOwnerToast
 import kotlinx.coroutines.launch
 
 class BookingsFragment : Fragment() {
@@ -30,6 +32,7 @@ class BookingsFragment : Fragment() {
     private lateinit var preferencesManager: UserPreferencesManager
     private lateinit var bookingsAdapter: BookingsAdapter
     private var progressBar: ProgressBar? = null
+    private var swipeRefresh: SwipeRefreshLayout? = null
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -72,8 +75,12 @@ class BookingsFragment : Fragment() {
             adapter = bookingsAdapter
         }
 
-        // Initialize progress bar
+        // Initialize progress bar and swipe refresh
         progressBar = view.findViewById(R.id.progressBar)
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
+
+        // Setup SwipeRefreshLayout
+        swipeRefresh?.setOnRefreshListener { refreshCurrentTab() }
 
         // Setup enhanced tab functionality with pending bookings focus
         val btnPending = view.findViewById<View>(R.id.btnPending)
@@ -106,7 +113,7 @@ class BookingsFragment : Fragment() {
             it.animate().rotation(360f).setDuration(500).withEndAction { it.rotation = 0f }.start()
 
             refreshCurrentTab()
-            showToast("Refreshing booking data...")
+            showEVOwnerToast("Refreshing booking data...", EVOwnerToast.ToastType.INFO)
         }
 
         // Setup FAB for creating new booking with animation
@@ -189,6 +196,9 @@ class BookingsFragment : Fragment() {
                         .start()
             }
         }
+
+        // Also handle SwipeRefreshLayout
+        swipeRefresh?.isRefreshing = isLoading
     }
 
     private fun showError(message: String) {

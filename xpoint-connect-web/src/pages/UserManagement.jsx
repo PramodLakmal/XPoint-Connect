@@ -4,6 +4,112 @@ import api from '../utils/api'
 import { Plus, Edit, Trash2, Search, Eye, EyeOff, UserCheck, UserX } from 'lucide-react'
 import toast from 'react-hot-toast'
 
+// Move UserModal OUTSIDE the main component
+const UserModal = ({ isOpen, onClose, onSubmit, title, isEdit = false, formData, setFormData, showPassword, setShowPassword }) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold text-secondary-900 mb-4">{title}</h3>
+        
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="label text-secondary-700 mb-2 block">Username</label>
+            <input
+              type="text"
+              className="input"
+              value={formData.username}
+              onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+              required
+              placeholder="Enter unique username"
+            />
+          </div>
+          
+          <div>
+            <label className="label text-secondary-700 mb-2 block">Email</label>
+            <input
+              type="email"
+              className="input"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              required
+              placeholder="user@example.com"
+            />
+          </div>
+          
+          <div>
+            <label className="label text-secondary-700 mb-2 block">Role</label>
+            <select
+              className="input"
+              value={formData.role}
+              onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+              required
+            >
+              <option value="StationOperator">Station Operator</option>
+              <option value="BackOffice">BackOffice Administrator</option>
+            </select>
+            <p className="text-xs text-secondary-500 mt-1">
+              {formData.role === 'BackOffice' 
+                ? 'Full system access including user management' 
+                : 'Access to stations, bookings, and EV owners only'
+              }
+            </p>
+          </div>
+          
+          <div>
+            <label className="label text-secondary-700 mb-2 block">
+              Password {isEdit && "(Leave blank to keep current password)"}
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="input pr-10"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                required={!isEdit}
+                placeholder={isEdit ? "Leave blank to keep current" : "Enter strong password"}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-secondary-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-secondary-400" />
+                )}
+              </button>
+            </div>
+            {!isEdit && (
+              <p className="text-xs text-secondary-500 mt-1">
+                Password should be at least 6 characters with letters and numbers
+              </p>
+            )}
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary btn-md flex-1"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary btn-md flex-1"
+            >
+              {isEdit ? 'Update User' : 'Create User'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 const UserManagement = () => {
   const { hasAccess } = useAuth()
   const [users, setUsers] = useState([])
@@ -139,111 +245,6 @@ const UserManagement = () => {
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const UserModal = ({ isOpen, onClose, onSubmit, title, isEdit = false }) => {
-    if (!isOpen) return null
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">{title}</h3>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="label text-secondary-700 mb-2 block">Username</label>
-              <input
-                type="text"
-                className="input"
-                value={formData.username}
-                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                required
-                placeholder="Enter unique username"
-              />
-            </div>
-            
-            <div>
-              <label className="label text-secondary-700 mb-2 block">Email</label>
-              <input
-                type="email"
-                className="input"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
-                placeholder="user@example.com"
-              />
-            </div>
-            
-            <div>
-              <label className="label text-secondary-700 mb-2 block">Role</label>
-              <select
-                className="input"
-                value={formData.role}
-                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                required
-              >
-                <option value="StationOperator">Station Operator</option>
-                <option value="BackOffice">BackOffice Administrator</option>
-              </select>
-              <p className="text-xs text-secondary-500 mt-1">
-                {formData.role === 'BackOffice' 
-                  ? 'Full system access including user management' 
-                  : 'Access to stations, bookings, and EV owners only'
-                }
-              </p>
-            </div>
-            
-            <div>
-              <label className="label text-secondary-700 mb-2 block">
-                Password {isEdit && "(Leave blank to keep current password)"}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="input pr-10"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  required={!isEdit}
-                  placeholder={isEdit ? "Leave blank to keep current" : "Enter strong password"}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-secondary-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-secondary-400" />
-                  )}
-                </button>
-              </div>
-              {!isEdit && (
-                <p className="text-xs text-secondary-500 mt-1">
-                  Password should be at least 6 characters with letters and numbers
-                </p>
-              )}
-            </div>
-            
-            <div className="flex space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-secondary btn-md flex-1"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary btn-md flex-1"
-              >
-                {isEdit ? 'Update User' : 'Create User'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -273,19 +274,19 @@ const UserManagement = () => {
         <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
           <h3 className="font-semibold text-primary-800 mb-2">BackOffice Administrator</h3>
           <ul className="text-sm text-primary-700 space-y-1">
-            <li>• Complete system administration access</li>
-            <li>• User management capabilities</li>
-            <li>• Full access to all features</li>
-            <li>• System configuration and monitoring</li>
+            <li>âœ“ Complete system administration access</li>
+            <li>âœ“ User management capabilities</li>
+            <li>âœ“ Full access to all features</li>
+            <li>âœ“ System configuration and monitoring</li>
           </ul>
         </div>
         <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-4">
           <h3 className="font-semibold text-secondary-800 mb-2">Station Operator</h3>
           <ul className="text-sm text-secondary-700 space-y-1">
-            <li>• EV owner account management</li>
-            <li>• Charging station operations</li>
-            <li>• Booking management and approval</li>
-            <li>• Limited to operational tasks</li>
+            <li>âœ“ EV owner account management</li>
+            <li>âœ“ Charging station operations</li>
+            <li>âœ“ Booking management and approval</li>
+            <li>âœ“ Limited to operational tasks</li>
           </ul>
         </div>
       </div>
@@ -411,6 +412,10 @@ const UserManagement = () => {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateUser}
         title="Create New User"
+        formData={formData}
+        setFormData={setFormData}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
       />
 
       <UserModal
@@ -419,6 +424,10 @@ const UserManagement = () => {
         onSubmit={handleUpdateUser}
         title="Edit User"
         isEdit={true}
+        formData={formData}
+        setFormData={setFormData}
+        showPassword={showPassword}
+        setShowPassword={setShowPassword}
       />
     </div>
   )

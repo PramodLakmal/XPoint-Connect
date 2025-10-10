@@ -20,16 +20,21 @@
         android:theme="@style/Theme.XPointConnectMobile"
         tools:targetApi="31">
         
-        <!-- Main Activity (Launcher - handles splash logic internally) -->
+        <!-- Splash Activity (Launcher) -->
         <activity 
-            android:name="com.xpoint.connect.ui.main.MainActivity"
+            android:name="com.xpoint.connect.ui.auth.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.XPointConnectMobile.Splash">
+            android:theme="@style/Theme.XPointConnectMobile.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- Main Activity -->
+        <activity 
+            android:name="com.xpoint.connect.ui.main.MainActivity"
+            android:theme="@style/Theme.XPointConnectMobile" />
         
         <!-- Auth Activities -->
         <activity 
@@ -40,11 +45,6 @@
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
         <activity 
             android:name="com.xpoint.connect.ui.auth.RegisterActivity"
-            android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
-        
-        <!-- Splash Activity (No longer launcher) -->
-        <activity 
-            android:name="com.xpoint.connect.ui.auth.SplashActivity"
             android:theme="@style/Theme.XPointConnectMobile.NoActionBar" />
 
         <!-- Booking Activities -->

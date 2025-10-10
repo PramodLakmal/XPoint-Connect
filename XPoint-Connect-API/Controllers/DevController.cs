@@ -1,3 +1,7 @@
+﻿/*
+ * DevController.cs
+ * Development endpoints for testing and data seeding
+ */
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using XPoint_Connect_API.Services;

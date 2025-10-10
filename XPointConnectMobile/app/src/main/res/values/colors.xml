@@ -96,12 +96,12 @@
     <color name="operator_info">#2196F3</color>
     
     <!-- Gradient Colors -->
-    <color name="gradient_blue_start">#1976D2</color>
-    <color name="gradient_blue_end">#42A5F5</color>
-    <color name="gradient_orange_start">#FF9800</color>
-    <color name="gradient_orange_end">#FFB74D</color>
+    <color name="gradient_blue_start">#2E7D32</color>
+    <color name="gradient_blue_end">#66BB6A</color>
+    <color name="gradient_orange_start">#388E3C</color>
+    <color name="gradient_orange_end">#A5D6A7</color>
     <color name="gradient_green_start">#4CAF50</color>
     <color name="gradient_green_end">#81C784</color>
-    <color name="gradient_purple_start">#9C27B0</color>
-    <color name="gradient_purple_end">#BA68C8</color>
+    <color name="gradient_purple_start">#1B5E20</color>
+    <color name="gradient_purple_end">#43A047</color>
 </resources>

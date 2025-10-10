@@ -3,6 +3,7 @@ import api from '../utils/api';
 import { Search, Check, X, Eye, Calendar, Clock, MapPin, User, Plus, Edit } from 'lucide-react';
 import { formatDateTime, formatDate, isWithin12Hours, isWithin7Days } from '../utils/helpers';
 import toast from 'react-hot-toast';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const BookingManagement = () => {
   const [bookings, setBookings] = useState([]);
@@ -150,7 +151,6 @@ const BookingManagement = () => {
   };
 
   const getStatusBadgeColor = (status) => {
-    // Ensure status is a string before calling toLowerCase
     const statusStr = typeof status === 'string' ? status.toLowerCase() : 'unknown';
     switch (statusStr) {
       case 'pending':
@@ -169,7 +169,6 @@ const BookingManagement = () => {
   };
 
   const canModifyBooking = (booking) => {
-    // Ensure status is a string or handle as 'unknown'
     const statusStr = typeof booking.status === 'string' ? booking.status.toLowerCase() : 'unknown';
     if (statusStr === 'cancelled' || statusStr === 'completed') {
       return false;
@@ -379,7 +378,13 @@ const BookingManagement = () => {
 
                 <div>
                   <label className="text-sm font-medium text-secondary-700">QR Code</label>
-                  <p className="text-secondary-900 font-mono">{selectedBooking.qrCode}</p>
+                  <div className="mt-1">
+                    {selectedBooking.qrCode && selectedBooking.qrCode !== '' && (selectedBooking.status.toLowerCase() === 'approved' || selectedBooking.status.toLowerCase() === 'checkedin') ? (
+                      <QRCodeCanvas value={selectedBooking.qrCode} size={128} />
+                    ) : (
+                      <p className="text-secondary-600 italic">Not generated</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -555,6 +560,7 @@ const BookingManagement = () => {
             <thead className="bg-secondary-50 border-b border-secondary-200">
               <tr>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Booking ID</th>
+                <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">QR Code</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">EV Owner</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Station</th>
                 <th className="text-left py-3 px-6 text-sm font-semibold text-secondary-900">Reservation</th>
@@ -570,7 +576,13 @@ const BookingManagement = () => {
                     <div className="font-mono text-sm font-medium text-secondary-900">
                       {booking.id?.slice(-8)}
                     </div>
-                    <div className="font-mono text-xs text-secondary-600">{booking.qrCode}</div>
+                  </td>
+                  <td className="py-4 px-6">
+                    {booking.qrCode && booking.qrCode !== '' && (booking.status.toLowerCase() === 'approved' || booking.status.toLowerCase() === 'checkedin') ? (
+                      <QRCodeCanvas value={booking.qrCode} size={64} />
+                    ) : (
+                      <div className="font-mono text-xs text-secondary-600 italic">Not generated</div>
+                    )}
                   </td>
                   <td className="py-4 px-6">
                     <div className="font-medium text-secondary-900">{booking.evOwnerName}</div>

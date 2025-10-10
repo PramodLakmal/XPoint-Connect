@@ -1,0 +1,117 @@
+/**
+ * UserPreferencesManagerTemp.kt
+ * 
+ * Temporary fallback implementation using SharedPreferences
+ * while Room database issues are resolved
+ */
+package com.xpoint.connect.data.database
+
+import android.content.Context
+import android.content.SharedPreferences
+import com.xpoint.connect.data.model.EVOwner
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+
+class UserPreferencesManager(private val context: Context) {
+    
+    private val prefs: SharedPreferences = context.getSharedPreferences("xpoint_prefs", Context.MODE_PRIVATE)
+    
+    suspend fun initialize() {
+        // No initialization needed for SharedPreferences
+    }
+    
+    suspend fun saveAuthToken(token: String) {
+        prefs.edit().putString("auth_token", token).apply()
+    }
+    
+    suspend fun getAuthToken(): String? {
+        return prefs.getString("auth_token", null)
+    }
+    
+    suspend fun saveUserId(userId: String) {
+        prefs.edit().putString("user_id", userId).apply()
+    }
+    
+    suspend fun getUserId(): String? {
+        return prefs.getString("user_id", null)
+    }
+    
+    suspend fun saveUserType(userType: String) {
+        prefs.edit().putString("user_type", userType).apply()
+    }
+    
+    suspend fun getUserType(): String? {
+        return prefs.getString("user_type", null)
+    }
+    
+    suspend fun saveUserEmail(email: String) {
+        prefs.edit().putString("user_email", email).apply()
+    }
+    
+    suspend fun getUserEmail(): String? {
+        return prefs.getString("user_email", null)
+    }
+    
+    suspend fun saveUserName(userName: String) {
+        prefs.edit().putString("user_name", userName).apply()
+    }
+    
+    suspend fun getUserName(): String? {
+        return prefs.getString("user_name", null)
+    }
+    
+    suspend fun saveEVOwnerProfile(profile: EVOwner) {
+        prefs.edit().apply {
+            putString("ev_owner_id", profile.id)
+            putString("ev_owner_name", profile.name)
+            putString("ev_owner_email", profile.email)
+            putString("ev_owner_phone", profile.phone)
+            putString("ev_owner_address", profile.address)
+            apply()
+        }
+    }
+    
+    suspend fun getEVOwnerProfile(): EVOwner? {
+        val id = prefs.getString("ev_owner_id", null) ?: return null
+        val name = prefs.getString("ev_owner_name", "") ?: ""
+        val email = prefs.getString("ev_owner_email", "") ?: ""
+        val phone = prefs.getString("ev_owner_phone", "") ?: ""
+        val address = prefs.getString("ev_owner_address", "") ?: ""
+        
+        return EVOwner(
+            id = id,
+            name = name,
+            email = email,
+            phone = phone,
+            address = address
+        )
+    }
+    
+    suspend fun isLoggedIn(): Boolean {
+        return getAuthToken() != null
+    }
+    
+    suspend fun clearUserData() {
+        prefs.edit().clear().apply()
+    }
+    
+    fun getUserFlow(): Flow<EVOwner?> = flow {
+        emit(getEVOwnerProfile())
+    }
+    
+    suspend fun saveRememberMe(remember: Boolean) {
+        prefs.edit().putBoolean("remember_me", remember).apply()
+    }
+    
+    suspend fun getRememberMe(): Boolean {
+        return prefs.getBoolean("remember_me", false)
+    }
+    
+    suspend fun saveAutoLogin(autoLogin: Boolean) {
+        prefs.edit().putBoolean("auto_login", autoLogin).apply()
+    }
+    
+    suspend fun getAutoLogin(): Boolean {
+        return prefs.getBoolean("auto_login", false)
+    }
+}

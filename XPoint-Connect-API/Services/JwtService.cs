@@ -1,3 +1,7 @@
+﻿/*
+ * JwtService.cs
+ * Service for JWT token generation and validation
+ */
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

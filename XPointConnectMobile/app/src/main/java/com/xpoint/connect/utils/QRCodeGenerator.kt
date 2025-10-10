@@ -21,7 +21,7 @@ import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import java.io.ByteArrayOutputStream
 
-class QRCodeGenerator {
+class QRCodeGeneratorUtil {
 
     companion object {
         private const val TAG = "QRCodeGenerator"

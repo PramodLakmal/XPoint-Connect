@@ -1,3 +1,7 @@
+﻿/*
+ * OperatorAssignmentService.cs
+ * Service for operator assignment management
+ */
 using MongoDB.Driver;
 using XPoint_Connect_API.DTOs;
 using XPoint_Connect_API.Models;

@@ -113,10 +113,12 @@ class LoginActivity : AppCompatActivity() {
                         // Save user data using coroutines
                         lifecycleScope.launch {
                             userPreferencesManager.saveLoginData(
-                                    nic = loginResponse.nic,
-                                    fullName = loginResponse.fullName,
-                                    token = loginResponse.token
+                                    token = loginResponse.token,
+                                    userId = loginResponse.nic,
+                                    userType = "EVOwner"
                             )
+                            userPreferencesManager.saveUserNIC(loginResponse.nic)
+                            userPreferencesManager.saveUserName(loginResponse.fullName)
 
                             // Verify data was saved
                             val savedNIC = userPreferencesManager.getUserNIC()

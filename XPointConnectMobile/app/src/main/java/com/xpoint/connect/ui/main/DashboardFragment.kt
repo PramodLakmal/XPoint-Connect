@@ -8,11 +8,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.xpoint.connect.R
 import com.xpoint.connect.XPointConnectApplication
 import com.xpoint.connect.data.database.UserPreferencesManager
 import com.xpoint.connect.ui.booking.CreateBookingActivity
-import com.xpoint.connect.ui.map.NearbyStationsActivity
 import com.xpoint.connect.utils.showToast
 import kotlinx.coroutines.launch
 
@@ -20,6 +20,7 @@ class DashboardFragment : Fragment() {
 
     private val viewModel: DashboardViewModel by viewModels()
     private lateinit var userPreferencesManager: UserPreferencesManager
+    private var swipeRefresh: SwipeRefreshLayout? = null
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -41,6 +42,10 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupViews(view: View) {
+        // Setup SwipeRefreshLayout
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
+        swipeRefresh?.setOnRefreshListener { refreshDashboardData() }
+
         // Set welcome message
         lifecycleScope.launch {
             val userName = userPreferencesManager.getUserName() ?: "User"
@@ -99,13 +104,15 @@ class DashboardFragment : Fragment() {
         viewModel.dashboardStats.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is com.xpoint.connect.utils.Resource.Success -> {
+                    swipeRefresh?.isRefreshing = false
                     resource.data?.let { stats -> updateStatsViews(stats) }
                 }
                 is com.xpoint.connect.utils.Resource.Error -> {
+                    swipeRefresh?.isRefreshing = false
                     showToast(resource.message ?: "Failed to load dashboard data")
                 }
                 is com.xpoint.connect.utils.Resource.Loading -> {
-                    // Show loading state
+                    // SwipeRefreshLayout handles loading state
                 }
             }
         }
