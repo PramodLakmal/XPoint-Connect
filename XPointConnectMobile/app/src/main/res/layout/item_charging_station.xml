@@ -5,24 +5,53 @@
     android:id="@+id/stationCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/primary"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:backgroundTint="@color/surface">
+
+    <!-- Gradient Background -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_primary_background"
+        android:alpha="0.08" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <!-- Header Row -->
+        <!-- Header Row with Station Icon and Status -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical">
+
+            <!-- Station Icon -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/primary"
+                android:layout_marginEnd="16dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_ev_station"
+                    app:tint="@android:color/white" />
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Station Info -->
             <LinearLayout
@@ -36,9 +65,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Station Name"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="@color/primary"
+                    android:textColor="@color/on_surface"
+                    android:layout_marginBottom="4dp"
                     tools:text="Green Valley Charging Hub" />
 
                 <TextView
@@ -47,82 +77,226 @@
                     android:layout_height="wrap_content"
                     android:text="Location"
                     android:textSize="14sp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/md_theme_onSurfaceVariant"
                     android:drawableStart="@drawable/ic_location"
-                    android:drawablePadding="4dp"
-                    android:layout_marginTop="4dp"
+                    android:drawablePadding="8dp"
+                    app:drawableTint="@color/primary"
                     tools:text="Colombo 03, Sri Lanka" />
 
             </LinearLayout>
 
-            <!-- Availability Status -->
-            <TextView
-                android:id="@+id/availabilityStatus"
+            <!-- Availability Status Badge -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Available"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:background="@drawable/rounded_background"
-                android:backgroundTint="@color/success"
-                android:textColor="@color/white"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                tools:text="Available" />
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/success">
+
+                <TextView
+                    android:id="@+id/availabilityStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Available"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp"
+                    tools:text="Available" />
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-        <!-- Description -->
-        <TextView
-            android:id="@+id/stationDescription"
+        <!-- Description Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Description"
-            android:textSize="14sp"
-            android:textColor="@color/md_theme_onSurfaceVariant"
-            android:layout_marginBottom="12dp" />
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/surface_variant"
+            android:layout_marginBottom="16dp">
 
-        <!-- Pricing and Actions -->
+            <TextView
+                android:id="@+id/stationDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fast charging station with modern amenities and 24/7 availability"
+                android:textSize="14sp"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:padding="16dp"
+                android:lineSpacingExtra="4dp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Features Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <!-- Charging Type -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/gradient_info_background"
+                android:padding="12dp"
+                android:layout_marginEnd="8dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_bolt"
+                    app:tint="@color/primary"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fast Charge"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/on_surface" />
+
+            </LinearLayout>
+
+            <!-- Connector Type -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/gradient_info_background"
+                android:padding="12dp"
+                android:layout_marginStart="8dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_charging"
+                    app:tint="@color/primary"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Type 2"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/on_surface" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Pricing and Actions Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Pricing Info -->
+            <!-- Enhanced Pricing Info -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="@drawable/gradient_success_background"
+                android:padding="16dp"
+                android:layout_marginEnd="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Charging Rate"
                     android:textSize="12sp"
-                    android:textColor="@color/text_secondary" />
+                    android:textColor="@android:color/white"
+                    android:alpha="0.8" />
 
-                <TextView
-                    android:id="@+id/costPerKWh"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rs. 25.00/hour"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primary"
-                    tools:text="Rs. 25.00/hour" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="4dp">
+
+                    <TextView
+                        android:id="@+id/costPerKWh"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rs. 25.00"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:layout_marginEnd="4dp"
+                        tools:text="Rs. 25.00" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="/hour"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/white"
+                        android:alpha="0.8" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Select Button -->
+            <!-- Enhanced Select Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/selectButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select"
+                android:layout_height="56dp"
+                android:text="Book Now"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 style="@style/Widget.Material3.Button"
-                app:icon="@drawable/ic_check" />
+                app:icon="@drawable/ic_check"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="28dp"
+                android:paddingHorizontal="24dp" />
+
+        </LinearLayout>
+
+        <!-- Distance and Rating Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="2.5 km away"
+                android:textSize="12sp"
+                android:textColor="@color/primary"
+                android:textStyle="bold"
+                android:drawableStart="@drawable/ic_location"
+                android:drawablePadding="4dp"
+                app:drawableTint="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tap for more details"
+                android:textSize="12sp"
+                android:textColor="@color/primary"
+                android:textStyle="italic"
+                android:drawableEnd="@drawable/ic_arrow_right"
+                android:drawablePadding="4dp"
+                app:drawableTint="@color/primary" />
 
         </LinearLayout>
 
