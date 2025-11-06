@@ -32,7 +32,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    private const val BASE_URL = "http://10.0.2.2:5034/" // Replace with your actual API URL
+    private const val BASE_URL = "http://10.0.2.2:5034/" // Replace with actual API URL
 
     private var userPreferencesManager: UserPreferencesManager? = null
 

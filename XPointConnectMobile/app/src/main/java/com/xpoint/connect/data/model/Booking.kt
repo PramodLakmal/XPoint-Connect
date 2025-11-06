@@ -57,7 +57,13 @@ data class Booking(
 ) {
         // Helper property to convert status string to enum
         val bookingStatus: BookingStatus
-                get() = BookingStatus.fromString(status)
+                get() {
+                        // Handle both integer strings and text status values
+                        return when {
+                                status.toIntOrNull() != null -> BookingStatus.fromInt(status.toInt())
+                                else -> BookingStatus.fromString(status)
+                        }
+                }
 }
 
 /**

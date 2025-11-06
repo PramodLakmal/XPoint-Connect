@@ -83,6 +83,8 @@ class BookingDetailsActivity : AppCompatActivity() {
     }
 
     private fun setupActionBar() {
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             title = "Booking Details"
@@ -265,8 +267,7 @@ class BookingDetailsActivity : AppCompatActivity() {
 
     private fun generateQRCode(booking: Booking) {
         try {
-            val qrCodeData =
-                    "BOOKING:${booking.id}:${booking.chargingStationId}:${booking.evOwnerNIC}"
+            val qrCodeData = "${booking.id}"
             val qrCodeBitmap = qrCodeGenerator.generateQRCode(qrCodeData)
 
             // Set QR code image bitmap
@@ -398,17 +399,12 @@ class BookingDetailsActivity : AppCompatActivity() {
     }
 
     /**
-     * Handles QR code generation for approved bookings Uses server-generated QR code if available,
-     * otherwise generates locally
+     * Handles QR code generation for approved bookings Always generates locally with only booking
+     * ID
      */
     private fun handleApprovedBookingQR(booking: Booking) {
-        if (booking.qrCode.isNotEmpty()) {
-            // Use server-generated QR code
-            displayServerQRCode(booking.qrCode)
-        } else {
-            // Generate local QR code as fallback
-            generateLocalQRCode(booking)
-        }
+        // Always generate local QR code with only booking ID
+        generateLocalQRCode(booking)
     }
 
     /** Manual QR code generation triggered by user */
@@ -452,8 +448,7 @@ class BookingDetailsActivity : AppCompatActivity() {
 
     /** Generates QR code locally for approved booking */
     private fun generateLocalQRCode(booking: Booking) {
-        val qrCodeData =
-                "XPOINT_BOOKING:${booking.id}:${booking.evOwnerNIC}:${booking.chargingStationId}:${System.currentTimeMillis()}"
+        val qrCodeData = "${booking.id}"
         val bitmap = qrCodeGenerator.generateQRCode(qrCodeData, 512)
 
         bitmap?.let {
@@ -691,7 +686,7 @@ class BookingDetailsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                finish()
+                onBackPressedDispatcher.onBackPressed()
                 true
             }
             R.id.action_refresh -> {

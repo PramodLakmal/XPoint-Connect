@@ -267,13 +267,7 @@ class ReservationManager(
                 return@flow
             }
 
-            // Use existing QR code if available and valid
-            if (booking.qrCode.isNotEmpty() && isQRCodeValid(booking)) {
-                emit(Resource.Success(booking.qrCode))
-                return@flow
-            }
-
-            // Generate new QR code
+            // Always generate new QR code with only booking ID
             val qrCodeData = createQRCodeData(booking)
             val qrCodeBitmap = qrCodeGenerator.generateQRCode(data = qrCodeData, size = 512)
 
@@ -467,7 +461,7 @@ class ReservationManager(
 
     /** Creates QR code data string for a booking */
     private fun createQRCodeData(booking: Booking): String {
-        return "XPOINT_BOOKING:${booking.id}:${booking.chargingStationId}:${booking.evOwnerNIC}:${System.currentTimeMillis()}"
+        return "${booking.id}"
     }
 
     /** Helper functions for time calculations and validations */
